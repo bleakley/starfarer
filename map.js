@@ -274,6 +274,9 @@ drawAll = function(recursion)
         case TERRAIN_STAR_YELLOW:
           mapDisplay.draw(x, y, "~", ["#D81", "#DD4"].random(), ["#D81", "#DD4"].random());
           break;
+        case TERRAIN_CORONA_YELLOW:
+          mapDisplay.draw(x, y, " ", ["#D81", "#DD4"].random(), ["#000", "#000", "#DD4"].random());
+          break;
         case TERRAIN_BARREN_1:
           mapDisplay.draw(x, y, "~", "#000", "#999");
           break;
@@ -387,19 +390,20 @@ advanceTurn =  function() {
     s.yCoord += s.yMoment;
 
     let speed = Math.max(Math.abs(s.xMoment), Math.abs(s.yMoment));
-    switch(map[s.xCoord][s.yCoord].terrain) {
-      case TERRAIN_STAR_YELLOW:
-        if (s.takeDamage(10*(speed+1))) {
-          s.stop();
-        }
-        break;
-      case TERRAIN_BARREN_1:
-      case TERRAIN_BARREN_2:
-      case TERRAIN_BARREN_3:
-        if (s.takeDamage(2*speed)) {
-          s.stop();
-        }
-    }
+    if(_.has(map, [s.xCoord, s.yCoord, 'terrain']))
+      switch(map[s.xCoord][s.yCoord].terrain) {
+        case TERRAIN_STAR_YELLOW:
+          if (s.takeDamage(10*(speed+1))) {
+            s.stop();
+          }
+          break;
+        case TERRAIN_BARREN_1:
+        case TERRAIN_BARREN_2:
+        case TERRAIN_BARREN_3:
+          if (s.takeDamage(2*(Math.max(0, speed-1)))) {
+            s.stop();
+          }
+      }
 
     if(s.energy >= s.energyMax) {
       s.shields = Math.min(s.shields + 1, s.shieldsMax);
@@ -414,6 +418,9 @@ advanceTurn =  function() {
 
 highlightObjects.handleEvent = function(event) {
   let coords = mapDisplay.eventToPosition(event);
+  if(!_.has(map, [coords[0], coords[1], 'body']))
+    return;
+
   let body = map[coords[0]][coords[1]].body;
   if (body == currentlyHighlightedObject) {
     return;
