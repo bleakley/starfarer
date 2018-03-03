@@ -1,5 +1,5 @@
-const MAP_WIDTH = 150;
-const MAP_HEIGHT = 60;
+const MAP_WIDTH = 140;
+const MAP_HEIGHT = 50;
 
 const BODY_STAR_YELLOW = 0;
 const BODY_STAR_RED = 1;
@@ -36,6 +36,7 @@ var planets = [
     mass: 100
   },
   {
+    name: 'CERES',
     xCoord: 20,
     yCoord: 20,
     radius: 2,
@@ -49,7 +50,13 @@ var ships = [
     xCoord: 10,
     yCoord: 10,
     char: "@",
-    player: true
+    player: true,
+    xMoment: 2,
+    yMoment: 3,
+    xCursor: 2,
+    yCursor: 3,
+    maneuverLevel: 1,
+    maxSpeed: 5
   }
 ];
 
@@ -102,6 +109,86 @@ unitVector = function(x, y) {
   return { x: x/mag, y: y/mag }
 }
 
+const EAST = 0;
+const WEST = 4;
+const NORTH = 2;
+const SOUTH = 6;
+const NE = 1;
+const NW = 3;
+const SE = 7;
+const SW = 5;
+const CENTER = 8;
+
+const DIRECTIONS = [];
+DIRECTIONS[EAST] = [1, 0];
+DIRECTIONS[WEST] = [-1, 0];
+DIRECTIONS[NORTH] = [0, -1];
+DIRECTIONS[SOUTH] = [0, 1];
+DIRECTIONS[NE] = [1, -1];
+DIRECTIONS[NW] = [-1, -1];
+DIRECTIONS[SE] = [1, 1];
+DIRECTIONS[SW] = [-1, 1];
+DIRECTIONS[CENTER] = [0, 0];
+
+const ARROWS = [];
+ARROWS[EAST] = '\u25B6';
+ARROWS[WEST] = '\u25C0';
+ARROWS[NORTH] = '\u25B2';
+ARROWS[SOUTH] = '\u25BC';
+ARROWS[NE] = '\u25E5';
+ARROWS[NW] = '\u25E4';
+ARROWS[SE] = '\u25E2';
+ARROWS[SW] = '\u25E3';
+ARROWS[CENTER] = '\u25A0';
+
+const OCTANT1 = Math.tan(Math.PI/8); //0.41
+const OCTANT2 = Math.tan(3*Math.PI/8); //2.41
+const OCTANT3 = Math.tan(5*Math.PI/8); //-2.41
+const OCTANT4 = Math.tan(7*Math.PI/8); //-0.41
+
+getEightWayDirection = function(x, y) {
+  if (x == 0) {
+    if (y > 0)
+      return SOUTH;
+    if (y < 0)
+      return NORTH;
+    return CENTER;
+  }
+  if (y == 0) {
+    if (x > 0)
+      return EAST;
+    if (x < 0)
+      return WEST;
+  }
+
+  let ratio = x/y;
+
+  if (y >= 1) {
+    if (ratio < OCTANT3)
+      return WEST;
+    if (ratio >= OCTANT3 && ratio <= OCTANT4)
+      return SW;
+    if (ratio > OCTANT4 && ratio < OCTANT1)
+      return SOUTH;
+    if (ratio >= OCTANT1 && ratio <= OCTANT2)
+      return SE;
+    if (ratio > OCTANT2)
+      return EAST;
+  } else {
+    if (ratio < OCTANT3)
+      return EAST;
+    if (ratio >= OCTANT3 && ratio <= OCTANT4)
+      return NE;
+    if (ratio > OCTANT4 && ratio < OCTANT1)
+      return NORTH;
+    if (ratio >= OCTANT1 && ratio <= OCTANT2)
+      return NW;
+    if (ratio > OCTANT2)
+      return WEST;
+  }
+  return CENTER;
+}
+
 generateMap = function()
 {
   for(var i = 0; i < MAP_WIDTH; i++) {
@@ -109,9 +196,7 @@ generateMap = function()
   	for(var j = 0; j < MAP_HEIGHT; j++) {
   		map[i][j] = {
         terrain: TERRAIN_NONE,
-        body: null,
-        gravityX: 0,
-        gravityY: 0
+        body: null
       }
   	}
   }
@@ -140,19 +225,19 @@ generateMap = function()
     map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE;
   });
 
-  for(var i = 0; i < MAP_WIDTH; i++) {
-  	for(var j = 0; j < MAP_HEIGHT; j++) {
-      planets.forEach((p) => {
-        let unit = unitVector(i-p.xCoord, j-p.yCoord);
-        gx = p.mass/Math.pow(i-p.xCoord, 2)/unit.x;
-        gy = p.mass/Math.pow(j-p.yCoord, 2)/unit.y;
-        map[i][j].gravityX += gx;
-        map[i][j].gravityY += gy;
-      });
-      //console.log('' + map[i][j].gravityX + ', ' + map[i][j].gravityY);
-  	}
-  }
+}
 
+drawHighlight = function(p) {
+  for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
+    mapDisplay.draw(x, p.yCoord - p.radius - 1, "#", "#0E4");
+    mapDisplay.draw(x, p.yCoord + p.radius, "#", "#0E4");
+  }
+  for (var y = p.yCoord - p.radius - 1; y < p.yCoord + p.radius + 1; y++) {
+    mapDisplay.draw(p.xCoord - p.radius - 1, y, "#", "#0E4");
+    mapDisplay.draw(p.xCoord + p.radius, y, "#", "#0E4");
+  }
+  mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius - 1, `%c{#0E4}${p.name}`);
+  mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius, `%c{#0E4}MASS: ${p.mass} x10^28 kg`);
 }
 
 drawAll = function(recursion)
@@ -181,21 +266,19 @@ drawAll = function(recursion)
 
   planets.forEach((p) => {
     if (p == currentlyHighlightedObject) {
-      for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
-        mapDisplay.draw(x, p.yCoord - p.radius - 1, "#", "#0E4");
-        mapDisplay.draw(x, p.yCoord + p.radius, "#", "#0E4");
-      }
-      for (var y = p.yCoord - p.radius - 1; y < p.yCoord + p.radius + 1; y++) {
-        mapDisplay.draw(p.xCoord - p.radius - 1, y, "#", "#0E4");
-        mapDisplay.draw(p.xCoord + p.radius, y, "#", "#0E4");
-      }
-      mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius - 1, `%c{#0E4}${p.name}`);
-      mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius, `%c{#0E4}MASS: ${p.mass} x10^28 kg`);
+      drawHighlight(p);
     }
   });
 
   ships.forEach((s) => {
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
+    if (s.player)
+      mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
+    let direction = getEightWayDirection(s.xMoment, s.yMoment);
+    mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], "#0E4");
+
+    if (s.player)
+      mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
   });
 
 	if(recursion)
@@ -210,12 +293,42 @@ init = function()
   generateMap();
 	mapDisplay = new ROT.Display({
 		width:MAP_WIDTH, height:MAP_HEIGHT,
-		layout:"rect", forceSquareRatio: true
+		layout:"rect", forceSquareRatio: false
 	});
 
 	document.body.appendChild(mapDisplay.getContainer());
 
 	drawAll(true);
+  playerTurn();
+}
+
+getPlayerShip = function() {
+  for (let i = 0; i < ships.length; i++) {
+    if (ships[i].player)
+      return ships[i];
+  }
+}
+
+moveCursor =  function(direction) {
+  let playerShip = getPlayerShip();
+  let dx = DIRECTIONS[direction][0];
+  let dy = DIRECTIONS[direction][1];
+  if (Math.abs(playerShip.xCursor+dx-playerShip.xMoment) > playerShip.maneuverLevel)
+    return false;
+  if (Math.abs(playerShip.yCursor+dy-playerShip.yMoment) > playerShip.maneuverLevel)
+    return false;
+  playerShip.xCursor += dx;
+  playerShip.yCursor += dy;
+  return true;
+}
+
+advanceTurn =  function() {
+  ships.forEach((s) => {
+    s.xCoord += s.xCursor;
+    s.yCoord += s.yCursor;
+    s.xMoment = s.xCursor;
+    s.yMoment = s.yCursor;
+  });
   playerTurn();
 }
 
@@ -229,7 +342,9 @@ highlightObjects.handleEvent = function(event) {
   }
 
   currentlyHighlightedObject = body;
-  drawAll();
+  if (body)
+    drawHighlight(body);
+  else drawAll();
 };
 
 selectDirection.handleEvent = function(event) {
@@ -240,28 +355,36 @@ selectDirection.handleEvent = function(event) {
 		case 103:
 		case 36:
 		case 55:
-			//numpad7
-			window.removeEventListener('keydown', this);
-			move(playerX-1, playerY-1);
+			//numpad7, top left
+      if (moveCursor(NW)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
 			break;
 		case 105:
 		case 33:
 		case 57:
-			//numpad9
-			window.removeEventListener('keydown', this);
-			move(playerX+1, playerY-1);
+			//numpad9, top right
+      if (moveCursor(NE)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
 			break;
 		case 100:
 		case 37:
-			//numpad4
-			window.removeEventListener('keydown', this);
-			move(playerX-1, playerY);
+			//numpad4, left
+      if (moveCursor(WEST)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
 			break;
 		case 102:
 		case 39:
-			//numpad6
-			window.removeEventListener('keydown', this);
-			move(playerX+2, playerY);
+			//numpad6, right
+      if (moveCursor(EAST)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
 			break;
 		case 191:
 			//?
@@ -270,16 +393,39 @@ selectDirection.handleEvent = function(event) {
 		case 97:
 		case 35:
 		case 49:
-			//numpad1
-			window.removeEventListener('keydown', this);
-			move(playerX-1, playerY+1);
+			//numpad1, bottom left
+      if (moveCursor(SW)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
 			break;
 		case 99:
 		case 34:
 		case 51:
-			//numpad3
+			//numpad3, bottom right
+      if (moveCursor(SE)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
+			break;
+    case 40:
+			//numpad2, down
+      if (moveCursor(SOUTH)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
+			break;
+    case 38:
+			//numpad8, up
+      if (moveCursor(NORTH)) {
+        window.removeEventListener('keydown', this);
+        playerTurn();
+      }
+			break;
+    case 32:
+			//space, next turn
 			window.removeEventListener('keydown', this);
-			move(playerX+1, playerY+1);
+      advanceTurn();
 			break;
 	}
 
