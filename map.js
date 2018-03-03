@@ -16,15 +16,17 @@ const BODY_GAS_3 = 11;
 const BODY_GAS_4 = 12;
 
 
-const TERRAIN_NONE = 0;
-const TERRAIN_STAR_YELLOW = 1;
-const TERRAIN_CORONA_YELLOW = 2;
-const TERRAIN_BARREN_1 = 3;
-const TERRAIN_BARREN_2 = 4;
-const TERRAIN_BARREN_3 = 5;
-const TERRAIN_GRASS = 6;
-const TERRAIN_WATER = 7;
-const TERRAIN_ICE = 8;
+const TERRAIN_NONE_EMPTY = 0;
+const TERRAIN_NONE_DIM_STAR = 1;
+const TERRAIN_NONE_BRIGHT_STAR = 2;
+const TERRAIN_STAR_YELLOW = 3;
+const TERRAIN_CORONA_YELLOW = 4;
+const TERRAIN_BARREN_1 = 5;
+const TERRAIN_BARREN_2 = 6;
+const TERRAIN_BARREN_3 = 7;
+const TERRAIN_GRASS = 8;
+const TERRAIN_WATER = 9;
+const TERRAIN_ICE = 10;
 
 var planets = [
   {
@@ -55,8 +57,7 @@ var ships = [
     yMoment: 3,
     xCursor: 2,
     yCursor: 3,
-    maneuverLevel: 1,
-    maxSpeed: 5
+    maneuverLevel: 1
   }
 ];
 
@@ -195,7 +196,7 @@ generateMap = function()
   	map[i] = [];
   	for(var j = 0; j < MAP_HEIGHT; j++) {
   		map[i][j] = {
-        terrain: TERRAIN_NONE,
+        terrain: [TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_DIM_STAR, TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_BRIGHT_STAR].random(),
         body: null
       }
   	}
@@ -216,13 +217,13 @@ generateMap = function()
       }
   	}
     map[p.xCoord - p.radius][p.yCoord - p.radius].body = null;
-    map[p.xCoord - p.radius][p.yCoord - p.radius].terrain = TERRAIN_NONE;
+    map[p.xCoord - p.radius][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
     map[p.xCoord - p.radius][p.yCoord + p.radius - 1].body = null;
-    map[p.xCoord - p.radius][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE;
+    map[p.xCoord - p.radius][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
     map[p.xCoord + p.radius - 1][p.yCoord - p.radius].body = null;
-    map[p.xCoord + p.radius - 1][p.yCoord - p.radius].terrain = TERRAIN_NONE;
+    map[p.xCoord + p.radius - 1][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
     map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].body = null;
-    map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE;
+    map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
   });
 
 }
@@ -245,8 +246,14 @@ drawAll = function(recursion)
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
       switch(map[x][y].terrain) {
-        case TERRAIN_NONE:
-          mapDisplay.draw(x, y, ".", ["#FFF", "#000", "#000", "#000", "#000", "#000", "#006"].random(), "#000");
+        case TERRAIN_NONE_EMPTY:
+          mapDisplay.draw(x, y, ".", ["#000"].random(), "#000");
+          break;
+        case TERRAIN_NONE_DIM_STAR:
+          mapDisplay.draw(x, y, ".", ["#000", "#006", "#006", "#006", "#006", "#006"].random(), "#000");
+          break;
+        case TERRAIN_NONE_BRIGHT_STAR:
+          mapDisplay.draw(x, y, ".", ["#006", "#FFF", "#FFF", "#FFF", "#FFF", "#FFF"].random(), "#000");
           break;
         case TERRAIN_STAR_YELLOW:
           mapDisplay.draw(x, y, "~", ["#D81", "#DD4"].random(), ["#D81", "#DD4"].random());
