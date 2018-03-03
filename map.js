@@ -1,4 +1,4 @@
-const MAP_WIDTH = 140;
+const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
 
 const BODY_STAR_YELLOW = 0;
@@ -47,6 +47,8 @@ var planets = [
   }
 ];
 
+let turn = 0;
+
 var ships = [
   {
     xCoord: 10,
@@ -57,7 +59,16 @@ var ships = [
     yMoment: 3,
     xCursor: 2,
     yCursor: 3,
-    maneuverLevel: 1
+    hull: 5,
+    hullMax: 5,
+    shields: 0,
+    shieldsMax: 3,
+    maneuverLevel: 1,
+    maneuverCost: 3,
+    energyRegen: 2,
+    energy: 0,
+    energyMax: 10,
+    credits: 100
   }
 ];
 
@@ -66,6 +77,8 @@ var map = [];
 var selectDirection = {};
 var highlightObjects = {};
 var currentlyHighlightedObject = null;
+
+var notEnoughEnergy = new Audio('Battlecruiser_EnergyLow00.mp3');
 
 /*
 
@@ -108,6 +121,24 @@ s shuttle
 unitVector = function(x, y) {
   let mag = Math.sqrt(x*x+y*y)
   return { x: x/mag, y: y/mag }
+}
+
+function randomNumber(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+function percentChance(chance) { return randomNumber(1, 100) <= chance; }
+
+randomOption = function(table) {
+  let keys = Object.keys(table);
+  let dflt = table[keys[0]];
+  let roll = randomNumber(1, 100);
+  for (let i = 0; i < keys.length; i++) {
+    let prob = parseFloat(keys[i]);
+    if (isNaN(prob))
+      return dflt;
+    if (roll <= prob)
+      return table[keys[i]];
+    roll -= prob;
+  }
+  return dflt;
 }
 
 const EAST = 0;
@@ -196,7 +227,7 @@ generateMap = function()
   	map[i] = [];
   	for(var j = 0; j < MAP_HEIGHT; j++) {
   		map[i][j] = {
-        terrain: [TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_DIM_STAR, TERRAIN_NONE_EMPTY, TERRAIN_NONE_EMPTY, TERRAIN_NONE_BRIGHT_STAR].random(),
+        terrain: randomOption({ '80': TERRAIN_NONE_EMPTY, '15': TERRAIN_NONE_DIM_STAR, '5': TERRAIN_NONE_BRIGHT_STAR}),
         body: null
       }
   	}
@@ -247,13 +278,13 @@ drawAll = function(recursion)
 		for (var y = 0; y < MAP_HEIGHT; y++) {
       switch(map[x][y].terrain) {
         case TERRAIN_NONE_EMPTY:
-          mapDisplay.draw(x, y, ".", ["#000"].random(), "#000");
+          mapDisplay.draw(x, y, ".", randomOption({ '99': '#000', '1': "#006" }), "#000");
           break;
         case TERRAIN_NONE_DIM_STAR:
-          mapDisplay.draw(x, y, ".", ["#000", "#006", "#006", "#006", "#006", "#006"].random(), "#000");
+          mapDisplay.draw(x, y, ".", randomOption({ '99': '#006', '1': "#FFF" }), "#000");
           break;
         case TERRAIN_NONE_BRIGHT_STAR:
-          mapDisplay.draw(x, y, ".", ["#006", "#FFF", "#FFF", "#FFF", "#FFF", "#FFF"].random(), "#000");
+          mapDisplay.draw(x, y, ".", randomOption({ '99': '#FFF', '1': "#006" }), "#000");
           break;
         case TERRAIN_STAR_YELLOW:
           mapDisplay.draw(x, y, "~", ["#D81", "#DD4"].random(), ["#D81", "#DD4"].random());
@@ -288,11 +319,25 @@ drawAll = function(recursion)
       mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
   });
 
+  drawSideBar();
+
 	if(recursion)
 		setTimeout(function() {
 			drawAll(true);
 		}, 900)
 
+}
+
+drawSideBar = function()
+{
+  let ps = getPlayerShip();
+	sideBarDisplay.clear();
+	sideBarDisplay.drawText(2, 0, `Turn: ${turn}`);
+  sideBarDisplay.drawText(2, 1, `BitCredits: ${ps.credits}`);
+	sideBarDisplay.drawText(2, 3, `Hull: ${ps.hull}/${ps.hullMax}`);
+	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
+	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
+	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
 }
 
 init = function()
@@ -303,7 +348,13 @@ init = function()
 		layout:"rect", forceSquareRatio: false
 	});
 
+  sideBarDisplay = new ROT.Display({
+		width:20, height:MAP_HEIGHT,
+		layout:"rect", fg: "#0E4", forceSquareRatio: false
+	});
+
 	document.body.appendChild(mapDisplay.getContainer());
+  document.body.appendChild(sideBarDisplay.getContainer());
 
 	drawAll(true);
   playerTurn();
@@ -324,6 +375,7 @@ moveCursor =  function(direction) {
     return false;
   if (Math.abs(playerShip.yCursor+dy-playerShip.yMoment) > playerShip.maneuverLevel)
     return false;
+
   playerShip.xCursor += dx;
   playerShip.yCursor += dy;
   return true;
@@ -331,11 +383,23 @@ moveCursor =  function(direction) {
 
 advanceTurn =  function() {
   ships.forEach((s) => {
-    s.xCoord += s.xCursor;
-    s.yCoord += s.yCursor;
-    s.xMoment = s.xCursor;
-    s.yMoment = s.yCursor;
+    let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+    if (s.energy >= maneuverMagnitude * s.maneuverCost) {
+      s.energy -= maneuverMagnitude * s.maneuverCost;
+      s.xMoment = s.xCursor;
+      s.yMoment = s.yCursor;
+    } else if (s.player) {
+      notEnoughEnergy.play();
+    }
+
+    s.xCoord += s.xMoment;
+    s.yCoord += s.yMoment;
+    if(s.energy >= s.energyMax) {
+      s.shields = Math.min(s.shields + 1, s.shieldsMax);
+    }
+    s.energy = Math.min(s.energy + s.energyRegen, s.energyMax);
   });
+  turn++;
   playerTurn();
 }
 
