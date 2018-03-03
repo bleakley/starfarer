@@ -40,7 +40,9 @@ var selectDirection = {};
 var highlightObjects = {};
 var currentlyHighlightedObject = null;
 
-var notEnoughEnergy = new Audio('Battlecruiser_EnergyLow00.mp3');
+var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
+var bgm = new Audio('sounds/bgm_01.mp3');
+bgm.loop = true;
 
 /*
 
@@ -293,6 +295,7 @@ init = function()
   document.body.appendChild(sideBarDisplay.getContainer());
 
 	drawAll(true);
+	bgm.play()
   playerTurn();
 }
 
