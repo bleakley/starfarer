@@ -49,28 +49,13 @@ var planets = [
 
 let turn = 0;
 
-var ships = [
-  {
-    xCoord: 10,
-    yCoord: 10,
-    char: "@",
-    player: true,
-    xMoment: 2,
-    yMoment: 3,
-    xCursor: 2,
-    yCursor: 3,
-    hull: 5,
-    hullMax: 5,
-    shields: 0,
-    shieldsMax: 3,
-    maneuverLevel: 1,
-    maneuverCost: 3,
-    energyRegen: 2,
-    energy: 0,
-    energyMax: 10,
-    credits: 100
-  }
-];
+var ships = [];
+
+let ps = new Ship([20,10], [2,2], 5, 3, 10);
+ps.name = `player's ship`;
+ps.player = true;
+ps.powerDown();
+ships.push(ps);
 
 var map = [];
 
@@ -315,8 +300,14 @@ drawAll = function(recursion)
     let direction = getEightWayDirection(s.xMoment, s.yMoment);
     mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], "#0E4");
 
-    if (s.player)
-      mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
+    if (s.player) {
+      let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+      if (s.energy >= maneuverMagnitude * s.maneuverCost)
+        mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
+      else
+        mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
+    }
+
   });
 
   drawSideBar();
@@ -394,6 +385,22 @@ advanceTurn =  function() {
 
     s.xCoord += s.xMoment;
     s.yCoord += s.yMoment;
+
+    let speed = Math.max(Math.abs(s.xMoment), Math.abs(s.yMoment));
+    switch(map[s.xCoord][s.yCoord].terrain) {
+      case TERRAIN_STAR_YELLOW:
+        if (s.takeDamage(10*(speed+1))) {
+          s.stop();
+        }
+        break;
+      case TERRAIN_BARREN_1:
+      case TERRAIN_BARREN_2:
+      case TERRAIN_BARREN_3:
+        if (s.takeDamage(2*speed)) {
+          s.stop();
+        }
+    }
+
     if(s.energy >= s.energyMax) {
       s.shields = Math.min(s.shields + 1, s.shieldsMax);
     }
