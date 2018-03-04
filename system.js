@@ -47,11 +47,6 @@ function System () {
   }
 
   this.ships = [];
-  let ps = new Ship([20,10], [2,2], 5, 3, 10);
-  ps.name = `player's ship`;
-  ps.player = true;
-  ps.powerDown();
-  this.ships.push(ps);
   let s2 = new Ship([30,30], [1,-2], 5, 3, 10);
   this.ships.push(s2);
 
@@ -103,5 +98,27 @@ System.prototype = {
       });
     });
 
+  },
+  removeShip: function(s) {
+    let index = this.ships.indexOf(s);
+    if (index > -1) {
+      this.ships.splice(index, 1);
+    }
+  },
+  randomUnoccupiedSpace: function() {
+    var collision = true;
+     while (collision) {
+      x = randomNumber(2,MAP_WIDTH-2);
+      y = randomNumber(2,MAP_HEIGHT-2);
+      collision = false;
+      this.ships.forEach( (s) => {
+        if (s.xCoord == x && s.yCoord == y)
+          collision = true;
+      });
+      if (this.map[x][y].body != null)
+        collision = true;
+      console.log(collision)
+    }
+    return([x,y]);
   }
 }

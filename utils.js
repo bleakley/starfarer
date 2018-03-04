@@ -126,3 +126,10 @@ djikstraSearch = function(layer, avoid, map)
     djikstraSearch(layer, false, map);
   }
 }
+
+getPlayerShip = function(ships) {
+  for (let i = 0; i < ships.length; i++) {
+    if (ships[i].player)
+      return ships[i];
+  }
+}
