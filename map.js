@@ -20,17 +20,17 @@ var planets = [
     radius: 2,
     class: BODY_PLANET_BARREN,
     mass: 1,
-	events: [function (display, p) {
-		return(`You search a crumbling precursor temple on ${p.name} and find the coordinates of a nearby anomaly. However a member of your landing party accidentally activated a subspace transponder in the temple. Your navigator estimates that if any ships in nearby systems picked up the transmission, they could arrive in as few as 4 days.`);
-	}]
+	events: [new TempleEvent()]
   }
 ];
 
 let turn = 0;
 
-let message = "";
+let message = {text: ""};
 
 var ships = [];
+
+var pending_events = [];
 
 let ps = new Ship([20,10], [2,2], 5, 3, 10);
 ps.name = `player's ship`;
@@ -242,22 +242,25 @@ drawAll = function(recursion)
     }
   });
 
+	console.log(ships)
   ships.forEach((s) => {
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
     if (s.player)
       mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
     let direction = getEightWayDirection(s.xMoment, s.yMoment);
-    mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], s.player ? "#0E4" : "red");
+	if (s.xMoment != 0 || s.yMoment != 0) {
+		mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], s.player ? "#0E4" : "red");
 
-    if (s.player) {
-      let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
-      if (s.energy >= maneuverMagnitude * s.maneuverCost)
-        mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
-      else
-        mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
-    } else {
-      mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
-    }
+		if (s.player) {
+		  let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+		  if (s.energy >= maneuverMagnitude * s.maneuverCost)
+			mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
+		  else
+			mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
+		} else {
+		  mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
+		}
+	}
 
   });
 
@@ -280,7 +283,7 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
-	sideBarDisplay.drawText(2, 7, message);
+	sideBarDisplay.drawText(2, 7, message.text);
 }
 
 init = function()
@@ -360,8 +363,8 @@ advanceTurn =  function() {
 		if (s.player) {
 		  p = map[s.xCoord][s.yCoord].body
           if(p!=null) {
-			if(p.events!=null) {
-			  message = p.events.random()(sideBarDisplay, p, s);
+			if(p.events!=null && p.events.length > 0) {
+			  p.events.pop().action(message, p, map, ships, pending_events);
 			}
 		  }
         }
@@ -372,6 +375,14 @@ advanceTurn =  function() {
     }
     s.energy = Math.min(s.energy + s.energyRegen, s.energyMax);
   });
+  
+  pending_events.forEach((e, index, arr) => {
+	  e.time_until = e.time_until - 1;
+	  if (e.time_until == 0) {
+		  e.action(message, null, map, ships, pending_events);
+		  arr.splice(index, 1);
+	  }});
+  
   turn++;
   playerTurn();
 }
