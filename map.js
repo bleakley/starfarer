@@ -1,17 +1,47 @@
 const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
 const N_STAR_SYSTEMS = 4;
+const N_CLUES = 4;
 
 let turn = 0;
 let message = {text: ""};
 
 var universe = [];
+var candidate_planets = [];
 for (var count = 0; count < N_STAR_SYSTEMS; count++) {
   universe.push(new System());
   console.log(universe);
 }
-var system = universe[0];
-console.log(universe);
+
+// Determine location of the Orbitron Device
+universe.forEach( (sys) => {
+  sys.planets.forEach( (p) => {
+    if (p.class == BODY_PLANET_BARREN || p.class == BODY_PLANET_TERRAN || p.class == BODY_PLANET_FROZEN) {
+      candidate_planets.push(p);
+    }
+  })
+})
+orbitron_planet = candidate_planets.random(); // Planet that holds the Orbitron Device
+orbitron_planet.events = [new FindOrbitronEvent()];
+orbitron_system = null; // System that the Orbitron Device is in
+universe.forEach( (sys) => {
+  if (sys.planets.indexOf(orbitron_planet) > -1) {
+    orbitron_system = sys;
+  }
+});
+console.log(orbitron_system)
+console.log(orbitron_planet)
+
+for (var count = 0; count < N_CLUES; count++){
+  p = candidate_planets.random();
+  if (p!=orbitron_planet){
+    p.events = [new TempleClueEvent(orbitron_system, orbitron_planet)];
+  }
+}
+
+var system = universe[0]; // The star system that the player currently is in
+
+message.text = `Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact that can be used to prevent your home system, Altaris, from going supernova.\n\nArrow keys:\nchange trajectory\n\nSpace:\nmove\n\nh:\njump to hyperspace`;
 
 var selectDirection = {};
 var highlightObjects = {};
