@@ -139,15 +139,15 @@ advanceTurn =  function() {
   let startTime = Date.now();
   console.log(`Building astar map...`);
   var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
-     return !_.get(map, [x, y, 'forbiddenToAI'], true);
+     return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
   });
   console.log(`done in ${Date.now()-startTime} ms.`);
 
-  ships.forEach((s) => {
+  system.ships.forEach((s) => {
     if (!s.player) {
       let startTime = Date.now();
       console.log(`Plotting course...`);
-      s.plotBetterCourse(map, astar);
+      s.plotBetterCourse(system.map, astar);
       console.log(`done in ${Date.now()-startTime} ms.`);
     }
     let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
@@ -177,7 +177,7 @@ advanceTurn =  function() {
             s.stop();
           }
       }
-      
+
       if (s.player) {
         p = system.map[s.xCoord][s.yCoord].body
         if(p!=null) {
@@ -187,7 +187,7 @@ advanceTurn =  function() {
         }
       }
     }
-    
+
     if (!s.player) {
       ps = getPlayerShip();
       if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
@@ -201,14 +201,14 @@ advanceTurn =  function() {
     }
     s.energy = Math.min(s.energy + s.energyRegen, s.energyMax);
   });
-  
+
   system.pending_events.forEach((e, index, arr) => {
 	  e.time_until = e.time_until - 1;
 	  if (e.time_until == 0) {
 		  e.action(message, null, system);
 		  arr.splice(index, 1);
 	  }});
-  
+
   turn++;
   playerTurn();
 }
@@ -309,7 +309,7 @@ selectDirection.handleEvent = function(event) {
       event.preventDefault();
 			window.removeEventListener('keydown', this);
       advanceTurn();
-			break;    
+			break;
     case 72:
 			//h, go to hyperspace
 			window.removeEventListener('keydown', this);
