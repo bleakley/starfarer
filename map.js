@@ -1,52 +1,9 @@
 const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
 
-
-
-var planets = [
-  {
-    name: 'CLASS G STAR',
-    xCoord: 75,
-    yCoord: 30,
-    radius: 4,
-    class: BODY_STAR_YELLOW,
-    mass: 100,
-	events: null
-  },
-  {
-    name: 'CERES',
-    xCoord: 20,
-    yCoord: 20,
-    radius: 2,
-    class: BODY_PLANET_BARREN,
-    mass: 1,
-	events: [new TempleEvent()]
-  }
-];
-
 let turn = 0;
-
 let message = {text: ""};
-
-var ships = [];
-
-var pending_events = [];
-
-var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
-
-pending_events.push(new MessageEvent(message_text, 6));
-
-let ps = new Ship([20,10], [2,2], 5, 3, 10);
-ps.name = `player's ship`;
-ps.player = true;
-ps.powerDown();
-ships.push(ps);
-let s2 = new Ship([30,30], [1,-2], 5, 3, 10);
-s2.dijkstra[DIJKSTRA_AVOID_EDGE] = 1;
-s2.dijkstra[DIJKSTRA_AVOID_HAZARDS] = 1;
-ships.push(s2);
-
-var map = [];
+var system = new System();
 
 var selectDirection = {};
 var highlightObjects = {};
@@ -55,168 +12,6 @@ var currentlyHighlightedObject = null;
 var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
 var bgm = new Audio('sounds/bgm_01.mp3');
 bgm.loop = true;
-
-unitVector = function(x, y) {
-  let mag = Math.sqrt(x*x+y*y)
-  return { x: x/mag, y: y/mag }
-}
-
-function randomNumber(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
-function percentChance(chance) { return randomNumber(1, 100) <= chance; }
-
-randomOption = function(table) {
-  let keys = Object.keys(table);
-  let dflt = table[keys[0]];
-  let roll = randomNumber(1, 100);
-  for (let i = 0; i < keys.length; i++) {
-    let prob = parseFloat(keys[i]);
-    if (isNaN(prob))
-      return dflt;
-    if (roll <= prob)
-      return table[keys[i]];
-    roll -= prob;
-  }
-  return dflt;
-}
-
-getEightWayDirection = function(x, y) {
-  if (x == 0) {
-    if (y > 0)
-      return SOUTH;
-    if (y < 0)
-      return NORTH;
-    return CENTER;
-  }
-  if (y == 0) {
-    if (x > 0)
-      return EAST;
-    if (x < 0)
-      return WEST;
-  }
-
-  let ratio = x/y;
-
-  if (y >= 1) {
-    if (ratio < OCTANT3)
-      return WEST;
-    if (ratio >= OCTANT3 && ratio <= OCTANT4)
-      return SW;
-    if (ratio > OCTANT4 && ratio < OCTANT1)
-      return SOUTH;
-    if (ratio >= OCTANT1 && ratio <= OCTANT2)
-      return SE;
-    if (ratio > OCTANT2)
-      return EAST;
-  } else {
-    if (ratio < OCTANT3)
-      return EAST;
-    if (ratio >= OCTANT3 && ratio <= OCTANT4)
-      return NE;
-    if (ratio > OCTANT4 && ratio < OCTANT1)
-      return NORTH;
-    if (ratio >= OCTANT1 && ratio <= OCTANT2)
-      return NW;
-    if (ratio > OCTANT2)
-      return WEST;
-  }
-  return CENTER;
-}
-
-djikstraSearch = function(layer, avoid)
-{
-  console.log('Updating AI map...');
-	var updatedLastIteration = true;
-	while(updatedLastIteration) {
-		let updatedThisIteration = false;
-		for(var j = 0; j < MAP_HEIGHT; j++)
-			for(var i = 0; i < MAP_WIDTH; i++) {
-
-					let prevVal = map[i][j].dijkstra[layer];
-
-					for(let d = 0; d < 8; d++) {
-
-            let adjX = DIRECTIONS[d][0];
-            let adjY = DIRECTIONS[d][1];
-						let delta = 1;
-
-            if (_.has(map, [i+adjX, j+adjY, 'dijkstra'])) {
-              map[i][j].dijkstra[layer] = Math.min(map[i][j].dijkstra[layer], map[i+adjX][j+adjY].dijkstra[layer] + delta);
-            }
-
-					}
-					if(map[i][j].dijkstra[layer] != prevVal)
-						updatedThisIteration = true;
-		}
-		updatedLastIteration = updatedThisIteration;
-	}
-	console.log('done.');
-  if(avoid) {
-    console.log('Inverting AI map...');
-    for(var j = 0; j < MAP_HEIGHT; j++)
-			for(var i = 0; i < MAP_WIDTH; i++) {
-        map[i][j].dijkstra[layer] = -1.2*map[i][j].dijkstra[layer];
-      }
-    djikstraSearch(layer, false);
-  }
-}
-
-generateMap = function()
-{
-  for(var i = 0; i < MAP_WIDTH; i++) {
-  	map[i] = [];
-  	for(var j = 0; j < MAP_HEIGHT; j++) {
-      let dijkstraLayers = [];
-      dijkstraLayers[DIJKSTRA_AVOID_EDGE] = 999;
-      dijkstraLayers[DIJKSTRA_AVOID_HAZARDS] = 999;
-      dijkstraLayers[DIJKSTRA_SEEK_PLAYER] = 999;
-      dijkstraLayers[DIJKSTRA_AVOID_PLAYER] = 999;
-  		map[i][j] = {
-        terrain: randomOption({ '80': TERRAIN_NONE_EMPTY, '15': TERRAIN_NONE_DIM_STAR, '5': TERRAIN_NONE_BRIGHT_STAR}),
-        body: null,
-        dijkstra: dijkstraLayers
-      }
-  	}
-  }
-
-  //mark edge cells
-  for(var i = 0; i < MAP_WIDTH; i++) {
-  	map[i][0].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-    map[i][MAP_HEIGHT-1].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-  }
-  for(var j = 0; j < MAP_HEIGHT; j++) {
-  	map[0][j].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-    map[MAP_WIDTH-1][j].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-  }
-  djikstraSearch(DIJKSTRA_AVOID_EDGE, true);
-
-  planets.forEach((p) => {
-    console.log(p);
-    for (var x = p.xCoord - p.radius; x < p.xCoord + p.radius; x++) {
-  		for (var y = p.yCoord - p.radius; y < p.yCoord + p.radius; y++) {
-  			map[x][y].body = p;
-			map[x][y].terrain = randomOption(TERRAINS[p.class]);
-        }
-  	}
-    map[p.xCoord - p.radius][p.yCoord - p.radius].body = null;
-    map[p.xCoord - p.radius][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
-    map[p.xCoord - p.radius][p.yCoord + p.radius - 1].body = null;
-    map[p.xCoord - p.radius][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
-    map[p.xCoord + p.radius - 1][p.yCoord - p.radius].body = null;
-    map[p.xCoord + p.radius - 1][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
-    map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].body = null;
-    map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
-  });
-
-  for(var i = 0; i < MAP_WIDTH; i++) {
-    for(var j = 0; j < MAP_HEIGHT; j++) {
-      if (map[i][j].body !== null) {
-        map[i][j].dijkstra[DIJKSTRA_AVOID_HAZARDS] = 0;
-      }
-    }
-  }
-
-  djikstraSearch(DIJKSTRA_AVOID_HAZARDS, true);
-}
 
 drawHighlight = function(p) {
   for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
@@ -235,18 +30,18 @@ drawAll = function(recursion)
 {
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
-		  var tile = randomOption(TILES[map[x][y].terrain]);
+		  var tile = randomOption(TILES[system.map[x][y].terrain]);
           mapDisplay.draw(x, y, tile.character, tile.color, tile.backgroundColor);
 		}
 	}
 
-  planets.forEach((p) => {
+  system.planets.forEach((p) => {
     if (p == currentlyHighlightedObject) {
       drawHighlight(p);
     }
   });
 
-  ships.forEach((s) => {
+  system.ships.forEach((s) => {
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
     if (s.player)
       mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
@@ -291,7 +86,6 @@ drawSideBar = function()
 
 init = function()
 {
-  generateMap();
 	mapDisplay = new ROT.Display({
 		width:MAP_WIDTH, height:MAP_HEIGHT,
 		layout:"rect", forceSquareRatio: false
@@ -311,9 +105,9 @@ init = function()
 }
 
 getPlayerShip = function() {
-  for (let i = 0; i < ships.length; i++) {
-    if (ships[i].player)
-      return ships[i];
+  for (let i = 0; i < system.ships.length; i++) {
+    if (system.ships[i].player)
+      return system.ships[i];
   }
 }
 
@@ -332,9 +126,9 @@ moveCursor =  function(direction) {
 }
 
 advanceTurn =  function() {
-  ships.forEach((s) => {
+  system.ships.forEach((s) => {
     if (!s.player) {
-      s.plotCourse(map);
+      s.plotCourse(system.map);
     }
     let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {
@@ -349,8 +143,8 @@ advanceTurn =  function() {
     s.yCoord += s.yMoment;
 
     let speed = Math.max(Math.abs(s.xMoment), Math.abs(s.yMoment));
-    if(_.has(map, [s.xCoord, s.yCoord, 'terrain'])){
-      switch(map[s.xCoord][s.yCoord].terrain) {
+    if(_.has(system.map, [s.xCoord, s.yCoord, 'terrain'])){
+      switch(system.map[s.xCoord][s.yCoord].terrain) {
         case TERRAIN_STAR_YELLOW:
           if (s.takeDamage(10*(speed+1))) {
             s.stop();
@@ -365,10 +159,10 @@ advanceTurn =  function() {
       }
       
       if (s.player) {
-        p = map[s.xCoord][s.yCoord].body
+        p = system.map[s.xCoord][s.yCoord].body
         if(p!=null) {
           if(p.events!=null && p.events.length > 0) {
-            p.events.pop().action(message, p, map, ships, pending_events, planets);
+            p.events.pop().action(message, p, system);
           }
         }
       }
@@ -378,7 +172,7 @@ advanceTurn =  function() {
       ps = getPlayerShip();
       if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
         if(s.event!=null)
-          s.event.action(message, p, map, ships, pending_events, planets);
+          s.event.action(message, p, system);
       }
     }
 
@@ -388,10 +182,10 @@ advanceTurn =  function() {
     s.energy = Math.min(s.energy + s.energyRegen, s.energyMax);
   });
   
-  pending_events.forEach((e, index, arr) => {
+  system.pending_events.forEach((e, index, arr) => {
 	  e.time_until = e.time_until - 1;
 	  if (e.time_until == 0) {
-		  e.action(message, null, map, ships, pending_events);
+		  e.action(message, null, system);
 		  arr.splice(index, 1);
 	  }});
   
@@ -399,14 +193,12 @@ advanceTurn =  function() {
   playerTurn();
 }
 
-
-
 highlightObjects.handleEvent = function(event) {
   let coords = mapDisplay.eventToPosition(event);
-  if(!_.has(map, [coords[0], coords[1], 'body']))
+  if(!_.has(system.map, [coords[0], coords[1], 'body']))
     return;
 
-  let body = map[coords[0]][coords[1]].body;
+  let body = system.map[coords[0]][coords[1]].body;
   if (body == currentlyHighlightedObject) {
     return;
   }
@@ -503,7 +295,7 @@ selectDirection.handleEvent = function(event) {
 
 playerTurn = function()
 {
-  console.log(planets);
+  console.log(system.planets);
 	drawAll();
 	window.addEventListener('keydown', selectDirection);
   window.addEventListener('mousemove', highlightObjects);

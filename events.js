@@ -6,8 +6,8 @@ function ArrivalEvent (ship) {
 
 ArrivalEvent.prototype = {
 
-	action: function (message, p, map, ships, pending_events, planets) {
-    ships.push(this.ship);
+	action: function (message, p, system) {
+    system.ships.push(this.ship);
     message.text = this.message;
 	}
 }
@@ -19,18 +19,18 @@ function TempleEvent () {
 
 TempleEvent.prototype = {
 
-	action: function (message, p, map, ships, pending_events, planets) {
+	action: function (message, p, system) {
     let anomaly = new Ship([32,17], [0,0], 1, 0, 0);
     anomaly.char = "A";
     anomaly.name = "anomaly X72-C";
     anomaly.event = new AnomalyCollapseEvent(anomaly);
-    ships.push(anomaly);
+    system.ships.push(anomaly);
     message.text = this.message;
     
     var ship = new Ship([60,40], [2,1], 5, 3, 10);
     arrival = new ArrivalEvent(ship);
     arrival.time_until = 4;
-    pending_events.push(arrival);
+    system.pending_events.push(arrival);
 	}
 }
 
@@ -41,7 +41,7 @@ function AnomalyCollapseEvent (anomaly) {
 }
 
 AnomalyCollapseEvent.prototype = {
-  action: function (message, p, map, ships, pending_events, planets) {
+  action: function (message, p, system) {
     black_hole = {
       name: 'BLACK HOLE',
       xCoord: this.anomaly.xCoord,
@@ -51,7 +51,7 @@ AnomalyCollapseEvent.prototype = {
       mass: 1000,
       events: null
     }
-    planets.push(black_hole);
+    system.planets.push(black_hole);
     this.anomaly.destroy();
     message.text = this.message;
   }
@@ -64,7 +64,7 @@ function MessageEvent (message, time_until) {
 }
 
 MessageEvent.prototype = {
-  action: function (message, p, map, ships, pending_events, planets) {
+  action: function (message, p, system) {
     message.text = this.message;
   }
 }
