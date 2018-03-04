@@ -1,9 +1,17 @@
 const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
+const N_STAR_SYSTEMS = 4;
 
 let turn = 0;
 let message = {text: ""};
-var system = new System();
+
+var universe = [];
+for (var count = 0; count < N_STAR_SYSTEMS; count++) {
+  universe.push(new System());
+  console.log(universe);
+}
+var system = universe[0];
+console.log(universe)
 
 var selectDirection = {};
 var highlightObjects = {};
@@ -288,6 +296,13 @@ selectDirection.handleEvent = function(event) {
 			//space, next turn
 			window.removeEventListener('keydown', this);
       advanceTurn();
+			break;    
+    case 72:
+			//h, go to hyperspace
+			window.removeEventListener('keydown', this);
+      system = universe.random();
+      message.text = "Hyperspace jump successful...warp core recharging.";
+      playerTurn();
 			break;
 	}
 

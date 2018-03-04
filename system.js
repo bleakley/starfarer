@@ -1,26 +1,50 @@
 // Construct an object representing a star system
 function System () {
+  
+  this.planets = [];
+  this.planets.push(
+    {
+      name: LARGE_BODY_NAMES.random(),
+      xCoord: MAP_WIDTH/2,
+      yCoord: MAP_HEIGHT/2,
+      radius: randomNumber(4,6),
+      class: randomOption(LARGE_BODIES),
+      mass: randomNumber(1,4)*100,
+      events: null
+    });
+  
+  var n_planets = randomNumber(0, 3);
+  for (i = 0; i < n_planets; i++) {
     
-  this.planets = [
-    {
-      name: 'CLASS G STAR',
-      xCoord: 75,
-      yCoord: 30,
-      radius: 4,
-      class: BODY_STAR_YELLOW,
-      mass: 100,
-    events: null
-    },
-    {
-      name: 'CERES',
-      xCoord: 20,
-      yCoord: 20,
-      radius: 2,
-      class: BODY_PLANET_BARREN,
-      mass: 1,
-    events: [new TempleEvent()]
+    let r = randomNumber(2,3);
+    var collision = true;
+    for (var attempts = 0; attempts < 1000; attempts++) {
+      x = randomNumber(8,MAP_WIDTH-8);
+      y = randomNumber(8,MAP_HEIGHT-8);
+      collision = false;
+      for (var count = 0; count < this.planets.length; count++) {
+        if (Math.abs(this.planets[count].xCoord - x) < this.planets[count].radius + r + 1)
+          collision = true;
+        if (Math.abs(this.planets[count].yCoord - y) < this.planets[count].radius + r + 1)
+          collision = true; 
+      }
+      console.log(collision)
+      if (!collision)
+        break;
     }
-  ];
+    
+    if (!collision) {
+      this.planets.push({
+        name: SMALL_BODY_NAMES.random(),
+        xCoord: x,
+        yCoord: y,
+        radius: r,
+        class: randomOption(SMALL_BODIES),
+        mass: randomNumber(1,4),
+        events: [new TempleEvent()]
+      });
+    }
+  }
   
   this.ships = [];
   let ps = new Ship([20,10], [2,2], 5, 3, 10);
