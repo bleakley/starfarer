@@ -64,6 +64,31 @@ getEightWayDirection = function(x, y) {
   return CENTER;
 }
 
+drawJet = function(xCoord, yCoord, radius, callback) {
+  for (var x = xCoord - radius/2; x < xCoord + radius/2; x++)
+    for (var y = yCoord - radius*2; y < yCoord + radius*2; y++)
+      callback(x, y);
+}
+
+drawSquareBody = function(xCoord, yCoord, radius, callback) {
+  for (var x = xCoord - radius; x < xCoord + radius; x++)
+    for (var y = yCoord - radius; y < yCoord + radius; y++)
+      callback(x, y);
+}
+
+drawPseudoSphericalBody = function(xCoord, yCoord, radius, callback) {
+  for (var x = xCoord - radius; x < xCoord + radius; x++) {
+    for (var y = yCoord - radius + 1; y < yCoord + radius - 1; y++) {
+      callback(x, y);
+    }
+  }
+
+  for (var x = xCoord - radius + 1; x < xCoord + radius - 1; x++) {
+      callback(x, yCoord - radius);
+      callback(x, yCoord + radius - 1);
+  }
+}
+
 djikstraSearch = function(layer, avoid, map)
 {
   console.log('Updating AI map...');

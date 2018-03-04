@@ -79,22 +79,28 @@ System.prototype = {
     }
 
     this.planets.forEach((p) => {
-      console.log(p);
-      for (var x = p.xCoord - p.radius; x < p.xCoord + p.radius; x++) {
-        for (var y = p.yCoord - p.radius; y < p.yCoord + p.radius; y++) {
-          this.map[x][y].body = p;
-          this.map[x][y].terrain = randomOption(TERRAINS[p.class]);
+
+      if(p.class == BODY_QUASAR) {
+        p.radius = 3; //smaller than other stellar bodies
+        p.name = 'QUASAR';
+        drawSquareBody(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
+          this.map[x][y].body = null;
+          this.map[x][y].terrain = TERRAIN_QUASAR_JET;
           this.map[x][y].forbiddenToAI = true;
-        }
+        });
+        drawJet(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
+          this.map[x][y].body = null;
+          this.map[x][y].terrain = TERRAIN_QUASAR_JET;
+          this.map[x][y].forbiddenToAI = true;
+        });
       }
-      this.map[p.xCoord - p.radius][p.yCoord - p.radius].body = null;
-      this.map[p.xCoord - p.radius][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
-      this.map[p.xCoord - p.radius][p.yCoord + p.radius - 1].body = null;
-      this.map[p.xCoord - p.radius][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
-      this.map[p.xCoord + p.radius - 1][p.yCoord - p.radius].body = null;
-      this.map[p.xCoord + p.radius - 1][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
-      this.map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].body = null;
-      this.map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
+
+      console.log(p);
+      drawPseudoSphericalBody(p.xCoord, p.yCoord, p.radius, (x, y) => {
+        this.map[x][y].body = p;
+        this.map[x][y].terrain = randomOption(TERRAINS[p.class]);
+        this.map[x][y].forbiddenToAI = true;
+      });
     });
 
   }
