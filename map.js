@@ -41,6 +41,10 @@ for (var count = 0; count < N_CLUES; count++){
 
 var system = universe[0]; // The star system that the player currently is in
 
+var global_pending_events = [];
+var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
+global_pending_events.push(new MessageEvent(message_text, 6));
+
 message.text = `Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact that can be used to prevent your home system, Altaris, from going supernova.\n\nArrow keys:\nchange trajectory\n\nSpace:\nmove\n\nh:\njump to hyperspace`;
 
 var selectDirection = {};
@@ -233,6 +237,12 @@ advanceTurn =  function() {
   });
 
   system.pending_events.forEach((e, index, arr) => {
+	  e.time_until = e.time_until - 1;
+	  if (e.time_until == 0) {
+		  e.action(message, null, system);
+		  arr.splice(index, 1);
+	  }});
+  global_pending_events.forEach((e, index, arr) => {
 	  e.time_until = e.time_until - 1;
 	  if (e.time_until == 0) {
 		  e.action(message, null, system);
