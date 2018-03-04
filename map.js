@@ -184,20 +184,8 @@ generateMap = function()
     for (var x = p.xCoord - p.radius; x < p.xCoord + p.radius; x++) {
   		for (var y = p.yCoord - p.radius; y < p.yCoord + p.radius; y++) {
   			map[x][y].body = p;
-        switch(p.class) {
-          case BODY_STAR_YELLOW:
-            map[x][y].terrain = TERRAIN_STAR_YELLOW;
-            break;
-          case BODY_BLACK_HOLE:
-            map[x][y].terrain = TERRAIN_BLACK_HOLE;
-            break;
-          case BODY_ANOMALY:
-            map[x][y].terrain = TERRAIN_ANOMALY;
-            break;			
-          default:
-            map[x][y].terrain = [TERRAIN_BARREN_1, TERRAIN_BARREN_2, TERRAIN_BARREN_3].random();
+			map[x][y].terrain = randomOption(TERRAINS[p.class]);
         }
-      }
   	}
     map[p.xCoord - p.radius][p.yCoord - p.radius].body = null;
     map[p.xCoord - p.radius][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
@@ -237,7 +225,7 @@ drawAll = function(recursion)
 {
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
-		  var tile = randomOption(tiles[map[x][y].terrain]);
+		  var tile = randomOption(TILES[map[x][y].terrain]);
           mapDisplay.draw(x, y, tile.character, tile.color, tile.backgroundColor);
 		}
 	}
