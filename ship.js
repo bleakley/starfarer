@@ -65,8 +65,16 @@ Ship.prototype = {
 	},
   plotBetterCourse: function(map, astar) {
 
+    let caution = 3;
+
+    if (this.energy < this.maneuverCost)
+      return; //don't bother
+
     let nextX = this.xCoord + this.xMoment;
     let nextY = this.yCoord + this.yMoment;
+    let distToTargetX = Math.abs(astar._toX - nextX);
+    let distToTargetY = Math.abs(astar._toY - nextY);
+    let distToTarget = Math.max(distToTargetX, distToTargetY);
 
     if (nextX >= MAP_WIDTH || nextX < 0 || nextY >= MAP_HEIGHT || nextY < 0) {
       // dont' go off the map!
@@ -74,39 +82,33 @@ Ship.prototype = {
       let directionBackToMapY = MAP_HEIGHT/2-this.yMoment;
       this.xCursor = this.xMoment + Math.sign(directionBackToMapX);
       this.yCursor = this.yMoment + Math.sign(directionBackToMapY);
-      console.log(`off the map coordinates: ${this.xCoord}, ${this.yCoord}`);
-      console.log(`off the map cursors: ${this.xCursor}, ${this.yCursor}`);
       return;
     }
 
     let currentSpeed = Math.max(Math.abs(this.xMoment), Math.abs(this.yMoment));
     let desiredSpeed = Math.min(currentSpeed + 1, this.maxSpeed);
+    //reduce desired speed here if too close to destination
+    if (distToTarget/desiredSpeed < caution)
+      desiredSpeed--;
 
-    /*console.log('plotting course');
-    console.log(`current postition is ${this.xCoord},${this.yCoord}`);
-    console.log(`next postition is ${nextX},${nextY}`);*/
     let desiredCourse = [0, 0];
 
     let stepCount = 0;
     astar.compute(nextX, nextY, function(x, y) {
       if (stepCount == desiredSpeed) {
         desiredCourse = [x,y];
-        //console.log(`${x},${y}`);
       }
       stepCount++;
     });
 
-    //let desireToConserveFuel = 1;
-    console.log(desiredCourse);
-
     //slow down!
-    while (desiredCourse[0] + this.xMoment - nextX > this.maxSpeed)
+    while (desiredCourse[0] + this.xMoment - nextX > desiredSpeed)
       desiredCourse[0]--;
-    while (desiredCourse[1] + this.yMoment - nextY > this.maxSpeed)
+    while (desiredCourse[1] + this.yMoment - nextY > desiredSpeed)
       desiredCourse[1]--;
-    while (desiredCourse[0] + this.xMoment - nextX < -this.maxSpeed)
+    while (desiredCourse[0] + this.xMoment - nextX < -desiredSpeed)
       desiredCourse[0]++;
-    while (desiredCourse[1] + this.yMoment - nextY < -this.maxSpeed)
+    while (desiredCourse[1] + this.yMoment - nextY < -desiredSpeed)
       desiredCourse[1]++;
 
     this.xCursor = this.xMoment + Math.sign(desiredCourse[0] - nextX);

@@ -344,7 +344,6 @@ highlightObjects.handleEvent = function(event) {
 };
 
 selectDirection.handleEvent = function(event) {
-  event.preventDefault();
 	//console.log("event handle key code: " + event.keyCode);
 	console.log(event.keyCode);
 	switch(event.keyCode)
@@ -421,6 +420,7 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 32:
 			//space, next turn
+      event.preventDefault();
 			window.removeEventListener('keydown', this);
       advanceTurn();
 			break;
