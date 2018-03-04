@@ -71,12 +71,6 @@ const OCTANT2 = Math.tan(3*Math.PI/8); //2.41
 const OCTANT3 = Math.tan(5*Math.PI/8); //-2.41
 const OCTANT4 = Math.tan(7*Math.PI/8); //-0.41
 
-const DIJKSTRA_AVOID_EDGE = 0;
-const DIJKSTRA_AVOID_HAZARDS = 1;
-const DIJKSTRA_SEEK_PLAYER = 2;
-const DIJKSTRA_AVOID_PLAYER = 3;
-const NUMBER_OF_AI_BEHAVIORS = 4;
-
 var TILES = {};
 TILES[TERRAIN_NONE_EMPTY] = {
 		99: {character : ".", color : "#000", backgroundColor : "#000"},

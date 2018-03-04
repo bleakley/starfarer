@@ -21,11 +21,6 @@ function Ship(coords, momentum, hull, shields, energy)
   this.credits = 10;
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
-  this.dijkstra = [];
-  this.dijkstra[DIJKSTRA_AVOID_EDGE] = 1;
-  this.dijkstra[DIJKSTRA_AVOID_HAZARDS] = 1;
-  this.dijkstra[DIJKSTRA_SEEK_PLAYER] = 0;
-  this.dijkstra[DIJKSTRA_AVOID_PLAYER] = 0;
   this.event = null; // Event triggered by investigating this ship
 }
 
@@ -69,21 +64,71 @@ Ship.prototype = {
     this.destroyed = true;
     console.log(this.name + ' is destroyed');
 	},
-  plotCourse: function(map) {
-    let courseOptions = [];
-    for (let d = 0; d < 9; d++) {
-      let totalSatisfaction = 0;
-      for (let b = 0; b < NUMBER_OF_AI_BEHAVIORS; b++) {
-        let satisfaction = map[this.xCoord+this.xMoment+DIRECTIONS[d][0]][this.yCoord+this.yMoment+DIRECTIONS[d][1]].dijkstra[b];
-        totalSatisfaction += satisfaction;
+  getTurnsUntilCollision: function(map) {
+    for (let i = 0; i < 4; i++) {
+      if(!_.has(map, [this.xCoord+this.xMoment*i, this.yCoord+this.yMoment*i, 'forbiddenToAI']))
+        continue;
+      let space = map[this.xCoord+this.xMoment*i][this.yCoord+this.yMoment*i];
+      if (space.forbiddenToAI) {
+        return i;
       }
-      if (Math.max(this.xMoment+DIRECTIONS[d][0], this.yMoment+DIRECTIONS[d][1]) > this.maxSpeed) {
-        totalSatisfaction += 999;
-      }
-      courseOptions[d] = totalSatisfaction;
     }
-    let bestDirection = courseOptions.indexOf(Math.min(...courseOptions));
-    this.xCursor = this.xMoment + DIRECTIONS[bestDirection][0];
-    this.yCursor = this.yMoment + DIRECTIONS[bestDirection][1];
+    return 5;
+  },
+  plotBetterCourse: function(map, astar) {
+
+    let caution = 3;
+
+    if (this.energy < this.maneuverCost)
+      return; //don't bother
+
+    let nextX = this.xCoord + this.xMoment;
+    let nextY = this.yCoord + this.yMoment;
+    let distToTargetX = Math.abs(astar._toX - nextX);
+    let distToTargetY = Math.abs(astar._toY - nextY);
+    let distToTarget = Math.max(distToTargetX, distToTargetY);
+
+    if (nextX >= MAP_WIDTH || nextX < 0 || nextY >= MAP_HEIGHT || nextY < 0) {
+      // dont' go off the map!
+      let directionBackToMapX = MAP_WIDTH/2-this.xMoment;
+      let directionBackToMapY = MAP_HEIGHT/2-this.yMoment;
+      this.xCursor = this.xMoment + Math.sign(directionBackToMapX);
+      this.yCursor = this.yMoment + Math.sign(directionBackToMapY);
+      return;
+    }
+
+    let currentSpeed = Math.max(Math.abs(this.xMoment), Math.abs(this.yMoment));
+    let desiredSpeed = Math.min(currentSpeed + 1, this.maxSpeed);
+    //reduce desired speed here if too close to destination
+    if (desiredSpeed && distToTarget/desiredSpeed < caution)
+      desiredSpeed--;
+
+    if (desiredSpeed && this.getTurnsUntilCollision(map) < caution) {
+      desiredSpeed = Math.max(1, desiredSpeed - 1);
+    }
+
+    let desiredCourse = [0, 0];
+
+    let stepCount = 0;
+    astar.compute(nextX, nextY, function(x, y) {
+      if (stepCount == desiredSpeed) {
+        desiredCourse = [x,y];
+      }
+      stepCount++;
+    });
+
+    //slow down!
+    while (desiredCourse[0] + this.xMoment - nextX > desiredSpeed)
+      desiredCourse[0]--;
+    while (desiredCourse[1] + this.yMoment - nextY > desiredSpeed)
+      desiredCourse[1]--;
+    while (desiredCourse[0] + this.xMoment - nextX < -desiredSpeed)
+      desiredCourse[0]++;
+    while (desiredCourse[1] + this.yMoment - nextY < -desiredSpeed)
+      desiredCourse[1]++;
+
+    this.xCursor = this.xMoment + Math.sign(desiredCourse[0] - nextX);
+    this.yCursor = this.yMoment + Math.sign(desiredCourse[1] - nextY);
+
 	}
 }

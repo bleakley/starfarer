@@ -11,7 +11,7 @@ for (var count = 0; count < N_STAR_SYSTEMS; count++) {
   console.log(universe);
 }
 var system = universe[0];
-console.log(universe)
+console.log(universe);
 
 var selectDirection = {};
 var highlightObjects = {};
@@ -134,9 +134,21 @@ moveCursor =  function(direction) {
 }
 
 advanceTurn =  function() {
-  system.ships.forEach((s) => {
+
+  let ps = getPlayerShip();
+  let startTime = Date.now();
+  console.log(`Building astar map...`);
+  var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
+     return !_.get(map, [x, y, 'forbiddenToAI'], true);
+  });
+  console.log(`done in ${Date.now()-startTime} ms.`);
+
+  ships.forEach((s) => {
     if (!s.player) {
-      s.plotCourse(system.map);
+      let startTime = Date.now();
+      console.log(`Plotting course...`);
+      s.plotBetterCourse(map, astar);
+      console.log(`done in ${Date.now()-startTime} ms.`);
     }
     let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {
@@ -294,6 +306,7 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 32:
 			//space, next turn
+      event.preventDefault();
 			window.removeEventListener('keydown', this);
       advanceTurn();
 			break;    
