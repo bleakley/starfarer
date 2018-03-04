@@ -20,6 +20,12 @@ function Ship(coords, momentum, hull, shields, energy)
   this.energyMax = energy;
   this.credits = 10;
   this.destroyed = false;
+  this.maxSpeed = 3; // this is for AI only
+  this.dijkstra = [];
+  this.dijkstra[DIJKSTRA_AVOID_EDGE] = 1;
+  this.dijkstra[DIJKSTRA_AVOID_HAZARDS] = 1;
+  this.dijkstra[DIJKSTRA_SEEK_PLAYER] = 0;
+  this.dijkstra[DIJKSTRA_AVOID_PLAYER] = 0;
 }
 
 Ship.prototype = {
@@ -62,4 +68,21 @@ Ship.prototype = {
     this.destroyed = true;
     console.log(this.name + ' is destroyed');
 	},
+  plotCourse: function(map) {
+    let courseOptions = [];
+    for (let d = 0; d < 9; d++) {
+      let totalSatisfaction = 0;
+      for (let b = 0; b < NUMBER_OF_AI_BEHAVIORS; b++) {
+        let satisfaction = map[this.xCoord+this.xMoment+DIRECTIONS[d][0]][this.yCoord+this.yMoment+DIRECTIONS[d][1]].dijkstra[b];
+        totalSatisfaction += satisfaction;
+      }
+      if (Math.max(this.xMoment+DIRECTIONS[d][0], this.yMoment+DIRECTIONS[d][1]) > this.maxSpeed) {
+        totalSatisfaction += 999;
+      }
+      courseOptions[d] = totalSatisfaction;
+    }
+    let bestDirection = courseOptions.indexOf(Math.min(...courseOptions));
+    this.xCursor = this.xMoment + DIRECTIONS[bestDirection][0];
+    this.yCursor = this.yMoment + DIRECTIONS[bestDirection][1];
+	}
 }

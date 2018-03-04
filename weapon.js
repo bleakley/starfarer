@@ -6,6 +6,8 @@ function Weapon(range, damage, accuracy, energy)
   this.energy = energy;
   this.accuracy = accuracy;
   this.ion = false;
+  this.tractor = false;
+  this.readyToFire = false;
 }
 
 Weapon.prototype = {

@@ -12,7 +12,6 @@ const BODY_GAS_2 = 10;
 const BODY_GAS_3 = 11;
 const BODY_GAS_4 = 12;
 
-
 const TERRAIN_NONE_EMPTY = 0;
 const TERRAIN_NONE_DIM_STAR = 1;
 const TERRAIN_NONE_BRIGHT_STAR = 2;
@@ -61,3 +60,9 @@ const OCTANT1 = Math.tan(Math.PI/8); //0.41
 const OCTANT2 = Math.tan(3*Math.PI/8); //2.41
 const OCTANT3 = Math.tan(5*Math.PI/8); //-2.41
 const OCTANT4 = Math.tan(7*Math.PI/8); //-0.41
+
+const DIJKSTRA_AVOID_EDGE = 0;
+const DIJKSTRA_AVOID_HAZARDS = 1;
+const DIJKSTRA_SEEK_PLAYER = 2;
+const DIJKSTRA_AVOID_PLAYER = 3;
+const NUMBER_OF_AI_BEHAVIORS = 4;
