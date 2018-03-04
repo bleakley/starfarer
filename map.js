@@ -169,6 +169,12 @@ generateMap = function()
           case BODY_STAR_YELLOW:
             map[x][y].terrain = TERRAIN_STAR_YELLOW;
             break;
+          case BODY_BLACK_HOLE:
+            map[x][y].terrain = TERRAIN_BLACK_HOLE;
+            break;
+          case BODY_ANOMALY:
+            map[x][y].terrain = TERRAIN_ANOMALY;
+            break;			
           default:
             map[x][y].terrain = [TERRAIN_BARREN_1, TERRAIN_BARREN_2, TERRAIN_BARREN_3].random();
         }
@@ -203,33 +209,9 @@ drawAll = function(recursion)
 {
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
-      switch(map[x][y].terrain) {
-        case TERRAIN_NONE_EMPTY:
-          mapDisplay.draw(x, y, ".", randomOption({ '99': '#000', '1': "#006" }), "#000");
-          break;
-        case TERRAIN_NONE_DIM_STAR:
-          mapDisplay.draw(x, y, ".", randomOption({ '99': '#006', '1': "#FFF" }), "#000");
-          break;
-        case TERRAIN_NONE_BRIGHT_STAR:
-          mapDisplay.draw(x, y, ".", randomOption({ '99': '#FFF', '1': "#006" }), "#000");
-          break;
-        case TERRAIN_STAR_YELLOW:
-          mapDisplay.draw(x, y, "~", ["#D81", "#DD4"].random(), ["#D81", "#DD4"].random());
-          break;
-        case TERRAIN_CORONA_YELLOW:
-          mapDisplay.draw(x, y, " ", ["#D81", "#DD4"].random(), ["#000", "#000", "#DD4"].random());
-          break;
-        case TERRAIN_BARREN_1:
-          mapDisplay.draw(x, y, "~", "#000", "#999");
-          break;
-        case TERRAIN_BARREN_2:
-          mapDisplay.draw(x, y, "~", "#000", "#bbb");
-          break;
-        case TERRAIN_BARREN_3:
-          mapDisplay.draw(x, y, "~", "#000", "#555");
-          break;
-      }
-    }
+		  var tile = randomOption(tiles[map[x][y].terrain]);
+          mapDisplay.draw(x, y, tile.character, tile.color, tile.backgroundColor);
+		}
 	}
 
   planets.forEach((p) => {
