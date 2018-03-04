@@ -21,11 +21,6 @@ function Ship(coords, momentum, hull, shields, energy)
   this.credits = 10;
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
-  this.dijkstra = [];
-  this.dijkstra[DIJKSTRA_AVOID_EDGE] = 1;
-  this.dijkstra[DIJKSTRA_AVOID_HAZARDS] = 1;
-  this.dijkstra[DIJKSTRA_SEEK_PLAYER] = 0;
-  this.dijkstra[DIJKSTRA_AVOID_PLAYER] = 0;
 }
 
 Ship.prototype = {
