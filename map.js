@@ -1,41 +1,17 @@
 const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
-
-
-
-var planets = [
-  {
-    name: 'CLASS G STAR',
-    xCoord: 75,
-    yCoord: 30,
-    radius: 4,
-    class: BODY_STAR_YELLOW,
-    mass: 100
-  },
-  {
-    name: 'CERES',
-    xCoord: 20,
-    yCoord: 20,
-    radius: 2,
-    class: BODY_PLANET_BARREN,
-    mass: 1
-  }
-];
+const N_STAR_SYSTEMS = 4;
 
 let turn = 0;
+let message = {text: ""};
 
-var ships = [];
-
-let ps = new Ship([20,10], [0,0], 5, 3, 10);
-ps.name = `player's ship`;
-ps.player = true;
-ships.push(ps);
-let s2 = new Ship([30,30], [1,-2], 5, 3, 10);
-ships.push(s2);
-let s3 = new Ship([30,50], [1,-2], 5, 3, 10);
-ships.push(s3);
-
-var map = [];
+var universe = [];
+for (var count = 0; count < N_STAR_SYSTEMS; count++) {
+  universe.push(new System());
+  console.log(universe);
+}
+var system = universe[0];
+console.log(universe);
 
 var selectDirection = {};
 var highlightObjects = {};
@@ -44,122 +20,6 @@ var currentlyHighlightedObject = null;
 var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
 var bgm = new Audio('sounds/bgm_01.mp3');
 bgm.loop = true;
-
-unitVector = function(x, y) {
-  let mag = Math.sqrt(x*x+y*y)
-  return { x: x/mag, y: y/mag }
-}
-
-function randomNumber(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
-function percentChance(chance) { return randomNumber(1, 100) <= chance; }
-
-randomOption = function(table) {
-  let keys = Object.keys(table);
-  let dflt = table[keys[0]];
-  let roll = randomNumber(1, 100);
-  for (let i = 0; i < keys.length; i++) {
-    let prob = parseFloat(keys[i]);
-    if (isNaN(prob))
-      return dflt;
-    if (roll <= prob)
-      return table[keys[i]];
-    roll -= prob;
-  }
-  return dflt;
-}
-
-getEightWayDirection = function(x, y) {
-  if (x == 0) {
-    if (y > 0)
-      return SOUTH;
-    if (y < 0)
-      return NORTH;
-    return CENTER;
-  }
-  if (y == 0) {
-    if (x > 0)
-      return EAST;
-    if (x < 0)
-      return WEST;
-  }
-
-  let ratio = x/y;
-
-  if (y >= 1) {
-    if (ratio < OCTANT3)
-      return WEST;
-    if (ratio >= OCTANT3 && ratio <= OCTANT4)
-      return SW;
-    if (ratio > OCTANT4 && ratio < OCTANT1)
-      return SOUTH;
-    if (ratio >= OCTANT1 && ratio <= OCTANT2)
-      return SE;
-    if (ratio > OCTANT2)
-      return EAST;
-  } else {
-    if (ratio < OCTANT3)
-      return EAST;
-    if (ratio >= OCTANT3 && ratio <= OCTANT4)
-      return NE;
-    if (ratio > OCTANT4 && ratio < OCTANT1)
-      return NORTH;
-    if (ratio >= OCTANT1 && ratio <= OCTANT2)
-      return NW;
-    if (ratio > OCTANT2)
-      return WEST;
-  }
-  return CENTER;
-}
-
-generateMap = function()
-{
-  for(var i = 0; i < MAP_WIDTH; i++) {
-  	map[i] = [];
-  	for(var j = 0; j < MAP_HEIGHT; j++) {
-  		map[i][j] = {
-        terrain: randomOption({ '80': TERRAIN_NONE_EMPTY, '15': TERRAIN_NONE_DIM_STAR, '5': TERRAIN_NONE_BRIGHT_STAR}),
-        body: null,
-        forbiddenToAI: false
-      }
-  	}
-  }
-
-  planets.forEach((p) => {
-    console.log(p);
-    for (var x = p.xCoord - p.radius -1; x < p.xCoord + p.radius +1; x++) {
-  		for (var y = p.yCoord - p.radius -1; y < p.yCoord + p.radius +1; y++) {
-  			map[x][y].forbiddenToAI = true;
-      }
-  	}
-    for (var x = p.xCoord - p.radius; x < p.xCoord + p.radius; x++) {
-  		for (var y = p.yCoord - p.radius; y < p.yCoord + p.radius; y++) {
-  			map[x][y].body = p;
-        switch(p.class) {
-          case BODY_STAR_YELLOW:
-            map[x][y].terrain = TERRAIN_STAR_YELLOW;
-            break;
-          case BODY_BLACK_HOLE:
-            map[x][y].terrain = TERRAIN_BLACK_HOLE;
-            break;
-          case BODY_ANOMALY:
-            map[x][y].terrain = TERRAIN_ANOMALY;
-            break;
-          default:
-            map[x][y].terrain = [TERRAIN_BARREN_1, TERRAIN_BARREN_2, TERRAIN_BARREN_3].random();
-        }
-      }
-  	}
-    map[p.xCoord - p.radius][p.yCoord - p.radius].body = null;
-    map[p.xCoord - p.radius][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
-    map[p.xCoord - p.radius][p.yCoord + p.radius - 1].body = null;
-    map[p.xCoord - p.radius][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
-    map[p.xCoord + p.radius - 1][p.yCoord - p.radius].body = null;
-    map[p.xCoord + p.radius - 1][p.yCoord - p.radius].terrain = TERRAIN_NONE_EMPTY;
-    map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].body = null;
-    map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
-  });
-
-}
 
 drawHighlight = function(p) {
   for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
@@ -178,33 +38,35 @@ drawAll = function(recursion)
 {
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
-		  var tile = randomOption(tiles[map[x][y].terrain]);
+		  var tile = randomOption(TILES[system.map[x][y].terrain]);
           mapDisplay.draw(x, y, tile.character, tile.color, tile.backgroundColor);
 		}
 	}
 
-  planets.forEach((p) => {
+  system.planets.forEach((p) => {
     if (p == currentlyHighlightedObject) {
       drawHighlight(p);
     }
   });
 
-  ships.forEach((s) => {
+  system.ships.forEach((s) => {
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
     if (s.player)
       mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
     let direction = getEightWayDirection(s.xMoment, s.yMoment);
-    mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], s.player ? "#0E4" : "red");
+	if (s.xMoment != 0 || s.yMoment != 0) {
+		mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], s.player ? "#0E4" : "red");
 
-    if (s.player) {
-      let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
-      if (s.energy >= maneuverMagnitude * s.maneuverCost)
-        mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
-      else
-        mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
-    } else {
-      mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
-    }
+		if (s.player) {
+		  let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+		  if (s.energy >= maneuverMagnitude * s.maneuverCost)
+			mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
+		  else
+			mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
+		} else {
+		  mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
+		}
+	}
 
   });
 
@@ -227,11 +89,11 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
+	sideBarDisplay.drawText(2, 8, message.text);
 }
 
 init = function()
 {
-  generateMap();
 	mapDisplay = new ROT.Display({
 		width:MAP_WIDTH, height:MAP_HEIGHT,
 		layout:"rect", forceSquareRatio: false
@@ -251,9 +113,9 @@ init = function()
 }
 
 getPlayerShip = function() {
-  for (let i = 0; i < ships.length; i++) {
-    if (ships[i].player)
-      return ships[i];
+  for (let i = 0; i < system.ships.length; i++) {
+    if (system.ships[i].player)
+      return system.ships[i];
   }
 }
 
@@ -301,8 +163,8 @@ advanceTurn =  function() {
     s.yCoord += s.yMoment;
 
     let speed = Math.max(Math.abs(s.xMoment), Math.abs(s.yMoment));
-    if(_.has(map, [s.xCoord, s.yCoord, 'terrain']))
-      switch(map[s.xCoord][s.yCoord].terrain) {
+    if(_.has(system.map, [s.xCoord, s.yCoord, 'terrain'])){
+      switch(system.map[s.xCoord][s.yCoord].terrain) {
         case TERRAIN_STAR_YELLOW:
           if (s.takeDamage(10*(speed+1))) {
             s.stop();
@@ -315,24 +177,48 @@ advanceTurn =  function() {
             s.stop();
           }
       }
+      
+      if (s.player) {
+        p = system.map[s.xCoord][s.yCoord].body
+        if(p!=null) {
+          if(p.events!=null && p.events.length > 0) {
+            p.events.pop().action(message, p, system);
+          }
+        }
+      }
+    }
+    
+    if (!s.player) {
+      ps = getPlayerShip();
+      if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
+        if(s.event!=null)
+          s.event.action(message, p, system);
+      }
+    }
 
     if(s.energy >= s.energyMax) {
       s.shields = Math.min(s.shields + 1, s.shieldsMax);
     }
     s.energy = Math.min(s.energy + s.energyRegen, s.energyMax);
   });
+  
+  system.pending_events.forEach((e, index, arr) => {
+	  e.time_until = e.time_until - 1;
+	  if (e.time_until == 0) {
+		  e.action(message, null, system);
+		  arr.splice(index, 1);
+	  }});
+  
   turn++;
   playerTurn();
 }
 
-
-
 highlightObjects.handleEvent = function(event) {
   let coords = mapDisplay.eventToPosition(event);
-  if(!_.has(map, [coords[0], coords[1], 'body']))
+  if(!_.has(system.map, [coords[0], coords[1], 'body']))
     return;
 
-  let body = map[coords[0]][coords[1]].body;
+  let body = system.map[coords[0]][coords[1]].body;
   if (body == currentlyHighlightedObject) {
     return;
   }
@@ -423,6 +309,13 @@ selectDirection.handleEvent = function(event) {
       event.preventDefault();
 			window.removeEventListener('keydown', this);
       advanceTurn();
+			break;    
+    case 72:
+			//h, go to hyperspace
+			window.removeEventListener('keydown', this);
+      system = universe.random();
+      message.text = "Hyperspace jump successful...warp core recharging.";
+      playerTurn();
 			break;
 	}
 
@@ -430,6 +323,7 @@ selectDirection.handleEvent = function(event) {
 
 playerTurn = function()
 {
+  console.log(system.planets);
 	drawAll();
 	window.addEventListener('keydown', selectDirection);
   window.addEventListener('mousemove', highlightObjects);

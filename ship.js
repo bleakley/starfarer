@@ -21,6 +21,7 @@ function Ship(coords, momentum, hull, shields, energy)
   this.credits = 10;
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
+  this.event = null; // Event triggered by investigating this ship
 }
 
 Ship.prototype = {
