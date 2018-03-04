@@ -63,6 +63,17 @@ Ship.prototype = {
     this.destroyed = true;
     console.log(this.name + ' is destroyed');
 	},
+  getTurnsUntilCollision: function(map) {
+    for (let i = 0; i < 4; i++) {
+      if(!_.has(map, [this.xCoord+this.xMoment*i, this.yCoord+this.yMoment*i, 'forbiddenToAI']))
+        continue;
+      let space = map[this.xCoord+this.xMoment*i][this.yCoord+this.yMoment*i];
+      if (space.forbiddenToAI) {
+        return i;
+      }
+    }
+    return 5;
+  },
   plotBetterCourse: function(map, astar) {
 
     let caution = 3;
@@ -88,8 +99,12 @@ Ship.prototype = {
     let currentSpeed = Math.max(Math.abs(this.xMoment), Math.abs(this.yMoment));
     let desiredSpeed = Math.min(currentSpeed + 1, this.maxSpeed);
     //reduce desired speed here if too close to destination
-    if (distToTarget/desiredSpeed < caution)
+    if (desiredSpeed && distToTarget/desiredSpeed < caution)
       desiredSpeed--;
+
+    if (desiredSpeed && this.getTurnsUntilCollision(map) < caution) {
+      desiredSpeed = Math.max(1, desiredSpeed - 1);
+    }
 
     let desiredCourse = [0, 0];
 
