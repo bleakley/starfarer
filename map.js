@@ -26,15 +26,14 @@ let turn = 0;
 
 var ships = [];
 
-let ps = new Ship([20,10], [2,2], 5, 3, 10);
+let ps = new Ship([20,10], [0,0], 5, 3, 10);
 ps.name = `player's ship`;
 ps.player = true;
-ps.powerDown();
 ships.push(ps);
 let s2 = new Ship([30,30], [1,-2], 5, 3, 10);
-s2.dijkstra[DIJKSTRA_AVOID_EDGE] = 1;
-s2.dijkstra[DIJKSTRA_AVOID_HAZARDS] = 1;
 ships.push(s2);
+let s3 = new Ship([30,50], [1,-2], 5, 3, 10);
+ships.push(s3);
 
 var map = [];
 
@@ -112,75 +111,26 @@ getEightWayDirection = function(x, y) {
   return CENTER;
 }
 
-djikstraSearch = function(layer, avoid)
-{
-  console.log('Updating AI map...');
-	var updatedLastIteration = true;
-	while(updatedLastIteration) {
-		let updatedThisIteration = false;
-		for(var j = 0; j < MAP_HEIGHT; j++)
-			for(var i = 0; i < MAP_WIDTH; i++) {
-
-					let prevVal = map[i][j].dijkstra[layer];
-
-					for(let d = 0; d < 8; d++) {
-
-            let adjX = DIRECTIONS[d][0];
-            let adjY = DIRECTIONS[d][1];
-						let delta = 1;
-
-            if (_.has(map, [i+adjX, j+adjY, 'dijkstra'])) {
-              map[i][j].dijkstra[layer] = Math.min(map[i][j].dijkstra[layer], map[i+adjX][j+adjY].dijkstra[layer] + delta);
-            }
-
-					}
-					if(map[i][j].dijkstra[layer] != prevVal)
-						updatedThisIteration = true;
-		}
-		updatedLastIteration = updatedThisIteration;
-	}
-	console.log('done.');
-  if(avoid) {
-    console.log('Inverting AI map...');
-    for(var j = 0; j < MAP_HEIGHT; j++)
-			for(var i = 0; i < MAP_WIDTH; i++) {
-        map[i][j].dijkstra[layer] = -1.2*map[i][j].dijkstra[layer];
-      }
-    djikstraSearch(layer, false);
-  }
-}
-
 generateMap = function()
 {
   for(var i = 0; i < MAP_WIDTH; i++) {
   	map[i] = [];
   	for(var j = 0; j < MAP_HEIGHT; j++) {
-      let dijkstraLayers = [];
-      dijkstraLayers[DIJKSTRA_AVOID_EDGE] = 999;
-      dijkstraLayers[DIJKSTRA_AVOID_HAZARDS] = 999;
-      dijkstraLayers[DIJKSTRA_SEEK_PLAYER] = 999;
-      dijkstraLayers[DIJKSTRA_AVOID_PLAYER] = 999;
   		map[i][j] = {
         terrain: randomOption({ '80': TERRAIN_NONE_EMPTY, '15': TERRAIN_NONE_DIM_STAR, '5': TERRAIN_NONE_BRIGHT_STAR}),
         body: null,
-        dijkstra: dijkstraLayers
+        forbiddenToAI: false
       }
   	}
   }
 
-  //mark edge cells
-  for(var i = 0; i < MAP_WIDTH; i++) {
-  	map[i][0].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-    map[i][MAP_HEIGHT-1].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-  }
-  for(var j = 0; j < MAP_HEIGHT; j++) {
-  	map[0][j].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-    map[MAP_WIDTH-1][j].dijkstra[DIJKSTRA_AVOID_EDGE] = 0;
-  }
-  djikstraSearch(DIJKSTRA_AVOID_EDGE, true);
-
   planets.forEach((p) => {
     console.log(p);
+    for (var x = p.xCoord - p.radius -1; x < p.xCoord + p.radius +1; x++) {
+  		for (var y = p.yCoord - p.radius -1; y < p.yCoord + p.radius +1; y++) {
+  			map[x][y].forbiddenToAI = true;
+      }
+  	}
     for (var x = p.xCoord - p.radius; x < p.xCoord + p.radius; x++) {
   		for (var y = p.yCoord - p.radius; y < p.yCoord + p.radius; y++) {
   			map[x][y].body = p;
@@ -193,7 +143,7 @@ generateMap = function()
             break;
           case BODY_ANOMALY:
             map[x][y].terrain = TERRAIN_ANOMALY;
-            break;			
+            break;
           default:
             map[x][y].terrain = [TERRAIN_BARREN_1, TERRAIN_BARREN_2, TERRAIN_BARREN_3].random();
         }
@@ -209,15 +159,6 @@ generateMap = function()
     map[p.xCoord + p.radius - 1][p.yCoord + p.radius - 1].terrain = TERRAIN_NONE_EMPTY;
   });
 
-  for(var i = 0; i < MAP_WIDTH; i++) {
-    for(var j = 0; j < MAP_HEIGHT; j++) {
-      if (map[i][j].body !== null) {
-        map[i][j].dijkstra[DIJKSTRA_AVOID_HAZARDS] = 0;
-      }
-    }
-  }
-
-  djikstraSearch(DIJKSTRA_AVOID_HAZARDS, true);
 }
 
 drawHighlight = function(p) {
@@ -331,9 +272,21 @@ moveCursor =  function(direction) {
 }
 
 advanceTurn =  function() {
+
+  let ps = getPlayerShip();
+  let startTime = Date.now();
+  console.log(`Building astar map...`);
+  var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
+     return !_.get(map, [x, y, 'forbiddenToAI'], true);
+  });
+  console.log(`done in ${Date.now()-startTime} ms.`);
+
   ships.forEach((s) => {
     if (!s.player) {
-      s.plotCourse(map);
+      let startTime = Date.now();
+      console.log(`Plotting course...`);
+      s.plotBetterCourse(map, astar);
+      console.log(`done in ${Date.now()-startTime} ms.`);
     }
     let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {
@@ -391,6 +344,7 @@ highlightObjects.handleEvent = function(event) {
 };
 
 selectDirection.handleEvent = function(event) {
+  event.preventDefault();
 	//console.log("event handle key code: " + event.keyCode);
 	console.log(event.keyCode);
 	switch(event.keyCode)

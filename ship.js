@@ -68,21 +68,54 @@ Ship.prototype = {
     this.destroyed = true;
     console.log(this.name + ' is destroyed');
 	},
-  plotCourse: function(map) {
-    let courseOptions = [];
-    for (let d = 0; d < 9; d++) {
-      let totalSatisfaction = 0;
-      for (let b = 0; b < NUMBER_OF_AI_BEHAVIORS; b++) {
-        let satisfaction = map[this.xCoord+this.xMoment+DIRECTIONS[d][0]][this.yCoord+this.yMoment+DIRECTIONS[d][1]].dijkstra[b];
-        totalSatisfaction += satisfaction;
-      }
-      if (Math.max(this.xMoment+DIRECTIONS[d][0], this.yMoment+DIRECTIONS[d][1]) > this.maxSpeed) {
-        totalSatisfaction += 999;
-      }
-      courseOptions[d] = totalSatisfaction;
+  plotBetterCourse: function(map, astar) {
+
+    let nextX = this.xCoord + this.xMoment;
+    let nextY = this.yCoord + this.yMoment;
+
+    if (nextX >= MAP_WIDTH || nextX < 0 || nextY >= MAP_HEIGHT || nextY < 0) {
+      // dont' go off the map!
+      let directionBackToMapX = MAP_WIDTH/2-this.xMoment;
+      let directionBackToMapY = MAP_HEIGHT/2-this.yMoment;
+      this.xCursor = this.xMoment + Math.sign(directionBackToMapX);
+      this.yCursor = this.yMoment + Math.sign(directionBackToMapY);
+      console.log(`off the map coordinates: ${this.xCoord}, ${this.yCoord}`);
+      console.log(`off the map cursors: ${this.xCursor}, ${this.yCursor}`);
+      return;
     }
-    let bestDirection = courseOptions.indexOf(Math.min(...courseOptions));
-    this.xCursor = this.xMoment + DIRECTIONS[bestDirection][0];
-    this.yCursor = this.yMoment + DIRECTIONS[bestDirection][1];
+
+    let currentSpeed = Math.max(Math.abs(this.xMoment), Math.abs(this.yMoment));
+    let desiredSpeed = Math.min(currentSpeed + 1, this.maxSpeed);
+
+    /*console.log('plotting course');
+    console.log(`current postition is ${this.xCoord},${this.yCoord}`);
+    console.log(`next postition is ${nextX},${nextY}`);*/
+    let desiredCourse = [0, 0];
+
+    let stepCount = 0;
+    astar.compute(nextX, nextY, function(x, y) {
+      if (stepCount == desiredSpeed) {
+        desiredCourse = [x,y];
+        //console.log(`${x},${y}`);
+      }
+      stepCount++;
+    });
+
+    //let desireToConserveFuel = 1;
+    console.log(desiredCourse);
+
+    //slow down!
+    while (desiredCourse[0] + this.xMoment - nextX > this.maxSpeed)
+      desiredCourse[0]--;
+    while (desiredCourse[1] + this.yMoment - nextY > this.maxSpeed)
+      desiredCourse[1]--;
+    while (desiredCourse[0] + this.xMoment - nextX < -this.maxSpeed)
+      desiredCourse[0]++;
+    while (desiredCourse[1] + this.yMoment - nextY < -this.maxSpeed)
+      desiredCourse[1]++;
+
+    this.xCursor = this.xMoment + Math.sign(desiredCourse[0] - nextX);
+    this.yCursor = this.yMoment + Math.sign(desiredCourse[1] - nextY);
+
 	}
 }
