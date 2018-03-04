@@ -56,8 +56,6 @@ function System () {
   this.ships.push(s2);
 
   this.pending_events = [];
-  var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
-  this.pending_events.push(new MessageEvent(message_text, 6));
 
   this.map = [];
   this.generateMap();

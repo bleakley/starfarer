@@ -68,3 +68,38 @@ MessageEvent.prototype = {
     message.text = this.message;
   }
 }
+
+function FindOrbitronEvent () {
+	this.message = "Amongst the crumbling ruins of a Precursor temple, your landing party finds a metal sphere with many spindly antennas. Your tech specialist is ecstatic...this is an intact Orbitron Device!";
+	this.time_until = 0;
+}
+
+FindOrbitronEvent.prototype = {
+	action: function (message, p, system) {
+    message.text = this.message;
+	}
+}
+
+
+function TempleClueEvent (orbitron_system, orbitron_planet) {
+  
+  switch(randomNumber(1,3)) {
+      case 1:
+        this.message = `Amongst the crumbling ruins of a Precursor temple, your landing party finds a damaged digicodex. A crude reconstruction of the glyphs suggests that the Orbitron Device resides in a system that contains ${orbitron_system.planets.length} bodies.`;
+        break;
+      case 2:
+        this.message = `Amongst the crumbling ruins of a Precursor temple, your landing party finds a damaged digicodex. A crude reconstruction of the glyphs suggests that the Orbitron Device resides the ${orbitron_system.planets[0].name} system.`;
+        break;
+      case 3:
+       this.message = `Amongst the crumbling ruins of a Precursor temple, your landing party finds a damaged digicodex. A crude reconstruction of the glyphs suggests that the Orbitron Device resides on a planet named ${orbitron_planet.name}.`;
+       break;
+  }
+	this.time_until = 0;
+}
+
+TempleClueEvent.prototype = {
+
+	action: function (message, p, system) {
+    message.text = this.message;
+	}
+}
