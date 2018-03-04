@@ -83,19 +83,21 @@ System.prototype = {
       if(p.class == BODY_QUASAR) {
         p.radius = 3; //smaller than other stellar bodies
         p.name = 'QUASAR';
-        drawSquareBody(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
-          this.map[x][y].body = null;
-          this.map[x][y].terrain = TERRAIN_QUASAR_JET;
-          this.map[x][y].forbiddenToAI = true;
-        });
-        drawJet(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
-          this.map[x][y].body = null;
-          this.map[x][y].terrain = TERRAIN_QUASAR_JET;
-          this.map[x][y].forbiddenToAI = true;
-        });
       }
 
       console.log(p);
+      if (_.has(JETS, p.class)) {
+        drawJet(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
+          this.map[x][y].terrain = randomOption(JETS[p.class]);
+          this.map[x][y].forbiddenToAI = true;
+        });
+      }
+      if (_.has(CORONAS, p.class)) {
+        drawSquareBody(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
+          this.map[x][y].terrain = randomOption(CORONAS[p.class]);
+          this.map[x][y].forbiddenToAI = true;
+        });
+      }
       drawPseudoSphericalBody(p.xCoord, p.yCoord, p.radius, (x, y) => {
         this.map[x][y].body = p;
         this.map[x][y].terrain = randomOption(TERRAINS[p.class]);

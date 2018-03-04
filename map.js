@@ -39,7 +39,7 @@ drawAll = function(recursion)
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
 		  var tile = randomOption(TILES[system.map[x][y].terrain]);
-          mapDisplay.draw(x, y, tile.character, tile.color, tile.backgroundColor);
+      mapDisplay.draw(x, y, tile.character, tile.color, tile.backgroundColor);
 		}
 	}
 
