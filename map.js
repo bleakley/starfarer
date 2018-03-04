@@ -10,7 +10,8 @@ var planets = [
     yCoord: 30,
     radius: 4,
     class: BODY_STAR_YELLOW,
-    mass: 100
+    mass: 100,
+	events: null
   },
   {
     name: 'CERES',
@@ -18,11 +19,16 @@ var planets = [
     yCoord: 20,
     radius: 2,
     class: BODY_PLANET_BARREN,
-    mass: 1
+    mass: 1,
+	events: [function (display, p) {
+		return(`You search a crumbling precursor temple on ${p.name} and find the coordinates of a nearby anomaly. However a member of your landing party accidentally activated a subspace transponder in the temple. Your navigator estimates that if any ships in nearby systems picked up the transmission, they could arrive in as few as 4 days.`);
+	}]
   }
 ];
 
 let turn = 0;
+
+let message = "";
 
 var ships = [];
 
@@ -274,6 +280,7 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
+	sideBarDisplay.drawText(2, 7, message);
 }
 
 init = function()
@@ -336,7 +343,7 @@ advanceTurn =  function() {
     s.yCoord += s.yMoment;
 
     let speed = Math.max(Math.abs(s.xMoment), Math.abs(s.yMoment));
-    if(_.has(map, [s.xCoord, s.yCoord, 'terrain']))
+    if(_.has(map, [s.xCoord, s.yCoord, 'terrain'])){
       switch(map[s.xCoord][s.yCoord].terrain) {
         case TERRAIN_STAR_YELLOW:
           if (s.takeDamage(10*(speed+1))) {
@@ -349,7 +356,16 @@ advanceTurn =  function() {
           if (s.takeDamage(2*(Math.max(0, speed-1)))) {
             s.stop();
           }
-      }
+	  }
+		if (s.player) {
+		  p = map[s.xCoord][s.yCoord].body
+          if(p!=null) {
+			if(p.events!=null) {
+			  message = p.events.random()(sideBarDisplay, p, s);
+			}
+		  }
+        }
+    }
 
     if(s.energy >= s.energyMax) {
       s.shields = Math.min(s.shields + 1, s.shieldsMax);
