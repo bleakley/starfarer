@@ -1,5 +1,5 @@
 function ArrivalEvent (ship) {
-	this.message = `Cherenkov radiation detected from an unknown object dropping out of hyperspace, bearing ${p.xMoment} ${ship.yMoment}.`;
+	this.message = `Cherenkov radiation detected from an unknown object dropping out of hyperspace, bearing ${ship.xMoment} ${ship.yMoment}.`;
 	this.time_until = 0;
 	this.ship = ship;
 }
@@ -7,8 +7,8 @@ function ArrivalEvent (ship) {
 ArrivalEvent.prototype = {
 
 	action: function (message, p, map, ships, pending_events) {
-			ships.push(this.ship);
-			message.text = this.message;
+    ships.push(this.ship);
+    message.text = this.message;
 	}
 }
 
@@ -20,15 +20,15 @@ function TempleEvent () {
 TempleEvent.prototype = {
 
 	action: function (message, p, map, ships, pending_events) {
-			let anomaly = new Ship([80,10], [0,0], 1, 0, 0);
-			anomaly.char = "A";
-			anomaly.name = "anomaly X72-C";
-			ships.push(anomaly);
-			message.text = this.message;
+    let anomaly = new Ship([80,10], [0,0], 1, 0, 0);
+    anomaly.char = "A";
+    anomaly.name = "anomaly X72-C";
+    ships.push(anomaly);
+    message.text = this.message;
 
-			var ship = new Ship([60,40], [2,1], 5, 3, 10);
-			arrival = new ArrivalEvent(ship);
-			arrival.time_until = 4;
-			pending_events.push(arrival);
+    var ship = new Ship([60,40], [2,1], 5, 3, 10);
+    arrival = new ArrivalEvent(ship);
+    arrival.time_until = 4;
+    pending_events.push(arrival);
 	}
 }

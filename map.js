@@ -242,7 +242,6 @@ drawAll = function(recursion)
     }
   });
 
-	console.log(ships)
   ships.forEach((s) => {
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
     if (s.player)
@@ -283,7 +282,7 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
-	sideBarDisplay.drawText(2, 7, message.text);
+	sideBarDisplay.drawText(2, 8, message.text);
 }
 
 init = function()
