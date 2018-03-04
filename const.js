@@ -11,6 +11,8 @@ const BODY_GAS_1 = 9;
 const BODY_GAS_2 = 10;
 const BODY_GAS_3 = 11;
 const BODY_GAS_4 = 12;
+const BODY_BLACK_HOLE = 13;
+const BODY_ANOMALY = 14
 
 const TERRAIN_NONE_EMPTY = 0;
 const TERRAIN_NONE_DIM_STAR = 1;
@@ -23,6 +25,8 @@ const TERRAIN_BARREN_3 = 7;
 const TERRAIN_GRASS = 8;
 const TERRAIN_WATER = 9;
 const TERRAIN_ICE = 10;
+const TERRAIN_BLACK_HOLE = 11;
+const TERRAIN_ANOMALY = 12;
 
 const EAST = 0;
 const WEST = 4;
@@ -66,3 +70,32 @@ const DIJKSTRA_AVOID_HAZARDS = 1;
 const DIJKSTRA_SEEK_PLAYER = 2;
 const DIJKSTRA_AVOID_PLAYER = 3;
 const NUMBER_OF_AI_BEHAVIORS = 4;
+
+var tiles = {};
+tiles[TERRAIN_NONE_EMPTY] = {
+		99: {character : ".", color : "#000", backgroundColor : "#000"},
+		1: {character : ".", color : "#006", backgroundColor : "#000"}};
+tiles[TERRAIN_NONE_DIM_STAR] = {
+		99: {character : ".", color : "#006", backgroundColor : "#000"},
+		1: {character : ".", color : "#FFF", backgroundColor : "#000"}};
+tiles[TERRAIN_NONE_BRIGHT_STAR] = {
+		99: {character : ".", color : "#FFF", backgroundColor : "#000"},
+		1: {character : ".", color : "#006", backgroundColor : "#000"}};
+tiles[TERRAIN_STAR_YELLOW] = {
+		51: {character : "~", color : "#D81", backgroundColor : "#DD4"},
+		49: {character : "~", color : "#DD4", backgroundColor : "#D81"}};
+tiles[TERRAIN_CORONA_YELLOW] = {
+		67: {character : " ", color : "#FFF", backgroundColor : "#000"},
+		33: {character : " ", color : "#FFF", backgroundColor : "#DD4"}}
+tiles[TERRAIN_BARREN_1] = {
+		100: {character : "~", color : "#000", backgroundColor : "#999"}};
+tiles[TERRAIN_BARREN_2] = {
+		100: {character : "~", color : "#000", backgroundColor : "#BBB"}};
+tiles[TERRAIN_BARREN_3] = {
+		100: {character : "~", color : "#000", backgroundColor : "#555"}};
+tiles[TERRAIN_NONE_BRIGHT_STAR] = {
+		99: {character : ".", color : "#FFF", backgroundColor : "#000"},
+		1: {character : ".", color : "#006", backgroundColor : "#000"}};
+tiles[TERRAIN_NONE_BRIGHT_STAR] = {
+		99: {character : ".", color : "#FFF", backgroundColor : "#000"},
+		1: {character : ".", color : "#006", backgroundColor : "#000"}};
