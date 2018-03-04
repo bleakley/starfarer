@@ -26,6 +26,7 @@ function Ship(coords, momentum, hull, shields, energy)
   this.dijkstra[DIJKSTRA_AVOID_HAZARDS] = 1;
   this.dijkstra[DIJKSTRA_SEEK_PLAYER] = 0;
   this.dijkstra[DIJKSTRA_AVOID_PLAYER] = 0;
+  this.event = null; // Event triggered by investigating this ship
 }
 
 Ship.prototype = {

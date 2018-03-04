@@ -32,6 +32,10 @@ var ships = [];
 
 var pending_events = [];
 
+var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
+
+pending_events.push(new MessageEvent(message_text, 6));
+
 let ps = new Ship([20,10], [2,2], 5, 3, 10);
 ps.name = `player's ship`;
 ps.player = true;
@@ -358,15 +362,24 @@ advanceTurn =  function() {
           if (s.takeDamage(2*(Math.max(0, speed-1)))) {
             s.stop();
           }
-	  }
-		if (s.player) {
-		  p = map[s.xCoord][s.yCoord].body
-          if(p!=null) {
-			if(p.events!=null && p.events.length > 0) {
-			  p.events.pop().action(message, p, map, ships, pending_events);
-			}
-		  }
+      }
+      
+      if (s.player) {
+        p = map[s.xCoord][s.yCoord].body
+        if(p!=null) {
+          if(p.events!=null && p.events.length > 0) {
+            p.events.pop().action(message, p, map, ships, pending_events, planets);
+          }
         }
+      }
+    }
+    
+    if (!s.player) {
+      ps = getPlayerShip();
+      if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
+        if(s.event!=null)
+          s.event.action(message, p, map, ships, pending_events, planets);
+      }
     }
 
     if(s.energy >= s.energyMax) {
@@ -490,6 +503,7 @@ selectDirection.handleEvent = function(event) {
 
 playerTurn = function()
 {
+  console.log(planets);
 	drawAll();
 	window.addEventListener('keydown', selectDirection);
   window.addEventListener('mousemove', highlightObjects);
