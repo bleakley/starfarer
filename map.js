@@ -95,7 +95,7 @@ drawAll = function(recursion)
   });
 
   system.ships.forEach((s) => {
-    mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
+
     if (s.player)
       mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
     mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], s.player ? "#0E4" : "red");
@@ -108,6 +108,7 @@ drawAll = function(recursion)
 		} else {
 		  mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
 		}
+    mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
 
   });
 
@@ -157,7 +158,8 @@ init = function()
 	drawAll(true);
 	bgm.play();
 
-  getAcknowledgement('Welcome to Rogue Starfarer!', playerTurn);
+  //getAcknowledgement('Welcome to Rogue Starfarer!', playerTurn);
+  playerTurn();
 }
 
 moveCursor =  function(direction) {
@@ -274,7 +276,6 @@ highlightObjects.handleEvent = function(event) {
 
 selectDirection.handleEvent = function(event) {
 	//console.log("event handle key code: " + event.keyCode);
-	console.log(event.keyCode);
 	switch(event.keyCode)
 	{
 		case 103:
@@ -378,7 +379,6 @@ selectDirection.handleEvent = function(event) {
 playerTurn = function()
 {
   clearPopup();
-  console.log(system.planets);
 	drawAll();
 	window.addEventListener('keydown', selectDirection);
   window.addEventListener('mousemove', highlightObjects);

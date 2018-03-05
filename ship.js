@@ -20,6 +20,9 @@ function Ship(coords, momentum, hull, shields, energy)
   this.energy = energy;
   this.energyMax = energy;
   this.credits = 10;
+  let wep = new Weapon('Laser Cannon', 10, 3, 50, 2);
+  wep.mount = MOUNT_FWD;
+  this.weapons = [wep];
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
   this.followPlayer = true;

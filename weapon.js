@@ -1,6 +1,6 @@
-function Weapon(range, damage, accuracy, energy)
+function Weapon(name, range, damage, accuracy, energy)
 {
-  this.name = 'unknown weapon';
+  this.name = name;
   this.range = range;
   this.damage = damage;
   this.energy = energy;
@@ -8,6 +8,7 @@ function Weapon(range, damage, accuracy, energy)
   this.ion = false;
   this.tractor = false;
   this.readyToFire = false;
+  this.mount = MOUNT_FWD;
 }
 
 Weapon.prototype = {
