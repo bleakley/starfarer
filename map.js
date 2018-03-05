@@ -40,6 +40,11 @@ for (var count = 0; count < N_CLUES; count++){
 }
 
 var system = universe[0]; // The star system that the player currently is in
+let ps = new Ship([20,10], [2,2], 5, 3, 10);
+ps.name = `player's ship`;
+ps.player = true;
+ps.powerDown();
+system.ships.push(ps);
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
@@ -111,7 +116,7 @@ drawAll = function(recursion)
 
 drawSideBar = function()
 {
-  let ps = getPlayerShip();
+  let ps = getPlayerShip(system.ships);
 	sideBarDisplay.clear();
 	sideBarDisplay.drawText(2, 0, `Turn: ${turn}`);
   sideBarDisplay.drawText(2, 1, `BitCredits: ${ps.credits}`);
@@ -142,15 +147,8 @@ init = function()
   playerTurn();
 }
 
-getPlayerShip = function() {
-  for (let i = 0; i < system.ships.length; i++) {
-    if (system.ships[i].player)
-      return system.ships[i];
-  }
-}
-
 moveCursor =  function(direction) {
-  let playerShip = getPlayerShip();
+  let playerShip = getPlayerShip(system.ships);
   let dx = DIRECTIONS[direction][0];
   let dy = DIRECTIONS[direction][1];
   if (Math.abs(playerShip.xCursor+dx-playerShip.xMoment) > playerShip.maneuverLevel)
@@ -165,7 +163,7 @@ moveCursor =  function(direction) {
 
 advanceTurn =  function() {
 
-  let ps = getPlayerShip();
+  let ps = getPlayerShip(system.ships);
   var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
      return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
   });
@@ -215,7 +213,7 @@ advanceTurn =  function() {
     }
 
     if (!s.player) {
-      ps = getPlayerShip();
+      ps = getPlayerShip(system.ships);
       if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
         if(s.event!=null)
           s.event.action(message, p, system);
@@ -345,7 +343,18 @@ selectDirection.handleEvent = function(event) {
     case 72:
 			//h, go to hyperspace
 			window.removeEventListener('keydown', this);
+      let ps = getPlayerShip(system.ships);
+      system.removeShip(ps);
       system = universe.random();
+      system.ships.push(ps);
+      coords = system.randomUnoccupiedSpace(system.map);
+      ps.xCoord = coords[0];
+      ps.yCoord = coords[1];
+      ps.xMoment = randomNumber(-2,2);
+      ps.yMoment = randomNumber(-2,2);
+      ps.xCursor = ps.xMoment;
+      ps.yCursor = ps.yMoment;
+
       message.text = "Hyperspace jump successful...warp core recharging.";
       playerTurn();
 			break;
