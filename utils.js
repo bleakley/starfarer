@@ -6,19 +6,23 @@ unitVector = function(x, y) {
 function randomNumber(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
 function percentChance(chance) { return randomNumber(1, 100) <= chance; }
 
-randomOption = function(table) {
-  let keys = Object.keys(table);
-  let dflt = table[keys[0]];
-  let roll = randomNumber(1, 100);
-  for (let i = 0; i < keys.length; i++) {
-    let prob = parseFloat(keys[i]);
-    if (isNaN(prob))
-      return dflt;
-    if (roll <= prob)
-      return table[keys[i]];
-    roll -= prob;
+randomOption = function(options) {
+  if (_.sumBy(options, 'prob') != 100) {
+    console.log('Error in random option selection, probabilities do not sum to 100.');
+    console.log(options);
+    return options[0].opt;
   }
-  return dflt;
+  let roll = randomNumber(1, 100);
+  let randomizedOptions = _.shuffle(options);
+
+  for (let i = 0; i < options.length; i++) {
+    if (roll <= options[i].prob)
+      return options[i].opt;
+    roll -= options[i].prob;
+  }
+
+  console.log('default bug in random option');
+  return options[0].opt;
 }
 
 getEightWayDirection = function(x, y) {
