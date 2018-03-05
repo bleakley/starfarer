@@ -56,10 +56,6 @@ var selectDirection = {};
 var highlightObjects = {};
 var currentlyHighlightedObject = null;
 
-var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
-var bgm = new Audio('sounds/bgm_01.mp3');
-bgm.loop = true;
-
 clearPopup = function()
 {
 	popUpDisplay.clear();
@@ -156,8 +152,7 @@ init = function()
   document.getElementById("stuffOnTop").appendChild(popUpDisplay.getContainer());
 
 	drawAll(true);
-	bgm.play();
-
+  system.bgm.play();
   //getAcknowledgement('Welcome to Rogue Starfarer!', playerTurn);
   playerTurn();
 }
@@ -359,6 +354,7 @@ selectDirection.handleEvent = function(event) {
 			window.removeEventListener('keydown', this);
       let ps = getPlayerShip(system.ships);
       system.removeShip(ps);
+      system.bgm.pause();
       system = universe.random();
       system.ships.push(ps);
       coords = system.randomUnoccupiedSpace(system.map);
@@ -368,6 +364,7 @@ selectDirection.handleEvent = function(event) {
       ps.yMoment = randomNumber(-2,2);
       ps.xCursor = ps.xMoment;
       ps.yCursor = ps.yMoment;
+      system.bgm.play();
 
       message.text = "Hyperspace jump successful...warp core recharging.";
       playerTurn();
