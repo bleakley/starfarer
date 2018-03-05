@@ -140,3 +140,11 @@ CORONAS[BODY_STAR_YELLOW] = {100: TERRAIN_CORONA_YELLOW};
 
 var JETS = {};
 JETS[BODY_QUASAR] = {100: TERRAIN_QUASAR_JET};
+
+var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
+var bgm1 = new Audio('sounds/bgm_01.mp3');
+bgm1.loop = true;
+var bgm2 = new Audio('sounds/bgm_02.mp3');
+bgm2.loop = true;
+
+bgms = [bgm1, bgm2];

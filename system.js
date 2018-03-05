@@ -54,6 +54,7 @@ function System () {
 
   this.map = [];
   this.generateMap();
+  this.bgm = bgms.random();
 
 }
 
