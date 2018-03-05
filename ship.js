@@ -9,6 +9,7 @@ function Ship(coords, momentum, hull, shields, energy)
   this.yMoment = momentum[1];
   this.xCursor = momentum[0];
   this.yCursor = momentum[1];
+  this.facing = getEightWayDirection(momentum[0], momentum[1]);
   this.hull = hull;
   this.hullMax = hull;
   this.shields = shields;
@@ -21,6 +22,8 @@ function Ship(coords, momentum, hull, shields, energy)
   this.credits = 10;
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
+  this.followPlayer = true;
+  this.attackPlayer = false;
   this.event = null; // Event triggered by investigating this ship
 }
 
@@ -53,6 +56,21 @@ Ship.prototype = {
 		let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
     this.shields = Math.max(0, this.shields - damage);
     this.energy -= damageAfterShields; // can go negative
+    return this.destroyed;
+	},
+  takeTractorDamage: function(damage) {
+    let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
+    this.shields = Math.max(0, this.shields - damage);
+    if (this.shields > 0)
+      return this.destroyed;
+    if (this.xMoment > 0)
+		  this.xMoment = Math.max(0, this.xMoment - damage);
+    if (this.xMoment < 0)
+      this.xMoment = Math.min(0, this.xMoment + damage);
+    if (this.yMoment > 0)
+		  this.yMoment = Math.max(0, this.yMoment - damage);
+    if (this.yMoment < 0)
+      this.yMoment = Math.min(0, this.yMoment + damage);
     return this.destroyed;
 	},
   destroy: function() {
@@ -109,13 +127,15 @@ Ship.prototype = {
 
     let desiredCourse = [0, 0];
 
-    let stepCount = 0;
-    astar.compute(nextX, nextY, function(x, y) {
-      if (stepCount == desiredSpeed) {
-        desiredCourse = [x,y];
-      }
-      stepCount++;
-    });
+    if (this.followPlayer) {
+      let stepCount = 0;
+      astar.compute(nextX, nextY, function(x, y) {
+        if (stepCount == desiredSpeed) {
+          desiredCourse = [x,y];
+        }
+        stepCount++;
+      });
+    }
 
     //slow down!
     while (desiredCourse[0] + this.xMoment - nextX > desiredSpeed)

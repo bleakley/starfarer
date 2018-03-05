@@ -87,20 +87,16 @@ drawAll = function(recursion)
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
     if (s.player)
       mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
-    let direction = getEightWayDirection(s.xMoment, s.yMoment);
-	if (s.xMoment != 0 || s.yMoment != 0) {
-		mapDisplay.draw(s.xCoord+DIRECTIONS[direction][0], s.yCoord+DIRECTIONS[direction][1], ARROWS[direction], s.player ? "#0E4" : "red");
-
+    mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], s.player ? "#0E4" : "red");
 		if (s.player) {
 		  let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
 		  if (s.energy >= maneuverMagnitude * s.maneuverCost)
-			mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
+			   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
 		  else
-			mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
+			   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
 		} else {
 		  mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
 		}
-	}
 
   });
 
@@ -170,25 +166,21 @@ moveCursor =  function(direction) {
 advanceTurn =  function() {
 
   let ps = getPlayerShip();
-  let startTime = Date.now();
-  console.log(`Building astar map...`);
   var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
      return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
   });
-  console.log(`done in ${Date.now()-startTime} ms.`);
 
   system.ships.forEach((s) => {
     if (!s.player) {
-      let startTime = Date.now();
-      console.log(`Plotting course...`);
       s.plotBetterCourse(system.map, astar);
-      console.log(`done in ${Date.now()-startTime} ms.`);
     }
     let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {
       s.energy -= maneuverMagnitude * s.maneuverCost;
       s.xMoment = s.xCursor;
       s.yMoment = s.yCursor;
+      if(!(s.xMoment == 0 && s.yMoment == 0))
+        s.facing = getEightWayDirection(s.xMoment, s.yMoment);
     } else if (s.player) {
       notEnoughEnergy.play();
     }

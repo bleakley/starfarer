@@ -97,7 +97,7 @@ TILES[TERRAIN_BARREN_2] = {
 TILES[TERRAIN_BARREN_3] = {
 		100: {character : "~", color : "#000", backgroundColor : "#555"}};
 TILES[TERRAIN_GRASS] = {
-		100: {character : "\"", color : "#6f3", backgroundColor : "#0c0"}};
+		100: {character : "\"", color : "#460", backgroundColor : "#0c0"}};
 TILES[TERRAIN_WATER] = {
 		65: {character : "~", color : "#9CF", backgroundColor : "#00F"},
 		35: {character : " ", color : "#9CF", backgroundColor : "#00F"}};
