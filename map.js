@@ -60,6 +60,12 @@ var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
 var bgm = new Audio('sounds/bgm_01.mp3');
 bgm.loop = true;
 
+clearPopup = function()
+{
+	popUpDisplay.clear();
+	document.getElementById('stuffOnTop').style.display = 'none';
+}
+
 drawHighlight = function(p) {
   for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
     mapDisplay.draw(x, p.yCoord - p.radius - 1, "#", "#0E4");
@@ -139,12 +145,19 @@ init = function()
 		layout:"rect", fg: "#0E4", forceSquareRatio: false
 	});
 
+  popUpDisplay = new ROT.Display({
+		width:50, height:23,
+		layout:"rect"
+	});
+
 	document.body.appendChild(mapDisplay.getContainer());
   document.body.appendChild(sideBarDisplay.getContainer());
+  document.getElementById("stuffOnTop").appendChild(popUpDisplay.getContainer());
 
 	drawAll(true);
-	bgm.play()
-  playerTurn();
+	bgm.play();
+
+  getAcknowledgement('Welcome to Rogue Starfarer!', playerTurn);
 }
 
 moveCursor =  function(direction) {
@@ -364,6 +377,7 @@ selectDirection.handleEvent = function(event) {
 
 playerTurn = function()
 {
+  clearPopup();
   console.log(system.planets);
 	drawAll();
 	window.addEventListener('keydown', selectDirection);
