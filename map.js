@@ -127,7 +127,16 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
-	sideBarDisplay.drawText(2, 8, message.text);
+  for (let i = 0; i < ps.weapons.length; i++) {
+    let w = ps.weapons[i];
+    let color = '#0E4';
+    if (!w.readyToFire || ps.energy < w.energy)
+      color = 'dimgrey';
+    else if (w.selected)
+      color = 'yellow';
+    sideBarDisplay.drawText(2, 8+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
+  }
+	sideBarDisplay.drawText(2, 10 + ps.weapons.length, message.text);
 }
 
 init = function()
@@ -138,7 +147,7 @@ init = function()
 	});
 
   sideBarDisplay = new ROT.Display({
-		width:20, height:MAP_HEIGHT,
+		width:30, height:MAP_HEIGHT,
 		layout:"rect", fg: "#0E4", forceSquareRatio: false
 	});
 
@@ -230,10 +239,7 @@ advanceTurn =  function() {
       }
     }
 
-    if(s.energy >= s.energyMax) {
-      s.shields = Math.min(s.shields + 1, s.shieldsMax);
-    }
-    s.energy = Math.min(s.energy + s.energyRegen, s.energyMax);
+    s.regenerateSystems();
   });
 
   system.pending_events.forEach((e, index, arr) => {
@@ -348,6 +354,18 @@ selectDirection.handleEvent = function(event) {
       event.preventDefault();
 			window.removeEventListener('keydown', this);
       advanceTurn();
+			break;
+    case 87:
+			//w, toggle weapon
+      getPlayerShip(system.ships).toggleSelectedWeapon();
+			window.removeEventListener('keydown', this);
+      playerTurn();
+			break;
+    case 70:
+			//f, fire weapon
+      getPlayerShip(system.ships).fireSelectedWeapon();
+			window.removeEventListener('keydown', this);
+      playerTurn();
 			break;
     case 72:
 			//h, go to hyperspace

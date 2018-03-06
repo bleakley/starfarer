@@ -9,6 +9,7 @@ function Weapon(name, range, damage, accuracy, energy)
   this.tractor = false;
   this.readyToFire = false;
   this.mount = MOUNT_FWD;
+  this.selected = false;
 }
 
 Weapon.prototype = {

@@ -80,6 +80,12 @@ const MOUNT_AFT = 2;
 const MOUNT_PORT = 3;
 const MOUNT_TURRET = 4;
 
+const MOUNT_NAMES = [];
+MOUNT_NAMES[MOUNT_FWD] = "FWD";
+MOUNT_NAMES[MOUNT_STBD] = "STBD";
+MOUNT_NAMES[MOUNT_AFT] = "AFT";
+MOUNT_NAMES[MOUNT_PORT] = "PORT";
+
 var TILES = {};
 TILES[TERRAIN_NONE_EMPTY] = [
 		{prob: 99, opt: {character : ".", color : "#000", backgroundColor : "#000"}},

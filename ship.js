@@ -21,8 +21,14 @@ function Ship(coords, momentum, hull, shields, energy)
   this.energyMax = energy;
   this.credits = 10;
   let wep = new Weapon('Laser Cannon', 10, 3, 50, 2);
-  wep.mount = MOUNT_FWD;
-  this.weapons = [wep];
+  wep.mount = MOUNT_STBD;
+  let wep2 = new Weapon('Ion Cannon', 10, 4, 50, 2);
+  wep2.ion = true;
+  wep2.mount = MOUNT_PORT;
+  let wep3 = new Weapon('Tractor Beam', 10, 2, 30, 2);
+  wep3.tractor = true;
+  wep3.mount = MOUNT_FWD;
+  this.weapons = [wep3, wep, wep2];
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
   this.followPlayer = true;
@@ -34,6 +40,17 @@ Ship.prototype = {
 	powerDown: function() {
 		this.shields = 0;
     this.energy = 0;
+	},
+  regenerateSystems: function() {
+    if(this.energy >= this.energyMax) {
+      this.shields = Math.min(this.shields + 1, this.shieldsMax);
+    }
+    if(this.energy > this.energyMax) {
+      this.energy--; // if you are overcharged, you slowly leak extra energy
+    } else {
+      this.energy = Math.min(this.energy + this.energyRegen, this.energyMax);
+    }
+    this.weapons.forEach((w) => { w.readyToFire = true; });
 	},
   stop: function() {
     this.xMoment = 0;
@@ -153,5 +170,36 @@ Ship.prototype = {
     this.xCursor = this.xMoment + Math.sign(desiredCourse[0] - nextX);
     this.yCursor = this.yMoment + Math.sign(desiredCourse[1] - nextY);
 
-	}
+	},
+  toggleSelectedWeapon: function() { //only useful for player
+    let selectedWeapon = _.find(this.weapons, (w) => w.selected);
+    let startingIndex = 0;
+    if (selectedWeapon) {
+      startingIndex = Math.min(this.weapons.length - 1, _.indexOf(this.weapons, selectedWeapon) + 1);
+    }
+
+    let nextUnselectedWeapon = _.find(this.weapons, (w) => { return !w.selected && w.readyToFire && this.energy >= w.energy; }, startingIndex);
+    if (!nextUnselectedWeapon)
+      nextUnselectedWeapon = _.find(this.weapons, (w) => { return !w.selected && w.readyToFire && this.energy >= w.energy; });
+
+    if (nextUnselectedWeapon) {
+      nextUnselectedWeapon.selected = true;
+      if(selectedWeapon)
+        selectedWeapon.selected = false;
+    }
+  },
+  fireSelectedWeapon: function() { //only useful for player
+    let selectedWeapon = _.find(this.weapons, (w) => w.selected);
+    if(selectedWeapon) {
+      this.fireWeapon(selectedWeapon);
+    }
+  },
+  fireWeapon: function(weapon) {
+    if (weapon.readyToFire && this.energy >= weapon.energy) {
+      console.log(`firing ${weapon.name}`);
+      this.energy -= weapon.energy;
+      weapon.readyToFire = false;
+      this.toggleSelectedWeapon();
+    }
+  },
 }
