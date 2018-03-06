@@ -110,14 +110,16 @@ drawAll = function(recursion)
     }
 
     let color = s.getHighlightColor();
-    if (s.player)
-      mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", color);
-    mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
-    let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
-	  if (s.energy >= maneuverMagnitude * s.maneuverCost)
-		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", color);
-	  else
-		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
+    if(!s.destroyed) {
+      if (s.player)
+        mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", color);
+      mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
+      let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+  	  if (s.energy >= maneuverMagnitude * s.maneuverCost)
+  		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", color);
+  	  else
+  		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
+    }
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
 
   });
