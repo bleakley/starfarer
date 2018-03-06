@@ -171,6 +171,13 @@ Ship.prototype = {
     this.yCursor = this.yMoment + Math.sign(desiredCourse[1] - nextY);
 
 	},
+  getHighlightColor: function() {
+    if (this.player)
+      return "#0E4";
+    if (this.attackPlayer)
+      return "red";
+    return "yellow";
+  },
   toggleSelectedWeapon: function() { //only useful for player
     let selectedWeapon = _.find(this.weapons, (w) => w.selected);
     let startingIndex = 0;

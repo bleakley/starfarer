@@ -125,8 +125,7 @@ TILES[TERRAIN_QUASAR] = [
 		{prob: 49, opt:  {character : "~", color : "#CEF", backgroundColor : "#73A"}}];
 TILES[TERRAIN_QUASAR_JET] = [
 		{prob: 40, opt:  {character : ":", color : "#314", backgroundColor : "#637"}},
-		{prob: 40, opt:  {character : ":", color : "#637", backgroundColor : "#314"}},
-		{prob: 20, opt:  {character : ".", color : "#000", backgroundColor : "#000"}}];
+		{prob: 60, opt:  {character : ".", color : "#000", backgroundColor : "#000"}}];
 TILES[TERRAIN_CORONA_YELLOW] = [
 		{prob: 60, opt:  {character : ":", color : "#CA1", backgroundColor : "#742"}},
 		{prob: 40, opt:  {character : ".", color : "#000", backgroundColor : "#000"}}];

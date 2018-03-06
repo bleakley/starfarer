@@ -62,7 +62,7 @@ clearPopup = function()
 	document.getElementById('stuffOnTop').style.display = 'none';
 }
 
-drawHighlight = function(p) {
+drawBodyHighlight = function(p) {
   for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
     mapDisplay.draw(x, p.yCoord - p.radius - 1, "#", "#0E4");
     mapDisplay.draw(x, p.yCoord + p.radius, "#", "#0E4");
@@ -73,6 +73,19 @@ drawHighlight = function(p) {
   }
   mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius - 1, `%c{#0E4}${p.name}`);
   mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius, `%c{#0E4}MASS: ${p.mass} x10^28 kg`);
+}
+
+drawShipHighlight = function(s) {
+  let color = s.getHighlightColor();
+  for (let x = s.xCoord - 1; x <= s.xCoord + 1; x++) {
+    mapDisplay.draw(x, s.yCoord - 1, "#", color);
+    mapDisplay.draw(x, s.yCoord + 1, "#", color);
+  }
+  mapDisplay.draw(s.xCoord - 1, s.yCoord, "#", color);
+  mapDisplay.draw(s.xCoord + 1, s.yCoord, "#", color);
+  mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
+
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord - 1, `%c{${color}}${s.name}`);
 }
 
 drawAll = function(recursion)
@@ -86,24 +99,25 @@ drawAll = function(recursion)
 
   system.planets.forEach((p) => {
     if (p == currentlyHighlightedObject) {
-      drawHighlight(p);
+      drawBodyHighlight(p);
     }
   });
 
   system.ships.forEach((s) => {
 
+    if (s == currentlyHighlightedObject) {
+      drawShipHighlight(s);
+    }
+
+    let color = s.getHighlightColor();
     if (s.player)
-      mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", "#0E4");
-    mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], s.player ? "#0E4" : "red");
-		if (s.player) {
-		  let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
-		  if (s.energy >= maneuverMagnitude * s.maneuverCost)
-			   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#0E4");
-		  else
-			   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
-		} else {
-		  mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "red");
-		}
+      mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", color);
+    mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
+    let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+	  if (s.energy >= maneuverMagnitude * s.maneuverCost)
+		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", color);
+	  else
+		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
 
   });
@@ -261,6 +275,12 @@ advanceTurn =  function() {
 
 highlightObjects.handleEvent = function(event) {
   let coords = mapDisplay.eventToPosition(event);
+  let highlightedShip = _.find(system.ships, (s) => { return s.xCoord == coords[0] && s.yCoord == coords[1] });
+  if (highlightedShip) {
+    currentlyHighlightedObject = highlightedShip;
+    drawShipHighlight(highlightedShip);
+    return;
+  }
   if(!_.has(system.map, [coords[0], coords[1], 'body']))
     return;
 
@@ -271,7 +291,7 @@ highlightObjects.handleEvent = function(event) {
 
   currentlyHighlightedObject = body;
   if (body)
-    drawHighlight(body);
+    drawBodyHighlight(body);
   else drawAll();
 };
 
