@@ -1,8 +1,3 @@
-const MAP_WIDTH = 120;
-const MAP_HEIGHT = 50;
-const N_STAR_SYSTEMS = 4;
-const N_CLUES = 4;
-
 let turn = 0;
 let message = {text: ""};
 
@@ -49,8 +44,6 @@ system.ships.push(ps);
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
 global_pending_events.push(new MessageEvent(message_text, 6));
-
-message.text = `Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact that can be used to prevent your home system, Altaris, from going supernova.\n\nArrow keys:\nchange trajectory\n\nSpace:\nmove\n\nh:\njump to hyperspace`;
 
 var selectDirection = {};
 var highlightObjects = {};
@@ -172,29 +165,29 @@ drawSideBar = function()
 
 init = function()
 {
-	mapDisplay = new ROT.Display({
-		width:MAP_WIDTH, height:MAP_HEIGHT,
-		layout:"rect", forceSquareRatio: false
-	});
-
-  sideBarDisplay = new ROT.Display({
-		width:30, height:MAP_HEIGHT,
-		layout:"rect", fg: "#0E4", forceSquareRatio: false
-	});
-
-  popUpDisplay = new ROT.Display({
-		width:50, height:23,
-		layout:"rect"
-	});
-
-	document.body.appendChild(mapDisplay.getContainer());
+  document.body.appendChild(mapDisplay.getContainer());
   document.body.appendChild(sideBarDisplay.getContainer());
   document.getElementById("stuffOnTop").appendChild(popUpDisplay.getContainer());
 
 	drawAll(true);
   system.bgm.play();
-  //getAcknowledgement('Welcome to Rogue Starfarer!', playerTurn);
-  playerTurn();
+  
+  getAcknowledgement(`Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
+
+}
+
+displayHelp = function(){
+  getAcknowledgement(
+  "STARSHIP CONTROLS\n\n" +
+  "h        show this help dialog\n" +
+  "arrows   change trajectory\n" +
+  "space    move\n" +
+  "j        jump to hyperspace\n" +
+  "w        toggle weapons\n" +
+  "f        fire weapons\n" +
+  "esc      deselect weapons\n\n" +
+  "To explore a planet, move on top of it. Your starship will be damaged if you are moving too fast when you land!",
+  playerTurn); 
 }
 
 moveCursor =  function(direction) {
@@ -350,9 +343,10 @@ selectDirection.handleEvent = function(event) {
         playerTurn();
       }
 			break;
-		case 191:
-			//?
-			console.log('help');
+		case 72:
+			//h
+      window.removeEventListener('keydown', this);
+			displayHelp();
 			break;
 		case 97:
 		case 35:
@@ -410,8 +404,8 @@ selectDirection.handleEvent = function(event) {
 			window.removeEventListener('keydown', this);
       playerTurn();
 			break;
-    case 72:
-			//h, go to hyperspace
+    case 74:
+			//j, jump to hyperspace
 			window.removeEventListener('keydown', this);
       let ps = getPlayerShip(system.ships);
       system.removeShip(ps);

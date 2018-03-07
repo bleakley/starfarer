@@ -1,3 +1,18 @@
+mapDisplay = new ROT.Display({
+  width:MAP_WIDTH, height:MAP_HEIGHT,
+  layout:"rect", forceSquareRatio: false
+});
+
+sideBarDisplay = new ROT.Display({
+  width:30, height:MAP_HEIGHT,
+  layout:"rect", fg: "#0E4", forceSquareRatio: false
+});
+
+popUpDisplay = new ROT.Display({
+  width:50, height:23,
+  layout:"rect", fg: "#0E4"
+});
+
 function selectOption(situation, options)
 {
 	//var so = Object.create(selectOption.methods);
@@ -41,7 +56,7 @@ selectOption.prototype = {
   }
 };
 
-getAcknowledgement = function(string, callbackFunction, callbackParameter)
+getAcknowledgement = function(string, callbackFunction)
 {
 	document.getElementById('stuffOnTop').style.display = 'initial';
 	popUpDisplay.clear();
@@ -50,13 +65,13 @@ getAcknowledgement = function(string, callbackFunction, callbackParameter)
 	cf = function() {
 		window.removeEventListener('keydown', cf);
 		clearPopup();
-		callbackFunction(callbackParameter);
+		callbackFunction();
 	};
 
 	window.addEventListener('keydown', cf);
 }
 
-getConfirmation = function(string, callbackFunction1, callbackFunction2, callbackParameter)
+getConfirmation = function(string, callbackFunction1, callbackFunction2)
 {
 	document.getElementById('stuffOnTop').style.display = 'initial';
 	popUpDisplay.clear();
@@ -67,13 +82,13 @@ getConfirmation = function(string, callbackFunction1, callbackFunction2, callbac
 		{
 			window.removeEventListener('keydown', cf);
 			clearPopup();
-			callbackFunction1(callbackParameter);
+			callbackFunction1();
 		}
 		if(event.keyCode == 78)//n
 		{
 			window.removeEventListener('keydown', cf);
 			clearPopup();
-			callbackFunction2(callbackParameter);
+			callbackFunction2();
 		}
 	};
 
