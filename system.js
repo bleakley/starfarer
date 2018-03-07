@@ -46,14 +46,30 @@ function System () {
     }
   }
 
-  this.ships = [];
-  let s2 = new Ship([30,30], [1,-2], 5, 3, 10);
-  this.ships.push(s2);
-
-  this.pending_events = [];
-
   this.map = [];
   this.generateMap();
+  
+  this.ships = [];
+  
+  var n_ships = randomNumber(0, 2);
+  for (var count = 0; count < n_ships; count++) {
+    let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], 5, 3, 10);
+    this.ships.push(s);
+  }
+
+  var n_stations = randomNumber(0, 1);
+  for (var count = 0; count < n_stations; count++) {
+    let s = new Ship(this.randomUnoccupiedSpace(), [0,0], 20, 10, 30);
+    s.char = "S";
+    s.maxSpeed = 0;
+    s.credits = 100;
+    s.name = "Space Station KL-72X"
+    s.event = new SpaceStationEvent();
+    this.ships.push(s);
+  }
+  
+  this.pending_events = [];
+
   this.bgm = bgms.random();
 
 }

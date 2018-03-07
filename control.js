@@ -62,7 +62,8 @@ getAcknowledgement = function(string, callbackFunction)
 	popUpDisplay.clear();
 	popUpDisplay.drawText(1, 1, string + "\n\n(press any key to continue)");
 
-	cf = function() {
+	cf = function(event) {
+    event.preventDefault();
 		window.removeEventListener('keydown', cf);
 		clearPopup();
 		callbackFunction();

@@ -43,7 +43,7 @@ system.ships.push(ps);
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
-global_pending_events.push(new MessageEvent(message_text, 6));
+global_pending_events.push(new MessageEvent(message_text, 10));
 
 var selectDirection = {};
 var highlightObjects = {};
@@ -255,6 +255,10 @@ advanceTurn =  function() {
       }
     }
 
+    s.regenerateSystems();
+  });
+  
+  system.ships.forEach((s) => {
     if (!s.player) {
       ps = getPlayerShip(system.ships);
       if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
@@ -262,8 +266,6 @@ advanceTurn =  function() {
           system.pending_events.push(s.event);
       }
     }
-
-    s.regenerateSystems();
   });
 
   turn++;
@@ -437,6 +439,7 @@ selectDirection.handleEvent = function(event) {
       ps.yMoment = randomNumber(-2,2);
       ps.xCursor = ps.xMoment;
       ps.yCursor = ps.yMoment;
+      ps.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
       system.bgm.play();
 
       message.text = "Hyperspace jump successful...warp core recharging.";

@@ -104,3 +104,17 @@ TempleClueEvent.prototype = {
     getAcknowledgement(this.message, callbackFunction);
 	}
 }
+
+
+function SpaceStationEvent () {
+	this.message = "As you approach the space station, you see that its scaffolds have been badly damaged by laser burns. The commander of the space station explains that a savage band of space pirates ransacked the station 17 days ago. They were searching for Precursor digicodexes. \"I just don't get why space pirates would care so much about some boring old books!\"\n\n" +
+  "The commander looks scarcely old enough to be a ensign. You speculate that everyone above him in the chain of command was killed in the attack.";
+	this.time_until = 0;
+}
+
+SpaceStationEvent.prototype = {
+	action: function (system, callbackFunction) {
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
