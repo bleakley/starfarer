@@ -44,6 +44,10 @@ Ship.prototype = {
 	powerDown: function() {
 		this.shields = 0;
     this.energy = 0;
+    this.weapons.forEach((w) => {
+      w.selected = false;
+      w.readyToFire = false;
+    });
 	},
   regenerateSystems: function() {
     if(this.energy >= this.energyMax) {
@@ -141,7 +145,7 @@ Ship.prototype = {
       return;
     }
 
-    let currentSpeed = Math.max(Math.abs(this.xMoment), Math.abs(this.yMoment));
+    let currentSpeed = freeDiagonalDistance([this.xMoment, this.yMoment], [0,0]);
     let desiredSpeed = Math.min(currentSpeed + 1, this.maxSpeed);
     //reduce desired speed here if too close to destination
     if (desiredSpeed && distToTarget/desiredSpeed < caution)

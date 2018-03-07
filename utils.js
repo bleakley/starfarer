@@ -120,6 +120,10 @@ getCounterClockwiseOctant = function(octant) {
   return ccw;
 }
 
+freeDiagonalDistance = function(pointA, pointB) { // distance between two points in a square world where diagonal movement costs 1
+  return Math.max(Math.abs(pointA[0]-pointB[0]), Math.abs(pointA[1]-pointB[1]));
+}
+
 
 djikstraSearch = function(layer, avoid, map)
 {

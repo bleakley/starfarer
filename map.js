@@ -129,7 +129,7 @@ drawAll = function(recursion)
       if (s.player)
         mapDisplay.draw(s.xCoord+s.xMoment, s.yCoord+s.yMoment, "0", color);
       mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
-      let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+      let maneuverMagnitude = freeDiagonalDistance([s.xCursor, s.yCursor], [s.xMoment, s.yMoment]);
   	  if (s.energy >= maneuverMagnitude * s.maneuverCost)
   		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", color);
   	  else
@@ -222,7 +222,7 @@ advanceTurn =  function() {
     if (!s.player) {
       s.plotBetterCourse(system.map, astar);
     }
-    let maneuverMagnitude = Math.max(Math.abs(s.xCursor - s.xMoment), Math.abs(s.yCursor - s.yMoment));
+    let maneuverMagnitude = freeDiagonalDistance([s.xCursor, s.yCursor], [s.xMoment, s.yMoment]);
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {
       s.energy -= maneuverMagnitude * s.maneuverCost;
       s.xMoment = s.xCursor;
@@ -236,7 +236,7 @@ advanceTurn =  function() {
     s.xCoord += s.xMoment;
     s.yCoord += s.yMoment;
 
-    let speed = Math.max(Math.abs(s.xMoment), Math.abs(s.yMoment));
+    let speed = freeDiagonalDistance([s.xMoment, s.yMoment], [0,0]);
     if(_.has(system.map, [s.xCoord, s.yCoord, 'terrain'])){
       switch(system.map[s.xCoord][s.yCoord].terrain) {
         case TERRAIN_STAR_YELLOW:
