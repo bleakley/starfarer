@@ -10,6 +10,8 @@ function Ship(coords, momentum, hull, shields, energy)
   this.xCursor = momentum[0];
   this.yCursor = momentum[1];
   this.facing = getEightWayDirection(momentum[0], momentum[1]);
+  if (this.facing == CENTER)
+    this.facing = EAST;
   this.hull = hull;
   this.hullMax = hull;
   this.shields = shields;
@@ -20,17 +22,19 @@ function Ship(coords, momentum, hull, shields, energy)
   this.energy = energy;
   this.energyMax = energy;
   this.credits = 10;
-  let wep = new Weapon('Laser Cannon', 10, 3, 50, 2);
+  let wep = new Weapon('Laser Cannon', 15, 3, 100, 2);
   wep.mount = MOUNT_STBD;
-  let wep2 = new Weapon('Ion Cannon', 10, 4, 50, 2);
+  let wep2 = new Weapon('Ion Cannon', 15, 4, 100, 2);
   wep2.ion = true;
   wep2.mount = MOUNT_PORT;
-  let wep3 = new Weapon('Tractor Beam', 10, 2, 30, 2);
+  let wep3 = new Weapon('Tractor Beam', 10, 2, 100, 2);
   wep3.tractor = true;
   wep3.mount = MOUNT_FWD;
   this.weapons = [wep3, wep, wep2];
   this.destroyed = false;
   this.maxSpeed = 3; // this is for AI only
+  this.mindControlByPlayerDuration = 0;
+  this.mindControlByEnemyDuration = 0;
   this.followPlayer = true;
   this.attackPlayer = false;
   this.event = null; // Event triggered by investigating this ship
@@ -51,6 +55,8 @@ Ship.prototype = {
       this.energy = Math.min(this.energy + this.energyRegen, this.energyMax);
     }
     this.weapons.forEach((w) => { w.readyToFire = true; });
+    this.mindControlByPlayerDuration = Math.max(0, this.mindControlByPlayerDuration - 1);
+    this.mindControlByEnemyDuration = Math.max(0, this.mindControlByEnemyDuration - 1);
 	},
   stop: function() {
     this.xMoment = 0;
@@ -176,6 +182,8 @@ Ship.prototype = {
       return "#0E4";
     if (this.attackPlayer)
       return "red";
+    if (this.mindControlByPlayerDuration || this.mindControlByEnemyDuration)
+      return "purple";
     return "yellow";
   },
   toggleSelectedWeapon: function() { //only useful for player
@@ -207,6 +215,8 @@ Ship.prototype = {
       this.energy -= weapon.energy;
       weapon.readyToFire = false;
       this.toggleSelectedWeapon();
+    } else {
+      console.log(`${this.name} does not have enough energy to fire ${weapon.name}`);
     }
   },
 }

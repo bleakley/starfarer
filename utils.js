@@ -93,6 +93,34 @@ drawPseudoSphericalBody = function(xCoord, yCoord, radius, callback) {
   }
 }
 
+getFiringOctant = function(facing, weaponMount) {
+  if (weaponMount == MOUNT_TURRET)
+    return CENTER;
+  let octant = facing - 2*weaponMount; // they both go clockwise :)
+  if (octant < 0)
+    octant += 8;
+  return octant;
+}
+
+getClockwiseOctant = function(octant) {
+  if (octant == CENTER)
+    return CENTER;
+  let clockwise = octant + 1;
+  if (clockwise > 7)
+    clockwise = 0;
+  return clockwise;
+}
+
+getCounterClockwiseOctant = function(octant) {
+  if (octant == CENTER)
+    return CENTER;
+  let ccw = octant - 1;
+  if (ccw < 0)
+    ccw = 7;
+  return ccw;
+}
+
+
 djikstraSearch = function(layer, avoid, map)
 {
   console.log('Updating AI map...');

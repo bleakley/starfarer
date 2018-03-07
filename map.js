@@ -88,6 +88,17 @@ drawShipHighlight = function(s) {
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord - 1, `%c{${color}}${s.name}`);
 }
 
+drawFiringArc = function(ship, weapon) {
+  let color = ship.getHighlightColor();
+  let octant = getFiringOctant(ship.facing, weapon.mount);
+  if (octant == CENTER)
+    return;
+  [getClockwiseOctant(octant), getCounterClockwiseOctant(octant)].forEach((line) => {
+    for(let r = 0; r < weapon.range; r++)
+      mapDisplay.draw(ship.xCoord+DIRECTIONS[line][0]*r, ship.yCoord+DIRECTIONS[line][1]*r, "+", ship.getHighlightColor());
+  });
+}
+
 drawAll = function(recursion)
 {
 	for (var x = 0; x < MAP_WIDTH; x++) {
@@ -102,6 +113,10 @@ drawAll = function(recursion)
       drawBodyHighlight(p);
     }
   });
+
+  let selectedWeapon = _.find(getPlayerShip(system.ships).weapons, (w) => w.selected);
+  if (selectedWeapon && selectedWeapon.readyToFire && getPlayerShip(system.ships).energy >= selectedWeapon.energy )
+    drawFiringArc(getPlayerShip(system.ships), selectedWeapon);
 
   system.ships.forEach((s) => {
 
@@ -386,6 +401,12 @@ selectDirection.handleEvent = function(event) {
     case 70:
 			//f, fire weapon
       getPlayerShip(system.ships).fireSelectedWeapon();
+			window.removeEventListener('keydown', this);
+      playerTurn();
+			break;
+    case 27:
+			//esc, deselect weapon
+      getPlayerShip(system.ships).weapons.forEach((w) => { w.selected = false; });
 			window.removeEventListener('keydown', this);
       playerTurn();
 			break;
