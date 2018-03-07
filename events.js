@@ -6,26 +6,26 @@ function ArrivalEvent (ship) {
 
 ArrivalEvent.prototype = {
 
-	action: function (message, p, system) {
+	action: function (system, callbackFunction) {
     system.ships.push(this.ship);
-    message.text = this.message;
+    getAcknowledgement(this.message, callbackFunction);
 	}
 }
 
 function TempleEvent () {
-	this.message = "Your landing party searches a crumbling precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as 4 days.";
+	this.message = "Your landing party searches a crumbling Precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as 4 days.";
 	this.time_until = 0;
 }
 
 TempleEvent.prototype = {
 
-	action: function (message, p, system) {
+	action: function (system, callbackFunction) {
     let anomaly = new Ship([32,17], [0,0], 1, 0, 0);
     anomaly.char = "A";
     anomaly.name = "anomaly X72-C";
     anomaly.event = new AnomalyCollapseEvent(anomaly);
     system.ships.push(anomaly);
-    message.text = this.message;
+    getAcknowledgement(this.message, callbackFunction);
     
     var ship = new Ship([60,40], [2,1], 5, 3, 10);
     arrival = new ArrivalEvent(ship);
@@ -41,7 +41,7 @@ function AnomalyCollapseEvent (anomaly) {
 }
 
 AnomalyCollapseEvent.prototype = {
-  action: function (message, p, system) {
+  action: function (system, callbackFunction) {
     black_hole = {
       name: 'BLACK HOLE',
       xCoord: this.anomaly.xCoord,
@@ -53,7 +53,7 @@ AnomalyCollapseEvent.prototype = {
     }
     system.planets.push(black_hole);
     this.anomaly.destroy();
-    message.text = this.message;
+    getAcknowledgement(this.message, callbackFunction);
   }
 }
 
@@ -64,19 +64,20 @@ function MessageEvent (message, time_until) {
 }
 
 MessageEvent.prototype = {
-  action: function (message, p, system) {
-    message.text = this.message;
+  action: function (system, callbackFunction) {
+    getAcknowledgement(this.message, callbackFunction);
   }
 }
 
 function FindOrbitronEvent () {
-	this.message = "Amongst the crumbling ruins of a Precursor temple, your landing party finds a metal sphere with many spindly antennas. Your tech specialist is ecstatic...this is an intact Orbitron Device!";
+	this.message = "Amongst the crumbling ruins of a Precursor temple, your landing party finds a metal sphere with many spindly antennas. Your tech specialist is ecstatic...this is an intact Orbitron Device!\n\n" +
+  "Congratulations! You have saved the Altaris system and won the game.";
 	this.time_until = 0;
 }
 
 FindOrbitronEvent.prototype = {
-	action: function (message, p, system) {
-    message.text = this.message;
+	action: function (system, callbackFunction) {
+    getAcknowledgement(this.message, callbackFunction);
 	}
 }
 
@@ -99,7 +100,7 @@ function TempleClueEvent (orbitron_system, orbitron_planet) {
 
 TempleClueEvent.prototype = {
 
-	action: function (message, p, system) {
-    message.text = this.message;
+	action: function (system, callbackFunction) {
+    getAcknowledgement(this.message, callbackFunction);
 	}
 }

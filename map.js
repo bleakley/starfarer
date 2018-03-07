@@ -172,7 +172,7 @@ init = function()
 	drawAll(true);
   system.bgm.play();
   
-  getAcknowledgement(`Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
+  getAcknowledgement(`Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
 
 }
 
@@ -249,7 +249,7 @@ advanceTurn =  function() {
         p = system.map[s.xCoord][s.yCoord].body
         if(p!=null) {
           if(p.events!=null && p.events.length > 0) {
-            p.events.pop().action(message, p, system);
+            system.pending_events.push(p.events.pop());
           }
         }
       }
@@ -259,27 +259,45 @@ advanceTurn =  function() {
       ps = getPlayerShip(system.ships);
       if (ps.xCoord == s.xCoord && ps.yCoord == s.yCoord) {
         if(s.event!=null)
-          s.event.action(message, p, system);
+          system.pending_events.push(s.event);
       }
     }
 
     s.regenerateSystems();
   });
 
-  system.pending_events.forEach((e, index, arr) => {
-	  e.time_until = e.time_until - 1;
-	  if (e.time_until == 0) {
-		  e.action(message, null, system);
-		  arr.splice(index, 1);
-	  }});
-  global_pending_events.forEach((e, index, arr) => {
-	  e.time_until = e.time_until - 1;
-	  if (e.time_until == 0) {
-		  e.action(message, null, system);
-		  arr.splice(index, 1);
-	  }});
-
   turn++;
+  resolvePendingEvents();
+}
+
+resolvePendingEvents = function() {
+
+  for (var count = 0; count < system.pending_events.length; count++) {
+    let e = system.pending_events[count];
+    e.time_until = e.time_until - 1;
+    if (e.time_until <= 0) {
+      console.log(e);
+      e.action(system, resolvePendingEvents);
+      index = system.pending_events.indexOf(e);
+      system.pending_events.splice(index, 1);
+      drawAll();
+      return;
+    }
+  }
+  
+  for (var count = 0; count < global_pending_events.length; count++) {
+    let e = global_pending_events[count];
+    e.time_until = e.time_until - 1;
+    if (e.time_until <= 0) {
+      console.log(e);
+      e.action(system, resolvePendingEvents);
+      index = global_pending_events.indexOf(e);
+      global_pending_events.splice(index, 1);
+      drawAll();
+      return;
+    }
+  }
+  
   playerTurn();
 }
 
