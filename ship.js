@@ -38,6 +38,7 @@ function Ship(coords, momentum, hull, shields, energy)
   this.followPlayer = true;
   this.attackPlayer = false;
   this.event = null; // Event triggered by investigating this ship
+  this.known_systems = [];
 }
 
 Ship.prototype = {

@@ -15,28 +15,24 @@ popUpDisplay = new ROT.Display({
 
 function selectOption(situation, options)
 {
-	//var so = Object.create(selectOption.methods);
   this.situation = situation;
 	this.options = options;
-	//return so;
 }
 
 selectOption.prototype = {
 	handleEvent: function(event) {
-
     options = this.options;
-
     if(options.length > 26)
       alert("Too many options");
-
     var selectedIndex = event.keyCode - 65; //keypress 'a' corresponds to index 0 here.
     if(selectedIndex >= options.length)
       return;
-
+    
 		for(var i = 0; i < options.length; i++)
     {
       if(selectedIndex == i) {
         window.removeEventListener('keydown', this);
+        clearPopup();
         options[i].o();
       }
     }
@@ -48,7 +44,9 @@ selectOption.prototype = {
     {
       s += "\n" + String.fromCharCode(97 + i) + ") " + this.options[i].t;
     }
-    drawPopup(s);
+    document.getElementById('stuffOnTop').style.display = 'initial';
+    popUpDisplay.clear();
+    popUpDisplay.drawText(1, 1, s);
   },
   run: function() {
     this.presentOptions();

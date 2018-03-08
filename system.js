@@ -45,6 +45,7 @@ function System () {
       });
     }
   }
+  this.name = this.planets[0].name;
 
   this.map = [];
   this.generateMap();

@@ -39,6 +39,7 @@ let ps = new Ship([20,10], [2,2], 5, 3, 10);
 ps.name = `player's ship`;
 ps.player = true;
 ps.powerDown();
+ps.known_systems.push(system);
 system.ships.push(ps);
 
 var global_pending_events = [];
@@ -488,23 +489,44 @@ selectDirection.handleEvent = function(event) {
     case 74:
 			//j, jump to hyperspace
 			window.removeEventListener('keydown', this);
+      
+      var options = [];
       var ps = getPlayerShip(system.ships);
-      system.removeShip(ps);
-      system.bgm.pause();
-      system = universe.random();
-      system.ships.push(ps);
-      coords = system.randomUnoccupiedSpace(system.map);
-      ps.xCoord = coords[0];
-      ps.yCoord = coords[1];
-      ps.xMoment = randomNumber(-2,2);
-      ps.yMoment = randomNumber(-2,2);
-      ps.xCursor = ps.xMoment;
-      ps.yCursor = ps.yMoment;
-      ps.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
-      system.bgm.play();
+      ps.known_systems.forEach( (sys) => {
+        let opt = { system: sys, t: sys.name, o: playerTurn };
+        if (sys != system) {
+          options.push(opt);
+        }
+      })
+      
+      
+      if (options.length == 0) {
+        
+      console.log('no options!')
+      console.log(options)
+        getAcknowledgement("We do not know the coordinates of any other star systems. Perhaps we can find coordinates somewhere in this system.", playerTurn);
+      }
+      else {
+        
+        var so = new selectOption("Select a destination:", options);
+        so.run();
+        
+        system.removeShip(ps);
+        system.bgm.pause();
+        system = universe.random();
+        system.ships.push(ps);
+        coords = system.randomUnoccupiedSpace(system.map);
+        ps.xCoord = coords[0];
+        ps.yCoord = coords[1];
+        ps.xMoment = randomNumber(-2,2);
+        ps.yMoment = randomNumber(-2,2);
+        ps.xCursor = ps.xMoment;
+        ps.yCursor = ps.yMoment;
+        ps.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
+        system.bgm.play();
 
-      message.text = "Hyperspace jump successful...warp core recharging.";
-      playerTurn();
+        message.text = "Hyperspace jump successful...warp core recharging.";
+      }
 			break;
 	}
 
