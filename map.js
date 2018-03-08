@@ -92,6 +92,51 @@ drawFiringArc = function(ship, weapon) {
   });
 }
 
+canBeHitByWeapon = function(ship, weapon, target) {
+  if (freeDiagonalDistance([ship.xCoord, ship.yCoord], [target.xCoord, target.yCoord]) > weapon.range)
+    return false;
+  return shipInFiringArc(ship, weapon, target);
+}
+
+shipInFiringArc = function(ship, weapon, target) {
+  if (ship.xCoord == target.xCoord && ship.yCoord == target.yCoord)
+    return false; //can't hit someone right on top of you
+  let octant = getFiringOctant(ship.facing, weapon.mount);
+  // doing this based off the direction vector left as an exercise for the reader
+  switch (octant) {
+    case SE:
+      return target.yCoord >= ship.yCoord && target.xCoord >= ship.xCoord;
+    case SW:
+      return target.yCoord >= ship.yCoord && target.xCoord <= ship.xCoord;
+    case NW:
+      return target.yCoord <= ship.yCoord && target.xCoord <= ship.xCoord;
+    case NE:
+      return target.yCoord <= ship.yCoord && target.xCoord >= ship.xCoord;
+    case EAST:
+      return target.xCoord > ship.xCoord && Math.abs(target.yCoord - ship.yCoord) <= target.xCoord - ship.xCoord;
+    case WEST:
+      return target.xCoord < ship.xCoord && Math.abs(target.yCoord - ship.yCoord) <= ship.xCoord - target.xCoord;
+    case NORTH:
+      return target.yCoord < ship.yCoord && Math.abs(target.xCoord - ship.xCoord) <= ship.yCoord - target.yCoord;
+    case SOUTH:
+      return target.yCoord > ship.yCoord && Math.abs(target.xCoord - ship.xCoord) <= target.yCoord - ship.yCoord;
+  }
+  return true;
+}
+
+selectNextClosestTarget = function(ship, weapon) {
+  let potentialTargets = _.filter(system.ships, (t) => { return canBeHitByWeapon(ship, weapon, t) });
+  let sortedTargets = _.sortBy(potentialTargets, [(t) => { return freeDiagonalDistance([ship.xCoord, ship.yCoord], [t.xCoord, t.yCoord])}, 'name']);
+  if (!currentlyHighlightedObject) {
+    currentlyHighlightedObject = sortedTargets[0];
+    return;
+  }
+  let newIndex = sortedTargets.indexOf(currentlyHighlightedObject) + 1;
+  if (newIndex >= sortedTargets.length)
+    newIndex = 0;
+  currentlyHighlightedObject = sortedTargets[newIndex];
+}
+
 drawAll = function(recursion)
 {
 	for (var x = 0; x < MAP_WIDTH; x++) {
@@ -171,7 +216,7 @@ init = function()
 
 	drawAll(true);
   system.bgm.play();
-  
+
   getAcknowledgement(`Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
 
 }
@@ -179,15 +224,15 @@ init = function()
 displayHelp = function(){
   getAcknowledgement(
   "STARSHIP CONTROLS\n\n" +
-  "h        show this help dialog\n" +
+  "h, ?     show this help dialog\n" +
   "arrows   change trajectory\n" +
   "space    move\n" +
   "j        jump to hyperspace\n" +
   "w        toggle weapons\n" +
-  "f        fire weapons\n" +
-  "esc      deselect weapons\n\n" +
+  "f        fire weapon\n" +
+  "esc      deselect weapon\n\n" +
   "To explore a planet, move on top of it. Your starship will be damaged if you are moving too fast when you land!",
-  playerTurn); 
+  playerTurn);
 }
 
 moveCursor =  function(direction) {
@@ -257,7 +302,7 @@ advanceTurn =  function() {
 
     s.regenerateSystems();
   });
-  
+
   system.ships.forEach((s) => {
     if (!s.player) {
       ps = getPlayerShip(system.ships);
@@ -286,7 +331,7 @@ resolvePendingEvents = function() {
       return;
     }
   }
-  
+
   for (var count = 0; count < global_pending_events.length; count++) {
     let e = global_pending_events[count];
     e.time_until = e.time_until - 1;
@@ -299,7 +344,7 @@ resolvePendingEvents = function() {
       return;
     }
   }
-  
+
   playerTurn();
 }
 
@@ -363,8 +408,8 @@ selectDirection.handleEvent = function(event) {
         playerTurn();
       }
 			break;
-		case 72:
-			//h
+		case 72: //h
+    case 191: //?
       window.removeEventListener('keydown', this);
 			displayHelp();
 			break;
@@ -408,8 +453,13 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 87:
 			//w, toggle weapon
-      getPlayerShip(system.ships).toggleSelectedWeapon();
-			window.removeEventListener('keydown', this);
+      window.removeEventListener('keydown', this);
+      var ps = getPlayerShip(system.ships);
+      ps.toggleSelectedWeapon();
+      var pw = _.find(ps.weapons, (w) => { return ps.canFireWeapon(w) && w.selected });
+      if (pw) {
+        selectNextClosestTarget(ps, pw);
+      }
       playerTurn();
 			break;
     case 70:
@@ -424,10 +474,21 @@ selectDirection.handleEvent = function(event) {
 			window.removeEventListener('keydown', this);
       playerTurn();
 			break;
+    case 9:
+			//tab, cycle targets
+      event.preventDefault();
+      var ps = getPlayerShip(system.ships);
+      var pw = _.find(ps.weapons, (w) => { return ps.canFireWeapon(w) && w.selected });
+      if (pw) {
+        selectNextClosestTarget(ps, pw);
+  			window.removeEventListener('keydown', this);
+        playerTurn();
+      }
+			break;
     case 74:
 			//j, jump to hyperspace
 			window.removeEventListener('keydown', this);
-      let ps = getPlayerShip(system.ships);
+      var ps = getPlayerShip(system.ships);
       system.removeShip(ps);
       system.bgm.pause();
       system = universe.random();

@@ -214,7 +214,7 @@ Ship.prototype = {
     }
   },
   fireWeapon: function(weapon) {
-    if (weapon.readyToFire && this.energy >= weapon.energy) {
+    if (this.canFireWeapon(weapon)) {
       console.log(`firing ${weapon.name}`);
       this.energy -= weapon.energy;
       weapon.readyToFire = false;
@@ -223,4 +223,10 @@ Ship.prototype = {
       console.log(`${this.name} does not have enough energy to fire ${weapon.name}`);
     }
   },
+  canFireWeapon: function(weapon) {
+    return weapon.readyToFire && this.energy >= weapon.energy;
+  },
+  activeWeapon: function() {
+    return _.find(this.weapons, (w) => { return this.canFireWeapon(w) && this.selected });
+  }
 }

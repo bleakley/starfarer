@@ -48,10 +48,10 @@ function System () {
 
   this.map = [];
   this.generateMap();
-  
+
   this.ships = [];
-  
-  var n_ships = randomNumber(0, 2);
+
+  var n_ships = randomNumber(5, 10);
   for (var count = 0; count < n_ships; count++) {
     let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], 5, 3, 10);
     this.ships.push(s);
@@ -67,7 +67,7 @@ function System () {
     s.event = new SpaceStationEvent();
     this.ships.push(s);
   }
-  
+
   this.pending_events = [];
 
   this.bgm = bgms.random();
