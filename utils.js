@@ -228,6 +228,10 @@ warp = function (ship, source, destination) {
   ship.xCursor = ps.xMoment;
   ship.yCursor = ps.yMoment;
   ship.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
+  if (ship.player) {
+    source.bgm.pause();
+    destination.bgm.play();
+  }
 }
 
 randomLargeBodyName = function () {

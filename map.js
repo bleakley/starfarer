@@ -9,6 +9,7 @@ ps.player = true;
 ps.powerDown();
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
+universe.systems[0].bgm = bgm2;
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
