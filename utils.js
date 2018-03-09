@@ -229,3 +229,9 @@ warp = function (ship, source, destination) {
   ship.yCursor = ps.yMoment;
   ship.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
 }
+
+randomLargeBodyName = function () {
+  var name = LARGE_BODY_NAMES.random();
+  LARGE_BODY_NAMES.splice(LARGE_BODY_NAMES.indexOf(name),1);
+  return name;
+}

@@ -13,7 +13,8 @@ ArrivalEvent.prototype = {
 }
 
 function TempleEvent () {
-	this.message = "Your landing party searches a crumbling Precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as 8 days.";
+  this.arrival_delay = randomNumber(4,12);
+	this.message = `Your landing party searches a crumbling Precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as ${this.arrival_delay} days.`;
 	this.time_until = 0;
 }
 
@@ -21,7 +22,7 @@ TempleEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
     let system = getPlayerSystem(universe);
-    let anomaly = new Ship([32,17], [0,0], 1, 0, 0);
+    let anomaly = new Ship(system.randomUnoccupiedSpace(), [0,0], 1, 0, 0);
     anomaly.char = "A";
     anomaly.name = "anomaly X72-C";
     anomaly.event = new AnomalyCollapseEvent(anomaly);
@@ -30,7 +31,7 @@ TempleEvent.prototype = {
     
     var ship = new Ship(system.randomUnoccupiedSpace(), [2,1], 5, 3, 10);
     arrival = new ArrivalEvent(ship);
-    arrival.time_until = 8;
+    arrival.time_until = this.arrival_delay;
     system.pending_events.push(arrival);
 	}
 }
