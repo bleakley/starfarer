@@ -458,12 +458,16 @@ selectDirection.handleEvent = function(event) {
       if (!currentlyHighlightedObject.canBeHitByWeapon(ps, pw))
         break;
 
-      ps.fireAt(pw, currentlyHighlightedObject);
+      let hit = ps.fireAt(pw, currentlyHighlightedObject);
       window.removeEventListener('keydown', this);
       drawline(ps.xCoord,ps.yCoord,currentlyHighlightedObject.xCoord,currentlyHighlightedObject.yCoord, (x,y) => {
         mapDisplay.draw(x, y, pw.symbol, pw.color);
       });
       mapDisplay.draw(ps.xCoord, ps.yCoord, ps.char, "#FFF");
+      if (hit)
+        mapDisplay.draw(currentlyHighlightedObject.xCoord, currentlyHighlightedObject.yCoord, pw.symbol, pw.color, pw.color);
+      else
+        mapDisplay.draw(currentlyHighlightedObject.xCoord, currentlyHighlightedObject.yCoord, currentlyHighlightedObject.char, "#FFF");
       setTimeout(function() {
   			playerTurn();
   		}, 1000)
