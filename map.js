@@ -26,16 +26,28 @@ clearPopup = function()
 }
 
 drawBodyHighlight = function(p) {
-  for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
-    mapDisplay.draw(x, p.yCoord - p.radius - 1, "#", "#0E4");
-    mapDisplay.draw(x, p.yCoord + p.radius, "#", "#0E4");
+  let color = "#0E4";
+  if (p.radius) {
+    for (var x = p.xCoord - p.radius - 1; x < p.xCoord + p.radius + 1; x++) {
+      mapDisplay.draw(x, p.yCoord - p.radius - 1, "#", color);
+      mapDisplay.draw(x, p.yCoord + p.radius, "#", color);
+    }
+    for (var y = p.yCoord - p.radius - 1; y < p.yCoord + p.radius + 1; y++) {
+      mapDisplay.draw(p.xCoord - p.radius - 1, y, "#", color);
+      mapDisplay.draw(p.xCoord + p.radius, y, "#", color);
+    }
+    mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius - 1, `%c{${color}}${p.name}`);
+    mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius, `%c{${color}}MASS: ${p.mass} x10^28 kg`);
+  } else {
+    for (let x = p.xCoord - 1; x <= p.xCoord + 1; x++) {
+      mapDisplay.draw(x, p.yCoord - 1, "#", color);
+      mapDisplay.draw(x, p.yCoord + 1, "#", color);
+    }
+    mapDisplay.draw(p.xCoord - 1, p.yCoord, "#", color);
+    mapDisplay.draw(p.xCoord + 1, p.yCoord, "#", color);
+    mapDisplay.drawText(p.xCoord + 2,  p.yCoord - 1, `%c{${color}}${p.name}`);
+    mapDisplay.drawText(p.xCoord + 2,  p.yCoord + 0, `%c{${color}}MASS: ${p.mass} x10^0 kg`);
   }
-  for (var y = p.yCoord - p.radius - 1; y < p.yCoord + p.radius + 1; y++) {
-    mapDisplay.draw(p.xCoord - p.radius - 1, y, "#", "#0E4");
-    mapDisplay.draw(p.xCoord + p.radius, y, "#", "#0E4");
-  }
-  mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius - 1, `%c{#0E4}${p.name}`);
-  mapDisplay.drawText(p.xCoord + p.radius + 2,  p.yCoord - p.radius, `%c{#0E4}MASS: ${p.mass} x10^28 kg`);
 }
 
 drawShipHighlight = function(s) {
@@ -255,11 +267,12 @@ advanceTurn =  function() {
           s.toBeDisintegrated = true;
       }
 
-      if (s.player) {
+      if (s.player && !s.destroyed) {
         p = system.map[s.xCoord][s.yCoord].body
         if(p!=null) {
           if(p.events!=null && p.events.length > 0) {
-            system.pending_events.push(p.events.pop());
+            if(s.speed() == 0 || !TERRAIN_EFFECTS[system.map[s.xCoord][s.yCoord].terrain].stopForEvent)
+              system.pending_events.push(p.events.pop());
           }
         }
       }

@@ -29,6 +29,13 @@ randomOption = function(options) {
   return options[0].opt;
 }
 
+getAnomalyName = function() {
+  let num = randomNumber(0,99).toString().padStart(2, '0');
+  let goodScrabbleLetter = ['X', 'Q', 'Z', 'J', 'K'].random();
+  let badScrabbleLetter = ['A', 'B', 'C', 'D', 'E'].random()
+  return `Anomaly ${goodScrabbleLetter}${num}-${badScrabbleLetter}`;
+}
+
 getEightWayDirection = function(x, y) {
   if (x == 0) {
     if (y > 0)

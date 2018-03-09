@@ -1,6 +1,6 @@
 function Universe () {
   this.systems = [];
-  
+
   for (var count = 0; count < N_STAR_SYSTEMS; count++) {
     this.systems.push(new System());
   }
@@ -29,9 +29,9 @@ function Universe () {
       p.events = [new TempleClueEvent(this.orbitron_system, this.orbitron_planet)];
     }
   }
-  
+
   this.build_connections();
-  
+
   this.systems.forEach( (sys) => {
     sys.planets.forEach( (p) => {
       if (p.class == BODY_PLANET_BARREN || p.class == BODY_PLANET_TERRAN || p.class == BODY_PLANET_FROZEN)
@@ -42,12 +42,12 @@ function Universe () {
   });
 }
 
-Universe.prototype = {  
+Universe.prototype = {
   build_connections: function () {
     var disconnected_systems = this.systems.slice();
     disconnected_systems.splice(0, 1);
     var connected_systems = [this.systems[0]];
-    
+
     while (disconnected_systems.length > 0) {
       var source = connected_systems.random();
       var destination = disconnected_systems[disconnected_systems.length-1]
@@ -56,7 +56,7 @@ Universe.prototype = {
           case 1:
             if (source.planets.length > 0) {
               let p = source.planets.random();
-               if (p.class == BODY_PLANET_BARREN || p.class == BODY_PLANET_TERRAN || p.class ==    BODY_PLANET_FROZEN) {
+               if (p.class == BODY_PLANET_BARREN || p.class == BODY_PLANET_TERRAN || p.class == BODY_PLANET_FROZEN) {
                  if (p.events.length == 0) {
                   p.events.push(new TempleFindCoordinatesEvent(destination))
                   connected_systems.push(destination);
@@ -66,16 +66,24 @@ Universe.prototype = {
             }
             break;
           case 2:
-            let anomaly = new Ship(source.randomUnoccupiedSpace(), [0,0], 1, 0, 0);
-            anomaly.char = "A";
-            anomaly.name = "unknown anomaly";
-            anomaly.event = new AnomalyWarpEvent(destination);
-            source.ships.push(anomaly);
+            let location = source.randomUnoccupiedSpace();
+            let anomaly = {
+              name: getAnomalyName(),
+              xCoord: location[0],
+              yCoord: location[1],
+              radius: 0,
+              class: BODY_ANOMALY,
+              mass: -1,
+              events: [new AnomalyWarpEvent(destination)]
+            }
+            source.planets.push(anomaly);
+            source.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
+            source.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
             connected_systems.push(destination);
             disconnected_systems.pop();
             console.log(source,destination)
-      }    
+      }
     }
-  
+
   },
 }

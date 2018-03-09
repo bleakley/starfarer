@@ -22,14 +22,25 @@ TempleEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
     let system = getPlayerSystem(universe);
-    let anomaly = new Ship(system.randomUnoccupiedSpace(), [0,0], 1, 0, 0);
-    anomaly.char = "A";
-    anomaly.name = "anomaly X72-C";
-    anomaly.event = new AnomalyCollapseEvent(anomaly);
-    system.ships.push(anomaly);
+
+		let location = system.randomUnoccupiedSpace();
+		let anomaly = {
+			name: getAnomalyName(),
+			xCoord: location[0],
+			yCoord: location[1],
+			radius: 0,
+			class: BODY_ANOMALY,
+			mass: -1,
+			events: []
+		}
+		anomaly.events.push(new AnomalyCollapseEvent(anomaly));
+		system.planets.push(anomaly);
+		system.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
+		system.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
+
     getAcknowledgement(this.message, callbackFunction);
-    
-    var ship = new Ship(system.randomUnoccupiedSpace(), [2,1], 5, 3, 10);
+
+    var ship = new Ship(this.randomUnoccupiedSpace(), [2,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN)
     arrival = new ArrivalEvent(ship);
     arrival.time_until = this.arrival_delay;
     system.pending_events.push(arrival);
@@ -86,7 +97,7 @@ FindOrbitronEvent.prototype = {
 
 
 function TempleClueEvent (orbitron_system, orbitron_planet) {
-  
+
   switch(randomNumber(1,3)) {
       case 1:
         this.message = `Amongst the crumbling ruins of a Precursor temple, your landing party finds a damaged digicodex. A crude reconstruction of the glyphs suggests that the Orbitron Device resides in a system that contains ${orbitron_system.planets.length} bodies.`;
@@ -164,4 +175,3 @@ AnomalyWarpEvent.prototype = {
     getAcknowledgement(this.message, callbackFunction);
 	}
 }
-

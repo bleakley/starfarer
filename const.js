@@ -300,8 +300,10 @@ TILES[TERRAIN_ICE] = [
 TILES[TERRAIN_BLACK_HOLE] = [
 		{prob: 100, opt:  {character : " ", color : "#000", backgroundColor : "#000"}}];
 TILES[TERRAIN_ANOMALY] = [
-		{prob: 95, opt:  {character : " ", color : "#99F", backgroundColor : "#33C"}},
-		{prob: 5, opt:  {character : "?", color : "#99F", backgroundColor : "#33C"}}];
+		{prob: 55, opt:  {character : " ", color : "#99F", backgroundColor : "#000"}},
+		{prob: 15, opt:  {character : "?", color : "purple", backgroundColor : "#000"}},
+		{prob: 15, opt:  {character : "?", color : "green", backgroundColor : "#000"}},
+		{prob: 15, opt:  {character : "?", color : "blue", backgroundColor : "#000"}}];
 TILES[TERRAIN_QUASAR] = [
 		{prob: 51, opt:  {character : "~", color : "#73A", backgroundColor : "#CEF"}},
 		{prob: 49, opt:  {character : "~", color : "#CEF", backgroundColor : "#73A"}}];
@@ -334,35 +336,48 @@ TERRAIN_EFFECTS[TERRAIN_STAR_YELLOW] = {
 	damage: 10,
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
-	disintegrateOnDeath: true
+	disintegrateOnDeath: true,
+	stopForEvent: false
 };
 TERRAIN_EFFECTS[TERRAIN_QUASAR] = {
 	minSpeedForDamage: 0,
 	damage: 10,
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
-	disintegrateOnDeath: true
+	disintegrateOnDeath: true,
+	stopForEvent: false
 };
 TERRAIN_EFFECTS[TERRAIN_BLACK_HOLE] = {
 	minSpeedForDamage: 0,
 	damage: 100,
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
-	disintegrateOnDeath: true
+	disintegrateOnDeath: true,
+	stopForEvent: false
 };
 TERRAIN_EFFECTS[TERRAIN_CORONA_YELLOW] = {
 	minSpeedForDamage: 0,
 	damage: 3,
 	damageType: DAMAGE_ION,
 	stopOnDeath: false,
-	disintegrateOnDeath: false
+	disintegrateOnDeath: false,
+	stopForEvent: false
 };
 TERRAIN_EFFECTS[TERRAIN_QUASAR_JET] = {
 	minSpeedForDamage: 0,
 	damage: 10,
 	damageType: DAMAGE_ION,
 	stopOnDeath: false,
-	disintegrateOnDeath: false
+	disintegrateOnDeath: false,
+	stopForEvent: false
+};
+TERRAIN_EFFECTS[TERRAIN_ANOMALY] = {
+	minSpeedForDamage: 0,
+	damage: 2,
+	damageType: DAMAGE_ION,
+	stopOnDeath: false,
+	disintegrateOnDeath: false,
+	stopForEvent: false
 };
 
 const terrestialTerrain = {
@@ -370,7 +385,8 @@ const terrestialTerrain = {
 	damage: 2,
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
-	disintegrateOnDeath: false
+	disintegrateOnDeath: false,
+	stopForEvent: true
 };
 
 const harmlessTerrain = {
@@ -378,13 +394,13 @@ const harmlessTerrain = {
 	damage: 0,
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: false,
-	disintegrateOnDeath: false
+	disintegrateOnDeath: false,
+	stopForEvent: false
 };
 
 TERRAIN_EFFECTS[TERRAIN_NONE_EMPTY] = harmlessTerrain;
 TERRAIN_EFFECTS[TERRAIN_NONE_DIM_STAR] = harmlessTerrain;
 TERRAIN_EFFECTS[TERRAIN_NONE_BRIGHT_STAR] = harmlessTerrain;
-TERRAIN_EFFECTS[TERRAIN_ANOMALY] = harmlessTerrain;
 TERRAIN_EFFECTS[TERRAIN_BARREN_1] = terrestialTerrain;
 TERRAIN_EFFECTS[TERRAIN_BARREN_2] = terrestialTerrain;
 TERRAIN_EFFECTS[TERRAIN_BARREN_3] = terrestialTerrain;

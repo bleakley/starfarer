@@ -157,24 +157,29 @@ System.prototype = {
         p.name = 'QUASAR';
       }
 
-      console.log(p);
-      if (_.has(JETS, p.class)) {
-        drawJet(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
-          this.map[x][y].terrain = randomOption(JETS[p.class]);
+      if (p.radius == 0) {
+        this.map[p.xCoord][p.yCoord].body = p;
+        this.map[p.xCoord][p.yCoord].terrain = randomOption(TERRAINS[p.class]);
+        this.map[p.xCoord][p.yCoord].forbiddenToAI = true;
+      } else {
+        if (_.has(JETS, p.class)) {
+          drawJet(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
+            this.map[x][y].terrain = randomOption(JETS[p.class]);
+            this.map[x][y].forbiddenToAI = true;
+          });
+        }
+        if (_.has(CORONAS, p.class)) {
+          drawSquareBody(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
+            this.map[x][y].terrain = randomOption(CORONAS[p.class]);
+            this.map[x][y].forbiddenToAI = true;
+          });
+        }
+        drawPseudoSphericalBody(p.xCoord, p.yCoord, p.radius, (x, y) => {
+          this.map[x][y].body = p;
+          this.map[x][y].terrain = randomOption(TERRAINS[p.class]);
           this.map[x][y].forbiddenToAI = true;
         });
       }
-      if (_.has(CORONAS, p.class)) {
-        drawSquareBody(p.xCoord, p.yCoord, p.radius+1, (x, y) => {
-          this.map[x][y].terrain = randomOption(CORONAS[p.class]);
-          this.map[x][y].forbiddenToAI = true;
-        });
-      }
-      drawPseudoSphericalBody(p.xCoord, p.yCoord, p.radius, (x, y) => {
-        this.map[x][y].body = p;
-        this.map[x][y].terrain = randomOption(TERRAINS[p.class]);
-        this.map[x][y].forbiddenToAI = true;
-      });
     });
 
   },
