@@ -68,7 +68,9 @@ function System () {
     s.char = "S";
     s.maxSpeed = 0;
     s.credits = 100;
-    s.name = "Space Station KL-72X";
+    s.followPlayer = false;
+    s.attackPlayer = false;
+    s.name = "Space Station KL-72X"
     s.event = new SpaceStationEvent();
     s.attackPlayer = false;
     this.ships.push(s);

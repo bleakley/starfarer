@@ -9,8 +9,25 @@ function Weapon(name, range, damage, accuracy, energy, damageType)
   this.readyToFire = false;
   this.mount = MOUNT_FWD;
   this.selected = false;
-  this.symbol = "\u2022";
-  this.color = "red";
+  this.makeNeutralsHostile = true;
+  switch (damageType) {
+    case DAMAGE_NORMAL:
+      this.symbol = "\u2022";
+      this.color = "red";
+      break;
+    case DAMAGE_ION:
+      this.symbol = "\u2022";
+      this.color = "#00F";
+      break;
+    case DAMAGE_TRACTOR:
+      this.symbol = "\u25CB";
+      this.color = "green";
+      break;
+    case DAMAGE_NEUTRON:
+      this.symbol = "\u25CB";
+      this.color = "white";
+      break;
+  }
 }
 
 Weapon.prototype = {
