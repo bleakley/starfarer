@@ -126,7 +126,11 @@ function System () {
   var n_stations = randomNumber(0, 1);
   for (var count = 0; count < n_stations; count++) {
     let s = new Ship(this.randomUnoccupiedSpace(), [0,0], SHIP_TYPE_STATION, SHIP_FLAG_MERCHANT);
-    s.event = new SpaceStationEvent();
+    if (percentChance(20)) {
+      s.event = new SpaceStationEvent();
+    } else {
+      s.event = new ShopEvent();
+    }
     this.ships.push(s);
   }
 

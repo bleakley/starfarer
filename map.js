@@ -7,9 +7,15 @@ let ps = new Ship([20, 10], [1,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_PLAYER);
 ps.name = `S.S. Profundity`;
 ps.player = true;
 ps.char = '@';
+ps.hullMax = 15;
+ps.hull = 15;
+ps.credits = 25;
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
+
+var repairCost = 1;
+var reactorUpgradeCost = 10;
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
@@ -164,6 +170,7 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
+  sideBarDisplay.drawText(2, 7, `Crew: ${ps.crew} (${ps.minCrew}-${ps.maxCrew})`);
   for (let i = 0; i < ps.weapons.length; i++) {
     let w = ps.weapons[i];
     let color = '#0E4';
@@ -171,9 +178,9 @@ drawSideBar = function()
       color = 'dimgrey';
     else if (w.selected)
       color = 'yellow';
-    sideBarDisplay.drawText(2, 8+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
+    sideBarDisplay.drawText(2, 9+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
   }
-	sideBarDisplay.drawText(2, 10 + ps.weapons.length, message.text);
+	sideBarDisplay.drawText(2, 11 + ps.weapons.length, message.text);
 }
 
 init = function()
