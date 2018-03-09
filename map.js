@@ -241,8 +241,20 @@ advanceTurn =  function() {
      return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
   });
 
+  let renderAttacks = false;
+
   system.ships.forEach((s) => {
     if (!s.player) {
+
+      if (s.attackPlayer) {
+        s.weapons.forEach((w) => {
+          if (s.canFireWeapon(w) && ps.canBeHitByWeapon(s, w)) {
+            fire(s, ps, w, Function.prototype);
+            renderAttacks = true;
+          }
+        });
+      }
+
       s.plotBetterCourse(system.map, astar);
     }
     let maneuverMagnitude = freeDiagonalDistance([s.xCursor, s.yCursor], [s.xMoment, s.yMoment]);
@@ -299,7 +311,11 @@ advanceTurn =  function() {
   });
 
   turn++;
-  resolvePendingEvents();
+  if (renderAttacks) {
+    setTimeout(resolvePendingEvents, 1000);
+  } else {
+   resolvePendingEvents();
+  }
 }
 
 resolvePendingEvents = function() {
@@ -331,6 +347,22 @@ resolvePendingEvents = function() {
   }
 
   playerTurn();
+}
+
+fire = function(attacker, target, weapon, callback) {
+  let hit = attacker.fireAt(weapon, target);
+
+  drawline(attacker.xCoord, attacker.yCoord, target.xCoord, target.yCoord, (x,y) => {
+    mapDisplay.draw(x, y, weapon.symbol, weapon.color);
+  });
+  mapDisplay.draw(attacker.xCoord, attacker.yCoord, attacker.char, "#FFF");
+  if (hit)
+    mapDisplay.draw(target.xCoord, target.yCoord, weapon.symbol, weapon.color, weapon.color);
+  else
+    mapDisplay.draw(target.xCoord, target.yCoord, target.char, "#FFF");
+  setTimeout(function() {
+    callback();
+  }, 1000);
 }
 
 highlightObjects.handleEvent = function(event) {
@@ -458,19 +490,9 @@ selectDirection.handleEvent = function(event) {
       if (!currentlyHighlightedObject.canBeHitByWeapon(ps, pw))
         break;
 
-      let hit = ps.fireAt(pw, currentlyHighlightedObject);
       window.removeEventListener('keydown', this);
-      drawline(ps.xCoord,ps.yCoord,currentlyHighlightedObject.xCoord,currentlyHighlightedObject.yCoord, (x,y) => {
-        mapDisplay.draw(x, y, pw.symbol, pw.color);
-      });
-      mapDisplay.draw(ps.xCoord, ps.yCoord, ps.char, "#FFF");
-      if (hit)
-        mapDisplay.draw(currentlyHighlightedObject.xCoord, currentlyHighlightedObject.yCoord, pw.symbol, pw.color, pw.color);
-      else
-        mapDisplay.draw(currentlyHighlightedObject.xCoord, currentlyHighlightedObject.yCoord, currentlyHighlightedObject.char, "#FFF");
-      setTimeout(function() {
-  			playerTurn();
-  		}, 1000)
+
+      fire(ps, currentlyHighlightedObject, pw, playerTurn);
 
 			break;
     case 27:

@@ -36,7 +36,7 @@ function Ship(coords, momentum, hull, shields, energy)
   this.mindControlByPlayerDuration = 0;
   this.mindControlByEnemyDuration = 0;
   this.followPlayer = true;
-  this.attackPlayer = false;
+  this.attackPlayer = true;
   this.event = null; // Event triggered by investigating this ship
 }
 
