@@ -41,7 +41,7 @@ function System () {
         radius: r,
         class: randomOption(SMALL_BODIES),
         mass: randomNumber(1,4),
-        events: [new TempleEvent()]
+        events: []
       });
     }
   }
@@ -52,7 +52,7 @@ function System () {
 
   this.ships = [];
 
-  var n_ships = randomNumber(5, 10);
+  var n_ships = randomNumber(0, 2);
   for (var count = 0; count < n_ships; count++) {
     let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], 5, 3, 10);
     this.ships.push(s);

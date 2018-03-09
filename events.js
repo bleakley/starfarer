@@ -13,7 +13,7 @@ ArrivalEvent.prototype = {
 }
 
 function TempleEvent () {
-	this.message = "Your landing party searches a crumbling Precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as 4 days.";
+	this.message = "Your landing party searches a crumbling Precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as 8 days.";
 	this.time_until = 0;
 }
 
@@ -29,7 +29,7 @@ TempleEvent.prototype = {
     
     var ship = new Ship([60,40], [2,1], 5, 3, 10);
     arrival = new ArrivalEvent(ship);
-    arrival.time_until = 4;
+    arrival.time_until = 8;
     system.pending_events.push(arrival);
 	}
 }
@@ -114,6 +114,46 @@ function SpaceStationEvent () {
 
 SpaceStationEvent.prototype = {
 	action: function (system, callbackFunction) {
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
+
+function TempleFindCoordinatesEvent (destination) {
+	this.message = `Your landing party finds a number of fascinating glyphs and diagrams inscribed in the wall of a Precursor temple. Your tech specialist recognizes the diagrams as a star map, and is able to determine the hyperspace coordinates of the ${destination.name} star system.`;
+	this.time_until = 0;
+  this.destination = destination;
+}
+
+TempleFindCoordinatesEvent.prototype = {
+
+	action: function (system, callbackFunction) {
+    ps = getPlayerShip(system.ships);
+    if (ps.known_systems.indexOf(this.destination) > -1) {
+      this.message = `Your landing party finds a number of fascinating glyphs and diagrams inscribed in the wall of a Precursor temple. The diagrams appear to depict the ${destination.name} star system, whose hyperspace coordinates your navigator had previously recorded.`
+    }
+    else{
+      ps.known_systems.push(this.destination);
+    }
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
+
+function AnomalyWarpEvent (destination) {
+	this.message = `As your ship approaches the anomaly, you feel feel for a brief moment as if you've been turned upside down. Your navigator reports that you now are in the ${destination.name} star system.`;
+	this.time_until = 0;
+  this.destination = destination;
+}
+
+AnomalyWarpEvent.prototype = {
+
+	action: function (system, callbackFunction) {
+    ps = getPlayerShip(system.ships);
+    if (ps.known_systems.indexOf(this.destination) == -1) {
+      ps.known_systems.push(this.destination);
+      this.message = this.message + " Your navigator has added the hyperspace coordinates of this system to her system log."
+    }
     getAcknowledgement(this.message, callbackFunction);
 	}
 }

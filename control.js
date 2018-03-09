@@ -64,6 +64,8 @@ getAcknowledgement = function(string, callbackFunction)
     event.preventDefault();
 		window.removeEventListener('keydown', cf);
 		clearPopup();
+    console.log('callback');
+    console.log(callbackFunction);
 		callbackFunction();
 	};
 
