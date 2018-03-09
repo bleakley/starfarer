@@ -80,6 +80,19 @@ drawShipHighlight = function(s) {
   mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
 
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord - 1, `%c{${color}}${s.name}`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 0, `%c{${color}}Hull: ${s.hull}/${s.hullMax}`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 1, `%c{${color}}Shields: ${s.shields}/${s.shieldsMax}`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 2, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
+  if (s.player)
+    return;
+  var ps = getPlayerShip(system.ships);
+  var pw = ps.activeWeapon();
+  if (!pw)
+    return;
+  let cd = ps.getChanceToHit(pw, s);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 3, `%c{${color}} ${cd.prob}% to hit`);
+  for (let j = 0; j < cd.modifiers.length; j++)
+    mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 4 + j, `%c{${color}}${cd.modifiers[j]}`);
 }
 
 drawFiringArc = function(ship, weapon) {
@@ -93,40 +106,8 @@ drawFiringArc = function(ship, weapon) {
   });
 }
 
-canBeHitByWeapon = function(ship, weapon, target) {
-  if (freeDiagonalDistance([ship.xCoord, ship.yCoord], [target.xCoord, target.yCoord]) > weapon.range)
-    return false;
-  return shipInFiringArc(ship, weapon, target);
-}
-
-shipInFiringArc = function(ship, weapon, target) {
-  if (ship.xCoord == target.xCoord && ship.yCoord == target.yCoord)
-    return false; //can't hit someone right on top of you
-  let octant = getFiringOctant(ship.facing, weapon.mount);
-  // doing this based off the direction vector left as an exercise for the reader
-  switch (octant) {
-    case SE:
-      return target.yCoord >= ship.yCoord && target.xCoord >= ship.xCoord;
-    case SW:
-      return target.yCoord >= ship.yCoord && target.xCoord <= ship.xCoord;
-    case NW:
-      return target.yCoord <= ship.yCoord && target.xCoord <= ship.xCoord;
-    case NE:
-      return target.yCoord <= ship.yCoord && target.xCoord >= ship.xCoord;
-    case EAST:
-      return target.xCoord > ship.xCoord && Math.abs(target.yCoord - ship.yCoord) <= target.xCoord - ship.xCoord;
-    case WEST:
-      return target.xCoord < ship.xCoord && Math.abs(target.yCoord - ship.yCoord) <= ship.xCoord - target.xCoord;
-    case NORTH:
-      return target.yCoord < ship.yCoord && Math.abs(target.xCoord - ship.xCoord) <= ship.yCoord - target.yCoord;
-    case SOUTH:
-      return target.yCoord > ship.yCoord && Math.abs(target.xCoord - ship.xCoord) <= target.yCoord - ship.yCoord;
-  }
-  return true;
-}
-
 selectNextClosestTarget = function(ship, weapon) {
-  let potentialTargets = _.filter(system.ships, (t) => { return canBeHitByWeapon(ship, weapon, t) });
+  let potentialTargets = _.filter(system.ships, (t) => { return t.canBeHitByWeapon(ship, weapon) });
   let sortedTargets = _.sortBy(potentialTargets, [(t) => { return freeDiagonalDistance([ship.xCoord, ship.yCoord], [t.xCoord, t.yCoord])}, 'name']);
   if (!currentlyHighlightedObject) {
     currentlyHighlightedObject = sortedTargets[0];
@@ -159,10 +140,6 @@ drawAll = function(recursion)
 
   system.ships.forEach((s) => {
 
-    if (s == currentlyHighlightedObject) {
-      drawShipHighlight(s);
-    }
-
     let color = s.getHighlightColor();
     if(!s.destroyed) {
       if (s.player)
@@ -176,6 +153,13 @@ drawAll = function(recursion)
     }
     mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
 
+  });
+
+  system.ships.forEach((s) => {
+
+    if (s == currentlyHighlightedObject) {
+      drawShipHighlight(s);
+    }
   });
 
   drawSideBar();
@@ -231,7 +215,8 @@ displayHelp = function(){
   "j        jump to hyperspace\n" +
   "w        toggle weapons\n" +
   "f        fire weapon\n" +
-  "esc      deselect weapon\n\n" +
+  "esc      deselect weapon\n" +
+  "tab      cycle through available targets\n\n" +
   "To explore a planet, move on top of it. Your starship will be damaged if you are moving too fast when you land!",
   playerTurn);
 }
@@ -257,8 +242,20 @@ advanceTurn =  function() {
      return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
   });
 
+  let renderAttacks = false;
+
   system.ships.forEach((s) => {
     if (!s.player) {
+
+      if (s.attackPlayer) {
+        s.weapons.forEach((w) => {
+          if (s.canFireWeapon(w) && ps.canBeHitByWeapon(s, w)) {
+            fire(s, ps, w, Function.prototype);
+            renderAttacks = true;
+          }
+        });
+      }
+
       s.plotBetterCourse(system.map, astar);
     }
     let maneuverMagnitude = freeDiagonalDistance([s.xCursor, s.yCursor], [s.xMoment, s.yMoment]);
@@ -315,7 +312,11 @@ advanceTurn =  function() {
   });
 
   turn++;
-  resolvePendingEvents();
+  if (renderAttacks) {
+    setTimeout(resolvePendingEvents, 1000);
+  } else {
+   resolvePendingEvents();
+  }
 }
 
 resolvePendingEvents = function() {
@@ -347,6 +348,22 @@ resolvePendingEvents = function() {
   }
 
   playerTurn();
+}
+
+fire = function(attacker, target, weapon, callback) {
+  let hit = attacker.fireAt(weapon, target);
+
+  drawline(attacker.xCoord, attacker.yCoord, target.xCoord, target.yCoord, (x,y) => {
+    mapDisplay.draw(x, y, weapon.symbol, weapon.color);
+  });
+  mapDisplay.draw(attacker.xCoord, attacker.yCoord, attacker.char, "#FFF");
+  if (hit)
+    mapDisplay.draw(target.xCoord, target.yCoord, weapon.symbol, weapon.color, weapon.color);
+  else
+    mapDisplay.draw(target.xCoord, target.yCoord, target.char, "#FFF");
+  setTimeout(function() {
+    callback();
+  }, 1000);
 }
 
 highlightObjects.handleEvent = function(event) {
@@ -465,9 +482,19 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 70:
 			//f, fire weapon
-      getPlayerShip(system.ships).fireSelectedWeapon();
-			window.removeEventListener('keydown', this);
-      playerTurn();
+      if (!currentlyHighlightedObject || system.ships.indexOf(currentlyHighlightedObject) == -1)
+        break;
+      var ps = getPlayerShip(system.ships);
+      var pw = ps.activeWeapon();
+      if (!pw)
+        break;
+      if (!currentlyHighlightedObject.canBeHitByWeapon(ps, pw))
+        break;
+
+      window.removeEventListener('keydown', this);
+
+      fire(ps, currentlyHighlightedObject, pw, playerTurn);
+
 			break;
     case 27:
 			//esc, deselect weapon

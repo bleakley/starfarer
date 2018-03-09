@@ -103,6 +103,14 @@ MOUNT_NAMES[MOUNT_AFT] = "AFT";
 MOUNT_NAMES[MOUNT_PORT] = "PORT";
 MOUNT_NAMES[MOUNT_TURRET] = "TRT";
 
+const DAMAGE_NORMAL = 0;
+const DAMAGE_ION = 1;
+const DAMAGE_TRACTOR = 2;
+const DAMAGE_NEUTRON = 3;
+const DAMAGE_SIPHON = 4;
+const DAMAGE_OVERLOAD = 5;
+const DAMAGE_MINDCONTROL = 6;
+
 var TILES = {};
 TILES[TERRAIN_NONE_EMPTY] = [
 		{prob: 99, opt: {character : ".", color : "#000", backgroundColor : "#000"}},

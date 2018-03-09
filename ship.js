@@ -22,12 +22,12 @@ function Ship(coords, momentum, hull, shields, energy)
   this.energy = energy;
   this.energyMax = energy;
   this.credits = 10;
-  let wep = new Weapon('Laser Cannon', 15, 3, 100, 2);
+  let wep = new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL);
   wep.mount = MOUNT_STBD;
-  let wep2 = new Weapon('Ion Cannon', 15, 4, 100, 2);
+  let wep2 = new Weapon('Ion Cannon', 15, 4, 100, DAMAGE_ION);
   wep2.ion = true;
   wep2.mount = MOUNT_PORT;
-  let wep3 = new Weapon('Tractor Beam', 10, 2, 100, 2);
+  let wep3 = new Weapon('Tractor Beam', 10, 2, 100, DAMAGE_TRACTOR);
   wep3.tractor = true;
   wep3.mount = MOUNT_FWD;
   this.weapons = [wep3, wep, wep2];
@@ -36,7 +36,7 @@ function Ship(coords, momentum, hull, shields, energy)
   this.mindControlByPlayerDuration = 0;
   this.mindControlByEnemyDuration = 0;
   this.followPlayer = true;
-  this.attackPlayer = false;
+  this.attackPlayer = true;
   this.event = null; // Event triggered by investigating this ship
   this.known_systems = [];
 }
@@ -69,7 +69,20 @@ Ship.prototype = {
     this.xCursor = 0;
     this.yCursor = 0;
   },
-	takeDamage: function(damage) {
+  takeDamage: function(damage, damageType) {
+    switch (damageType) {
+      case DAMAGE_NORMAL:
+        this.takeNormalDamage(damage);
+        break;
+      case DAMAGE_ION:
+        this.takeIonDamage(damage);
+        break;
+      case DAMAGE_TRACTOR:
+        this.takeTractorDamage(damage);
+        break;
+    }
+	},
+	takeNormalDamage: function(damage) {
 		let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
     this.shields = Math.max(0, this.shields - damage);
     this.hull = Math.max(0, this.hull - damageAfterShields);
@@ -90,8 +103,6 @@ Ship.prototype = {
     return this.destroyed;
 	},
   takeTractorDamage: function(damage) {
-    let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
-    this.shields = Math.max(0, this.shields - damage);
     if (this.shields > 0)
       return this.destroyed;
     if (this.xMoment > 0)
@@ -228,6 +239,73 @@ Ship.prototype = {
     return weapon.readyToFire && this.energy >= weapon.energy;
   },
   activeWeapon: function() {
-    return _.find(this.weapons, (w) => { return this.canFireWeapon(w) && this.selected });
+    return _.find(this.weapons, (w) => { return this.canFireWeapon(w) && w.selected; });
+  },
+  canBeHitByWeapon: function(attacker, weapon) {
+    if (freeDiagonalDistance([attacker.xCoord, attacker.yCoord], [this.xCoord, this.yCoord]) > weapon.range)
+      return false;
+    return this.inFiringArc(attacker, weapon);
+  },
+  inFiringArc: function(attacker, weapon) {
+    if (this.xCoord == attacker.xCoord && this.yCoord == attacker.yCoord)
+      return false; //can't hit someone right on top of you
+    let octant = getFiringOctant(attacker.facing, weapon.mount);
+    // doing this based off the direction vector left as an exercise for the reader
+    switch (octant) {
+      case SE:
+        return this.yCoord >= attacker.yCoord && this.xCoord >= attacker.xCoord;
+      case SW:
+        return this.yCoord >= attacker.yCoord && this.xCoord <= attacker.xCoord;
+      case NW:
+        return this.yCoord <= attacker.yCoord && this.xCoord <= attacker.xCoord;
+      case NE:
+        return this.yCoord <= attacker.yCoord && this.xCoord >= attacker.xCoord;
+      case EAST:
+        return this.xCoord > attacker.xCoord && Math.abs(this.yCoord - attacker.yCoord) <= this.xCoord - attacker.xCoord;
+      case WEST:
+        return this.xCoord < attacker.xCoord && Math.abs(this.yCoord - attacker.yCoord) <= attacker.xCoord - this.xCoord;
+      case NORTH:
+        return this.yCoord < attacker.yCoord && Math.abs(this.xCoord - attacker.xCoord) <= attacker.yCoord - this.yCoord;
+      case SOUTH:
+        return this.yCoord > attacker.yCoord && Math.abs(this.xCoord - attacker.xCoord) <= this.yCoord - attacker.yCoord;
+    }
+    return true;
+  },
+  getChanceToHit: function(weapon, target) {
+    let distance = freeDiagonalDistance([this.xCoord, this.yCoord], [target.xCoord, target.yCoord]);
+    let targetSpeed = target.speed();
+    if (distance > weapon.range) {
+     return { prob: 0, modifiers: ['Out of range'] }
+    }
+    if (!target.inFiringArc(this, weapon)) {
+      return { prob: 0, modifiers: ['Not in firing arc'] };
+    }
+
+    let totalHitProb = weapon.accuracy;
+    let hitModifiers = [`+${weapon.accuracy.toString().padEnd(2)} Base weapon accuracy`];
+    totalHitProb -= distance;
+    hitModifiers.push(`-${distance.toString().padEnd(2)} Distance`);
+    let speedMod = 5*targetSpeed;
+    totalHitProb -= speedMod;
+    hitModifiers.push(`-${speedMod.toString().padEnd(2)} Target speed`);
+    let firingDirection = unitVector(this.xCoord - target.xCoord, this.yCoord - target.yCoord);
+    let transverseMod = Math.floor(10*crossProduct(firingDirection, [target.xMoment, target.yMoment]));
+    totalHitProb -= transverseMod;
+    hitModifiers.push(`-${transverseMod.toString().padEnd(2)} Transverse velocity`);
+    return { prob: Math.min(95, Math.max(5, totalHitProb)), modifiers: hitModifiers };
+  },
+  fireAt: function(weapon, target) {
+    this.fireWeapon(weapon);
+    let prob = this.getChanceToHit(weapon, target).prob;
+    if (percentChance(prob)) {
+      target.takeDamage(weapon.damage, weapon.damageType);
+      console.log(`${this.name} fires at ${target.name} (${prob}%) and hits`);
+      return true;
+    }
+    console.log(`${this.name} fires at ${target.name} (${prob}%) and misses`);
+    return false;
+  },
+  speed: function() {
+    return freeDiagonalDistance([this.xMoment, this.yMoment], [0, 0]);
   }
 }
