@@ -51,7 +51,7 @@ function System () {
 
   this.ships = [];
 
-  var n_ships = randomNumber(5, 10);
+  var n_ships = randomNumber(0, 4);
   for (var count = 0; count < n_ships; count++) {
     let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], 5, 3, 10);
     this.ships.push(s);
@@ -63,6 +63,8 @@ function System () {
     s.char = "S";
     s.maxSpeed = 0;
     s.credits = 100;
+    s.followPlayer = false;
+    s.attackPlayer = false;
     s.name = "Space Station KL-72X"
     s.event = new SpaceStationEvent();
     this.ships.push(s);

@@ -24,10 +24,10 @@ function Ship(coords, momentum, hull, shields, energy)
   this.credits = 10;
   let wep = new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL);
   wep.mount = MOUNT_STBD;
-  let wep2 = new Weapon('Ion Cannon', 15, 4, 100, DAMAGE_ION);
+  let wep2 = new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION);
   wep2.ion = true;
   wep2.mount = MOUNT_PORT;
-  let wep3 = new Weapon('Tractor Beam', 10, 2, 100, DAMAGE_TRACTOR);
+  let wep3 = new Weapon('Tractor Beam', 10, 2, 100, 3, DAMAGE_TRACTOR);
   wep3.tractor = true;
   wep3.mount = MOUNT_FWD;
   this.weapons = [wep3, wep, wep2];
@@ -295,6 +295,9 @@ Ship.prototype = {
   },
   fireAt: function(weapon, target) {
     this.fireWeapon(weapon);
+    if (weapon.makeNeutralsHostile) {
+      target.attackPlayer = true;
+    }
     let prob = this.getChanceToHit(weapon, target).prob;
     if (percentChance(prob)) {
       target.takeDamage(weapon.damage, weapon.damageType);
