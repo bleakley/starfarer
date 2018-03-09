@@ -3,10 +3,10 @@ let message = {text: ""};
 
 var universe = new Universe();
 
-let ps = new Ship([20,10], [2,2], 5, 3, 10);
-ps.name = `player's ship`;
+let ps = new Ship([20, 10], [1,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_PLAYER);
+ps.name = `S.S. Profundity`;
 ps.player = true;
-ps.powerDown();
+ps.char = '@';
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;

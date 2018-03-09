@@ -1,9 +1,9 @@
-function Ship(coords, momentum, hull, shields, energy)
+function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
 {
-  this.name = 'unknown ship';
+  this.name = TEAM_NAME[flag] + " " + SHIP_NAMES[type];
   this.xCoord = coords[0];
   this.yCoord = coords[1];
-  this.char = "@";
+  this.char = SHIP_SYMBOL[type];
   this.player = false;
   this.xMoment = momentum[0];
   this.yMoment = momentum[1];
@@ -12,37 +12,127 @@ function Ship(coords, momentum, hull, shields, energy)
   this.facing = getEightWayDirection(momentum[0], momentum[1]);
   if (this.facing == CENTER)
     this.facing = EAST;
-  this.hull = hull;
-  this.hullMax = hull;
-  this.shields = shields;
-  this.shieldsMax = shields;
-  this.maneuverLevel = 1;
-  this.maneuverCost = 3;
-  this.energyRegen = 1;
-  this.energy = energy;
-  this.energyMax = energy;
-  this.credits = 10;
-  let wep = new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL);
-  wep.mount = MOUNT_STBD;
-  let wep2 = new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION);
-  wep2.ion = true;
-  wep2.mount = MOUNT_PORT;
-  let wep3 = new Weapon('Tractor Beam', 10, 2, 100, 3, DAMAGE_TRACTOR);
-  wep3.tractor = true;
-  wep3.mount = MOUNT_FWD;
-  this.weapons = [wep3, wep, wep2];
+  this.weapons = [];
+
+  this.hullMax = SHIP_HULL[type];
+  this.hull = SHIP_HULL[type];
+  this.shields = SHIP_SHIELD[type];
+  this.shieldsMax = SHIP_SHIELD[type];
+  this.maneuverLevel = type == SHIP_TYPE_FIGHTER ? 2 : 1;
+  this.maneuverCost = SHIP_MANEUVER_COST[type];
+  this.energyRegen = SHIP_ENERGY_RECHARGE[type];
+  this.energy = SHIP_ENERGY[type];
+  this.energyMax = SHIP_ENERGY[type];
+  this.crew = SHIP_MAX_CREW[type];
+  this.minCrew = SHIP_MIN_CREW[type];
+  this.maxCrew = SHIP_MAX_CREW[type];
+  this.maxPrisoners = Math.floor(SHIP_MAX_CREW[type]/2);
+  this.prisoners = randomNumber(0, this.maxPrisoners);
+  this.credits = SHIP_LOOT[type];
+  switch (type) {
+    case SHIP_TYPE_FIGHTER:
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.maxSpeed = 4;
+      break;
+    case SHIP_TYPE_SLOOP:
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_STBD);
+      this.maxSpeed = 3;
+      break;
+    case SHIP_TYPE_FRIGATE:
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_STBD);
+      this.maxSpeed = 3;
+      break;
+    case SHIP_TYPE_TRANSPORT:
+      this.mountWeapon(new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Tractor Beam', 10, 1, 100, 3, DAMAGE_TRACTOR), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.maxSpeed = 2;
+      break;
+    case SHIP_TYPE_CARRIER:
+      this.mountWeapon(new Weapon('Heavy Ion Cannon', 20, 8, 90, 6, DAMAGE_ION), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Tractor Beam', 10, 1, 100, 3, DAMAGE_TRACTOR), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.maxSpeed = 2;
+      break;
+    case SHIP_TYPE_BATTLESHIP:
+      this.mountWeapon(new Weapon('Siege Laser Cannon', 30, 3, 100, 10, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Heavy Laser Cannon', 20, 7, 90, 6, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Heavy Laser Cannon', 20, 7, 90, 6, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.maxSpeed = 2;
+      break;
+    case SHIP_TYPE_DREADNOUGHT:
+      this.mountWeapon(new Weapon('Heavy Laser Cannon', 20, 7, 90, 6, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Heavy Laser Cannon', 20, 7, 90, 6, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Heavy Laser Cannon', 20, 7, 90, 6, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Neutron Beam', 10, 5, 100, 3, DAMAGE_NEUTRON), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Neutron Beam', 10, 5, 100, 3, DAMAGE_NEUTRON), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Neutron Beam', 10, 5, 100, 3, DAMAGE_NEUTRON), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.maxSpeed = 3;
+      break;
+    case SHIP_TYPE_STATION:
+      this.mountWeapon(new Weapon('Siege Laser Cannon', 30, 3, 100, 10, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Siege Laser Cannon', 30, 3, 100, 10, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Siege Laser Cannon', 30, 3, 100, 10, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Siege Laser Cannon', 30, 3, 100, 10, DAMAGE_NORMAL), MOUNT_AFT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_STBD);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_PORT);
+      this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_AFT);
+      this.maxSpeed = 0;
+      break;
+  }
+  switch (flag) {
+    case SHIP_FLAG_UNKNOWN:
+    case SHIP_FLAG_MERCHANT:
+      this.followPlayer = false;
+      this.attackPlayer = false;
+      break;
+    case SHIP_FLAG_PLAYER:
+      this.followPlayer = true;
+      this.attackPlayer = false;
+      break;
+    case SHIP_FLAG_PIRATE:
+    case SHIP_FLAG_KHAN:
+      this.followPlayer = true;
+      this.attackPlayer = true;
+      break;
+  }
   this.destroyed = false;
   this.toBeDisintegrated = false;
-  this.maxSpeed = 3; // this is for AI only
   this.mindControlByPlayerDuration = 0;
   this.mindControlByEnemyDuration = 0;
-  this.followPlayer = true;
-  this.attackPlayer = true;
   this.event = null; // Event triggered by investigating this ship
   this.known_systems = [];
 }
 
 Ship.prototype = {
+  mountWeapon: function(weapon, mount) {
+    weapon.mount = mount;
+    weapon.readyToFire = false;
+    weapon.selected = false;
+    this.weapons.push(weapon);
+	},
 	powerDown: function() {
 		this.shields = 0;
     this.energy = 0;

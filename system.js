@@ -52,27 +52,81 @@ function System () {
 
   this.ships = [];
 
-  var n_ships = randomNumber(0, 2);
-  for (var count = 0; count < n_ships; count++) {
-    let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], 5, 3, 10);
-    if (randomNumber(1,2) == 1) {
-      s.attackPlayer = false;
-      s.followPlayer = false;
+  let encounters = [
+    {
+      prob: 1,
+      opt: SHIP_FLAG_PRECURSOR
+    },
+    {
+      prob: 9,
+      opt: SHIP_FLAG_KHAN
+    },
+    {
+      prob: 20,
+      opt: SHIP_FLAG_MERCHANT
+    },
+    {
+      prob: 40,
+      opt: SHIP_FLAG_PIRATE
+    },
+    {
+      prob: 30,
+      opt: SHIP_FLAG_UNKNOWN
     }
-    this.ships.push(s);
+  ];
+  switch (randomOption(encounters)) {
+    case SHIP_FLAG_UNKNOWN:
+      break;
+    case SHIP_FLAG_MERCHANT:
+      for (var count = 0; count < randomNumber(1, 3); count++) {
+        let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], randomOption([{prob: 50, opt: SHIP_TYPE_SLOOP}, {prob: 50, opt: SHIP_TYPE_FRIGATE}]), SHIP_FLAG_MERCHANT);
+        this.ships.push(s);
+      }
+      break;
+    case SHIP_FLAG_PIRATE:
+      for (var count = 0; count < randomNumber(1, 2); count++) {
+        let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_FRIGATE, SHIP_FLAG_PIRATE);
+        this.ships.push(s);
+      }
+      for (var count = 0; count < randomNumber(0, 2); count++) {
+        let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_SLOOP, SHIP_FLAG_PIRATE);
+        this.ships.push(s);
+      }
+      if (percentChance(25))
+        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_TRANSPORT, SHIP_FLAG_PIRATE));
+      break;
+    case SHIP_FLAG_KHAN:
+      for (var count = 0; count < randomNumber(1, 2); count++) {
+        let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN);
+        this.ships.push(s);
+      }
+      for (var count = 0; count < randomNumber(1, 2); count++) {
+        let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_SLOOP, SHIP_FLAG_KHAN);
+        this.ships.push(s);
+      }
+      if (percentChance(50))
+        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_TRANSPORT, SHIP_FLAG_KHAN));
+      if (percentChance(30)) {
+        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_DREADNOUGHT, SHIP_FLAG_KHAN)); // THE MOGG!!
+        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_BATTLESHIP, SHIP_FLAG_KHAN));
+        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_CARRIER, SHIP_FLAG_KHAN));
+      } else {
+        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], randomOption([{prob: 50, opt: SHIP_TYPE_CARRIER}, {prob: 50, opt: SHIP_TYPE_BATTLESHIP}]), SHIP_FLAG_KHAN));
+      }
+      break;
+    case SHIP_FLAG_PRECURSOR:
+      for (var count = 0; count < randomNumber(1, 2); count++) {
+        let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_WRAITH, SHIP_FLAG_PRECURSOR);
+        this.ships.push(s);
+      }
+      this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_ARBITER, SHIP_FLAG_PRECURSOR));
+      break;
   }
 
   var n_stations = randomNumber(0, 1);
   for (var count = 0; count < n_stations; count++) {
-    let s = new Ship(this.randomUnoccupiedSpace(), [0,0], 20, 10, 30);
-    s.char = "S";
-    s.maxSpeed = 0;
-    s.credits = 100;
-    s.followPlayer = false;
-    s.attackPlayer = false;
-    s.name = "Space Station KL-72X"
+    let s = new Ship(this.randomUnoccupiedSpace(), [0,0], SHIP_TYPE_STATION, SHIP_FLAG_MERCHANT);
     s.event = new SpaceStationEvent();
-    s.attackPlayer = false;
     this.ships.push(s);
   }
 
