@@ -4,7 +4,7 @@ function System () {
   this.planets = [];
   this.planets.push(
     {
-      name: LARGE_BODY_NAMES.random(),
+      name: randomLargeBodyName(),
       xCoord: MAP_WIDTH/2,
       yCoord: MAP_HEIGHT/2,
       radius: randomNumber(4,6),
@@ -41,19 +41,24 @@ function System () {
         radius: r,
         class: randomOption(SMALL_BODIES),
         mass: randomNumber(1,4),
-        events: [new TempleEvent()]
+        events: []
       });
     }
   }
+  this.name = this.planets[0].name;
 
   this.map = [];
   this.generateMap();
 
   this.ships = [];
 
-  var n_ships = randomNumber(0, 4);
+  var n_ships = randomNumber(0, 2);
   for (var count = 0; count < n_ships; count++) {
     let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], 5, 3, 10);
+    if (randomNumber(1,2) == 1) {
+      s.attackPlayer = false;
+      s.followPlayer = false;
+    }
     this.ships.push(s);
   }
 
@@ -67,6 +72,7 @@ function System () {
     s.attackPlayer = false;
     s.name = "Space Station KL-72X"
     s.event = new SpaceStationEvent();
+    s.attackPlayer = false;
     this.ships.push(s);
   }
 

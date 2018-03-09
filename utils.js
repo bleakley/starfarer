@@ -206,4 +206,36 @@ getPlayerShip = function(ships) {
     if (ships[i].player)
       return ships[i];
   }
+  return(null);
+}
+
+getPlayerSystem = function(universe) {
+  for (let i = 0; i < universe.systems.length; i++) {
+    if (getPlayerShip(universe.systems[i].ships) != null)
+      return universe.systems[i];
+  }
+  console.log("couldn't find player!")
+}
+
+warp = function (ship, source, destination) {
+  source.removeShip(ship);
+  destination.ships.push(ps);
+  coords = destination.randomUnoccupiedSpace();
+  ship.xCoord = coords[0];
+  ship.yCoord = coords[1];
+  ship.xMoment = randomNumber(-2,2);
+  ship.yMoment = randomNumber(-2,2);
+  ship.xCursor = ps.xMoment;
+  ship.yCursor = ps.yMoment;
+  ship.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
+  if (ship.player) {
+    source.bgm.pause();
+    destination.bgm.play();
+  }
+}
+
+randomLargeBodyName = function () {
+  var name = LARGE_BODY_NAMES.random();
+  LARGE_BODY_NAMES.splice(LARGE_BODY_NAMES.indexOf(name),1);
+  return name;
 }
