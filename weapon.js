@@ -1,15 +1,16 @@
-function Weapon(name, range, damage, accuracy, energy)
+function Weapon(name, range, damage, accuracy, energy, damageType)
 {
   this.name = name;
   this.range = range;
   this.damage = damage;
   this.energy = energy;
   this.accuracy = accuracy;
-  this.ion = false;
-  this.tractor = false;
+  this.damageType = damageType;
   this.readyToFire = false;
   this.mount = MOUNT_FWD;
   this.selected = false;
+  this.symbol = "\u2022";
+  this.color = "red";
 }
 
 Weapon.prototype = {
