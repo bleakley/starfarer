@@ -32,6 +32,7 @@ function Ship(coords, momentum, hull, shields, energy)
   wep3.mount = MOUNT_FWD;
   this.weapons = [wep3, wep, wep2];
   this.destroyed = false;
+  this.toBeDisintegrated = false;
   this.maxSpeed = 3; // this is for AI only
   this.mindControlByPlayerDuration = 0;
   this.mindControlByEnemyDuration = 0;
@@ -72,14 +73,11 @@ Ship.prototype = {
   takeDamage: function(damage, damageType) {
     switch (damageType) {
       case DAMAGE_NORMAL:
-        this.takeNormalDamage(damage);
-        break;
+        return this.takeNormalDamage(damage);
       case DAMAGE_ION:
-        this.takeIonDamage(damage);
-        break;
+        return this.takeIonDamage(damage);
       case DAMAGE_TRACTOR:
-        this.takeTractorDamage(damage);
-        break;
+        return this.takeTractorDamage(damage);
     }
 	},
 	takeNormalDamage: function(damage) {
@@ -298,6 +296,7 @@ Ship.prototype = {
     this.fireWeapon(weapon);
     if (weapon.makeNeutralsHostile) {
       target.attackPlayer = true;
+      target.followPlayer = true;
     }
     let prob = this.getChanceToHit(weapon, target).prob;
     if (percentChance(prob)) {

@@ -121,7 +121,8 @@ drawAll = function(recursion)
   	  else
   		   mapDisplay.draw(s.xCoord+s.xCursor, s.yCoord+s.yCursor, "X", "#B63");
     }
-    mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
+    if(!s.toBeDisintegrated)
+      mapDisplay.draw(s.xCoord, s.yCoord, s.char, "#FFF");
 
   });
 
@@ -244,20 +245,14 @@ advanceTurn =  function() {
     s.xCoord += s.xMoment;
     s.yCoord += s.yMoment;
 
-    let speed = freeDiagonalDistance([s.xMoment, s.yMoment], [0,0]);
     if(_.has(system.map, [s.xCoord, s.yCoord, 'terrain'])){
-      switch(system.map[s.xCoord][s.yCoord].terrain) {
-        case TERRAIN_STAR_YELLOW:
-          if (s.takeDamage(10*(speed+1))) {
-            s.stop();
-          }
-          break;
-        case TERRAIN_BARREN_1:
-        case TERRAIN_BARREN_2:
-        case TERRAIN_BARREN_3:
-          if (s.takeDamage(2*(Math.max(0, speed-1)))) {
-            s.stop();
-          }
+
+      let effect = TERRAIN_EFFECTS[system.map[s.xCoord][s.yCoord].terrain];
+      if (s.takeDamage(effect.damage * (Math.max(0, s.speed() + 1 - effect.minSpeedForDamage)), effect.damageType)) {
+        if (effect.stopOnDeath)
+          s.stop();
+        if (effect.disintegrateOnDeath)
+          s.toBeDisintegrated = true;
       }
 
       if (s.player) {
@@ -272,6 +267,15 @@ advanceTurn =  function() {
 
     s.regenerateSystems();
   });
+
+  system.ships = system.ships.filter(s => s.player || !s.toBeDisintegrated);
+
+  if (getPlayerShip(system.ships).destroyed) {
+    system.ships.forEach((s) => {
+      s.followPlayer = false;
+      s.attackPlayer = false; //peace has come to the galaxy at last
+    });
+  }
 
   system.ships.forEach((s) => {
     if (!s.player) {
@@ -495,14 +499,14 @@ selectDirection.handleEvent = function(event) {
         if (sys != getPlayerSystem(universe)) {
           options.push(opt);
         }
-      })   
+      })
       options.push({t: "cancel", o: playerTurn})
-      
+
       if (options.length == 1) {
         getAcknowledgement("We do not know the coordinates of any other star systems. Perhaps we can find coordinates somewhere in this system.", playerTurn);
       }
       else {
-        
+
         var so = new selectOption("Select a destination:", options);
         so.run();
         message.text = "Hyperspace jump successful...warp core recharging.";

@@ -171,6 +171,70 @@ CORONAS[BODY_STAR_YELLOW] = [{prob: 100, opt: TERRAIN_CORONA_YELLOW}];
 var JETS = {};
 JETS[BODY_QUASAR] = [{prob: 100, opt: TERRAIN_QUASAR_JET}];
 
+var TERRAIN_EFFECTS = {};
+TERRAIN_EFFECTS[TERRAIN_STAR_YELLOW] = {
+	minSpeedForDamage: 0,
+	damage: 10,
+	damageType: DAMAGE_NORMAL,
+	stopOnDeath: true,
+	disintegrateOnDeath: true
+};
+TERRAIN_EFFECTS[TERRAIN_QUASAR] = {
+	minSpeedForDamage: 0,
+	damage: 10,
+	damageType: DAMAGE_NORMAL,
+	stopOnDeath: true,
+	disintegrateOnDeath: true
+};
+TERRAIN_EFFECTS[TERRAIN_BLACK_HOLE] = {
+	minSpeedForDamage: 0,
+	damage: 100,
+	damageType: DAMAGE_NORMAL,
+	stopOnDeath: true,
+	disintegrateOnDeath: true
+};
+TERRAIN_EFFECTS[TERRAIN_CORONA_YELLOW] = {
+	minSpeedForDamage: 0,
+	damage: 3,
+	damageType: DAMAGE_ION,
+	stopOnDeath: false,
+	disintegrateOnDeath: false
+};
+TERRAIN_EFFECTS[TERRAIN_QUASAR_JET] = {
+	minSpeedForDamage: 0,
+	damage: 10,
+	damageType: DAMAGE_ION,
+	stopOnDeath: false,
+	disintegrateOnDeath: false
+};
+
+const terrestialTerrain = {
+	minSpeedForDamage: 1,
+	damage: 2,
+	damageType: DAMAGE_NORMAL,
+	stopOnDeath: true,
+	disintegrateOnDeath: false
+};
+
+const harmlessTerrain = {
+	minSpeedForDamage: 10,
+	damage: 0,
+	damageType: DAMAGE_NORMAL,
+	stopOnDeath: false,
+	disintegrateOnDeath: false
+};
+
+TERRAIN_EFFECTS[TERRAIN_NONE_EMPTY] = harmlessTerrain;
+TERRAIN_EFFECTS[TERRAIN_NONE_DIM_STAR] = harmlessTerrain;
+TERRAIN_EFFECTS[TERRAIN_NONE_BRIGHT_STAR] = harmlessTerrain;
+TERRAIN_EFFECTS[TERRAIN_ANOMALY] = harmlessTerrain;
+TERRAIN_EFFECTS[TERRAIN_BARREN_1] = terrestialTerrain;
+TERRAIN_EFFECTS[TERRAIN_BARREN_2] = terrestialTerrain;
+TERRAIN_EFFECTS[TERRAIN_BARREN_3] = terrestialTerrain;
+TERRAIN_EFFECTS[TERRAIN_WATER] = terrestialTerrain;
+TERRAIN_EFFECTS[TERRAIN_ICE] = terrestialTerrain;
+TERRAIN_EFFECTS[TERRAIN_GRASS] = terrestialTerrain;
+
 var notEnoughEnergy = new Audio('sounds/Battlecruiser_EnergyLow00.mp3');
 var bgm1 = new Audio('sounds/bgm_01.mp3');
 bgm1.loop = true;
