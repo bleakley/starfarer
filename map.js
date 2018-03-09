@@ -1,40 +1,9 @@
 let turn = 0;
 let message = {text: ""};
 
-var universe = [];
-var candidate_planets = [];
-for (var count = 0; count < N_STAR_SYSTEMS; count++) {
-  universe.push(new System());
-  console.log(universe);
-}
+var universe = new Universe();
 
-// Determine location of the Orbitron Device
-universe.forEach( (sys) => {
-  sys.planets.forEach( (p) => {
-    if (p.class == BODY_PLANET_BARREN || p.class == BODY_PLANET_TERRAN || p.class == BODY_PLANET_FROZEN) {
-      candidate_planets.push(p);
-    }
-  })
-})
-orbitron_planet = candidate_planets.random(); // Planet that holds the Orbitron Device
-orbitron_planet.events = [new FindOrbitronEvent()];
-orbitron_system = null; // System that the Orbitron Device is in
-universe.forEach( (sys) => {
-  if (sys.planets.indexOf(orbitron_planet) > -1) {
-    orbitron_system = sys;
-  }
-});
-console.log(orbitron_system)
-console.log(orbitron_planet)
-
-for (var count = 0; count < N_CLUES; count++){
-  p = candidate_planets.random();
-  if (p!=orbitron_planet){
-    p.events = [new TempleClueEvent(orbitron_system, orbitron_planet)];
-  }
-}
-
-var system = universe[0]; // The star system that the player currently is in
+var system = universe.systems[0]; // The star system that the player currently is in
 let ps = new Ship([20,10], [2,2], 5, 3, 10);
 ps.name = `player's ship`;
 ps.player = true;
