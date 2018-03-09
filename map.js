@@ -3,13 +3,12 @@ let message = {text: ""};
 
 var universe = new Universe();
 
-var system = universe.systems[0]; // The star system that the player currently is in
 let ps = new Ship([20,10], [2,2], 5, 3, 10);
 ps.name = `player's ship`;
 ps.player = true;
 ps.powerDown();
-ps.known_systems.push(system);
-system.ships.push(ps);
+ps.known_systems.push(universe.systems[0]);
+universe.systems[0].ships.push(ps);
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
@@ -54,7 +53,7 @@ drawShipHighlight = function(s) {
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 2, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
   if (s.player)
     return;
-  var ps = getPlayerShip(system.ships);
+  var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
   var pw = ps.activeWeapon();
   if (!pw)
     return;
@@ -76,7 +75,7 @@ drawFiringArc = function(ship, weapon) {
 }
 
 selectNextClosestTarget = function(ship, weapon) {
-  let potentialTargets = _.filter(system.ships, (t) => { return t.canBeHitByWeapon(ship, weapon) });
+  let potentialTargets = _.filter(getPlayerSystem(universe).ships, (t) => { return t.canBeHitByWeapon(ship, weapon) });
   let sortedTargets = _.sortBy(potentialTargets, [(t) => { return freeDiagonalDistance([ship.xCoord, ship.yCoord], [t.xCoord, t.yCoord])}, 'name']);
   if (!currentlyHighlightedObject) {
     currentlyHighlightedObject = sortedTargets[0];
@@ -90,6 +89,8 @@ selectNextClosestTarget = function(ship, weapon) {
 
 drawAll = function(recursion)
 {
+  let system = getPlayerSystem(universe);
+  console.log(system)
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
 		  var tile = randomOption(TILES[system.map[x][y].terrain]);
@@ -142,7 +143,7 @@ drawAll = function(recursion)
 
 drawSideBar = function()
 {
-  let ps = getPlayerShip(system.ships);
+  let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
 	sideBarDisplay.drawText(2, 0, `Turn: ${turn}`);
   sideBarDisplay.drawText(2, 1, `BitCredits: ${ps.credits}`);
@@ -169,9 +170,10 @@ init = function()
   document.getElementById("stuffOnTop").appendChild(popUpDisplay.getContainer());
 
 	drawAll(true);
-  system.bgm.play();
+  getPlayerSystem(universe).bgm.play();
+  let system = getPlayerSystem(universe);
 
-  getAcknowledgement(`Greetings, space farer! You have entered the ${system.planets[0].name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
+  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
 
 }
 
@@ -191,7 +193,7 @@ displayHelp = function(){
 }
 
 moveCursor =  function(direction) {
-  let playerShip = getPlayerShip(system.ships);
+  let playerShip = getPlayerShip(getPlayerSystem(universe).ships);
   let dx = DIRECTIONS[direction][0];
   let dy = DIRECTIONS[direction][1];
   if (Math.abs(playerShip.xCursor+dx-playerShip.xMoment) > playerShip.maneuverLevel)
@@ -206,6 +208,7 @@ moveCursor =  function(direction) {
 
 advanceTurn =  function() {
 
+  let system = getPlayerSystem(universe);
   let ps = getPlayerShip(system.ships);
   var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
      return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
@@ -289,13 +292,12 @@ advanceTurn =  function() {
 }
 
 resolvePendingEvents = function() {
-
+  let system = getPlayerSystem(universe);
   for (var count = 0; count < system.pending_events.length; count++) {
     let e = system.pending_events[count];
     e.time_until = e.time_until - 1;
     if (e.time_until <= 0) {
-      console.log(e);
-      e.action(system, resolvePendingEvents);
+      e.action(universe, resolvePendingEvents);
       index = system.pending_events.indexOf(e);
       system.pending_events.splice(index, 1);
       drawAll();
@@ -308,7 +310,7 @@ resolvePendingEvents = function() {
     e.time_until = e.time_until - 1;
     if (e.time_until <= 0) {
       console.log(e);
-      e.action(system, resolvePendingEvents);
+      e.action(universe, resolvePendingEvents);
       index = global_pending_events.indexOf(e);
       global_pending_events.splice(index, 1);
       drawAll();
@@ -336,6 +338,7 @@ fire = function(attacker, target, weapon, callback) {
 }
 
 highlightObjects.handleEvent = function(event) {
+  let system = getPlayerSystem(universe);
   let coords = mapDisplay.eventToPosition(event);
   let highlightedShip = _.find(system.ships, (s) => { return s.xCoord == coords[0] && s.yCoord == coords[1] });
   if (highlightedShip) {
@@ -356,22 +359,6 @@ highlightObjects.handleEvent = function(event) {
     drawBodyHighlight(body);
   else drawAll();
 };
-
-function warpTo(sys) {
-  system.removeShip(ps);
-  system.bgm.pause();
-  system = sys;
-  system.ships.push(ps);
-  coords = system.randomUnoccupiedSpace(system.map);
-  ps.xCoord = coords[0];
-  ps.yCoord = coords[1];
-  ps.xMoment = randomNumber(-2,2);
-  ps.yMoment = randomNumber(-2,2);
-  ps.xCursor = ps.xMoment;
-  ps.yCursor = ps.yMoment;
-  ps.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
-  system.bgm.play();
-}
 
 selectDirection.handleEvent = function(event) {
 	//console.log("event handle key code: " + event.keyCode);
@@ -457,7 +444,7 @@ selectDirection.handleEvent = function(event) {
     case 87:
 			//w, toggle weapon
       window.removeEventListener('keydown', this);
-      var ps = getPlayerShip(system.ships);
+      var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
       ps.toggleSelectedWeapon();
       var pw = _.find(ps.weapons, (w) => { return ps.canFireWeapon(w) && w.selected });
       if (pw) {
@@ -467,9 +454,9 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 70:
 			//f, fire weapon
-      if (!currentlyHighlightedObject || system.ships.indexOf(currentlyHighlightedObject) == -1)
+      if (!currentlyHighlightedObject || getPlayerSystem(universe).ships.indexOf(currentlyHighlightedObject) == -1)
         break;
-      var ps = getPlayerShip(system.ships);
+      var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
       var pw = ps.activeWeapon();
       if (!pw)
         break;
@@ -483,14 +470,14 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 27:
 			//esc, deselect weapon
-      getPlayerShip(system.ships).weapons.forEach((w) => { w.selected = false; });
+      getPlayerShip(getPlayerSystem(universe).ships).weapons.forEach((w) => { w.selected = false; });
 			window.removeEventListener('keydown', this);
       playerTurn();
 			break;
     case 9:
 			//tab, cycle targets
       event.preventDefault();
-      var ps = getPlayerShip(system.ships);
+      var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
       var pw = _.find(ps.weapons, (w) => { return ps.canFireWeapon(w) && w.selected });
       if (pw) {
         selectNextClosestTarget(ps, pw);
@@ -502,11 +489,10 @@ selectDirection.handleEvent = function(event) {
 			//j, jump to hyperspace
 			window.removeEventListener('keydown', this);
       var options = [];
-      var ps = getPlayerShip(system.ships);
-      console.log(ps.known_systems);
+      var ps = getPlayerShip(getPlayerSystem(universe).ships);
       ps.known_systems.forEach( (sys) => {
-        let opt = { system: sys, t: sys.name, o: () => {warpTo(sys); playerTurn()} };
-        if (sys != system) {
+        let opt = { system: sys, t: sys.name, o: () => {warp(ps, getPlayerSystem(universe), sys); playerTurn()} };
+        if (sys != getPlayerSystem(universe)) {
           options.push(opt);
         }
       })   

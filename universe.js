@@ -77,5 +77,5 @@ Universe.prototype = {
       }    
     }
   
-  }
+  },
 }
