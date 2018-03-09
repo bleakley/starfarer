@@ -54,7 +54,7 @@ drawShipHighlight = function(s) {
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 2, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
   if (s.player)
     return;
-  var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
+  var ps = getPlayerShip(getPlayerSystem(universe).ships);
   var pw = ps.activeWeapon();
   if (!pw)
     return;
@@ -91,7 +91,6 @@ selectNextClosestTarget = function(ship, weapon) {
 drawAll = function(recursion)
 {
   let system = getPlayerSystem(universe);
-  console.log(system)
 	for (var x = 0; x < MAP_WIDTH; x++) {
 		for (var y = 0; y < MAP_HEIGHT; y++) {
 		  var tile = randomOption(TILES[system.map[x][y].terrain]);
@@ -445,7 +444,7 @@ selectDirection.handleEvent = function(event) {
     case 87:
 			//w, toggle weapon
       window.removeEventListener('keydown', this);
-      var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
+      var ps = getPlayerShip(getPlayerSystem(universe).ships);
       ps.toggleSelectedWeapon();
       var pw = _.find(ps.weapons, (w) => { return ps.canFireWeapon(w) && w.selected });
       if (pw) {
@@ -457,7 +456,7 @@ selectDirection.handleEvent = function(event) {
 			//f, fire weapon
       if (!currentlyHighlightedObject || getPlayerSystem(universe).ships.indexOf(currentlyHighlightedObject) == -1)
         break;
-      var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
+      var ps = getPlayerShip(getPlayerSystem(universe).ships);
       var pw = ps.activeWeapon();
       if (!pw)
         break;
@@ -478,7 +477,7 @@ selectDirection.handleEvent = function(event) {
     case 9:
 			//tab, cycle targets
       event.preventDefault();
-      var ps = getPlayerShip(getPlayerSystem(universe.systems).ships);
+      var ps = getPlayerShip(getPlayerSystem(universe).ships);
       var pw = _.find(ps.weapons, (w) => { return ps.canFireWeapon(w) && w.selected });
       if (pw) {
         selectNextClosestTarget(ps, pw);
