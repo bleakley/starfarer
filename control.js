@@ -65,13 +65,15 @@ getAcknowledgement = function(string, callbackFunction)
 {
 	document.getElementById('stuffOnTop').style.display = 'initial';
 	popUpDisplay.clear();
-	popUpDisplay.drawText(1, 1, string + "\n\n(press any key to continue)");
+	popUpDisplay.drawText(1, 1, string + "\n\n(press ENTER to continue)");
 
 	cf = function(event) {
     event.preventDefault();
-		window.removeEventListener('keydown', cf);
-		clearPopup();
-		callbackFunction();
+    if (event.keyCode == 13) {
+      window.removeEventListener('keydown', cf);
+  		clearPopup();
+  		callbackFunction();
+    }
 	};
 
 	window.addEventListener('keydown', cf);
