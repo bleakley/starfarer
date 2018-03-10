@@ -13,6 +13,11 @@ The green arrow indicates the the direction your ship is currently facing. Your 
 
 Weapons are mounted on particular hull zones and each weapon can only fire out of that hull zone. Each weapon has its own firing arc determined by its range, hull zone, and your ship's facing. Press 'w' to cycle through weapons, press 'tab' to cycle through eligible targets within the weapon's arc, and press 'f' to fire. You can also target and fire on ships using the mouse.
 
+## Exploration
+The universe is filled with strange events and mysterious sites to explore. You can land on any planet by flying over it and coming to a stop. If you collide with a planet while traveling faster than speed 1, you will suffer damage. You can board a destroyed or abandoned ship by flying over it. Note that destroyed ships will continue on their original trajectories, so you may find that a tractor beam is helpful to bring them to a stop.
+
+You will also find perplexing anomalies in space and merchant stations that can repair and refit your ship. You can interact with these by flying over them. 
+
 ## Ship Systems
 ### Reactor and Energy Storage
 Your ship has a state-of-the-art fusion reactor that continously produces energy which is stored in your ship's capacitor banks. Maneuvering and firing weapons consumes energy. If your current energy is at least 50% of maximum, your shields and warp core will slowly recharge. In normal circumstances your energy reserves will never exceed your maximum. However, if any special item or effect raises your energy reserves above twice your maximum, your reactor will overload and begin to melt down, dealing 1 point of hull damage per turn.
@@ -35,8 +40,3 @@ Rumors of persist of ancient precusor relics that are far more powerful than the
 
 ### Boarding Tubes
 Boarding tubes can bridge the vacuum of space and slice through even the thickest armor. If you and an enemy ship are adjacent, and either ship is at 0 speed, a boarding action will be initiated. Your crewmemebers will fight directly, though an entire shipboard battle can rarely be resolved in a single turn.
-
-## Exploration
-The universe is filled with strange events and mysterious sites to explore. You can land on any planet by flying over it and coming to a stop. If you collide with a planet while traveling faster than speed 1, you will suffer damage. You can board a destroyed or abandoned ship by flying over it. Note that destroyed ships will continue on their original trajectories, so you may find that a tractor beam is helpful to bring them to a stop.
-
-You will also find perplexing anomalies in space and merchant stations that can repair and refit your ship. You can interact with these by flying over them. 

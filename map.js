@@ -261,7 +261,8 @@ displayHelp = function(){
   "f        fire weapon\n" +
   "esc      deselect weapon\n" +
   "tab      cycle through available targets\n\n" +
-  "To explore a planet, move on top of it. Your starship will be damaged if you are moving too fast when you land!",
+  "To explore a planet, move on top of it. Your starship will be damaged if you are moving too fast when you land!\n\n" +
+  "For more detailed help and information on ship systems, read the full manual at https://github.com/bleakley/starfarer",
   playerTurn);
 }
 
