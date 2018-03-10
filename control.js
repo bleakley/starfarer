@@ -9,7 +9,7 @@ sideBarDisplay = new ROT.Display({
 });
 
 popUpDisplay = new ROT.Display({
-  width:50, height:23,
+  width:80, height:23,
   layout:"rect", fg: "#0E4"
 });
 
@@ -27,7 +27,7 @@ selectOption.prototype = {
     var selectedIndex = event.keyCode - 65; //keypress 'a' corresponds to index 0 here.
     if(selectedIndex >= options.length)
       return;
-    
+
 		for(var i = 0; i < options.length; i++)
     {
       if(selectedIndex == i) {

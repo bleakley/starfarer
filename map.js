@@ -16,6 +16,12 @@ universe.systems[0].bgm = bgm2;
 
 var repairCost = 1;
 var reactorUpgradeCost = 10;
+var propulsionUpgradeCost = 10;
+var armorUpgradeCost = 10;
+var crewUpgradeCost = 10;
+var prisonerUpgradeCost = 10;
+var capacitorUpgradeCost = 10;
+var shieldUpgradeCost = 10;
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
@@ -170,7 +176,7 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
-  sideBarDisplay.drawText(2, 7, `Crew: ${ps.crew} (${ps.minCrew}-${ps.maxCrew})`);
+  sideBarDisplay.drawText(2, 7, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
   for (let i = 0; i < ps.weapons.length; i++) {
     let w = ps.weapons[i];
     let color = '#0E4';
