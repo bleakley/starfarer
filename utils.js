@@ -246,3 +246,48 @@ randomLargeBodyName = function () {
   LARGE_BODY_NAMES.splice(LARGE_BODY_NAMES.indexOf(name),1);
   return name;
 }
+
+equipWeapon = function (ship, weapon, callback) {
+  let message = `You have a new ${weapon.name}. Where will you mount it?`;
+  var options = [];
+  if (ship.maneuverCost < ship.energyMax) {
+    options.push({ t: `Mount it on the forward end of the ship.`, o: () => {
+        ship.mountWeapon(weapon, MOUNT_FWD);
+        ship.minCrew++;
+        ship.maneuverCost++;
+        drawSideBar();
+        callback();
+      }
+    });
+    options.push({ t: `Mount it on the starboard side.`, o: () => {
+        ship.mountWeapon(weapon, MOUNT_STBD);
+        ship.minCrew++;
+        ship.maneuverCost++;
+        drawSideBar();
+        callback();
+      }
+    });
+    options.push({ t: `Mount it on the port side.`, o: () => {
+        ship.mountWeapon(weapon, MOUNT_PORT);
+        ship.minCrew++;
+        ship.maneuverCost++;
+        drawSideBar();
+        callback();
+      }
+    });
+  }
+  if (ps.maneuverCost + AFT_MOUNT_PENALTY < ps.energyMax) {
+    options.push({ t: `Mount it on the aft end of the ship.`, o: () => {
+        ship.mountWeapon(weapon, MOUNT_AFT);
+        ship.minCrew++;
+        ship.maneuverCost += 1 + AFT_MOUNT_PENALTY;
+        drawSideBar();
+        callback();
+      }
+    });
+  }
+  options.push({ t: `Just jettison it. The thing will only slow us down.`, o: callback });
+
+  var so = new selectOption(message, options);
+  so.run();
+}

@@ -7,10 +7,10 @@ let ps = new Ship([20, 10], [1,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_PLAYER);
 ps.name = `S.S. Profundity`;
 ps.player = true;
 ps.char = '@';
-ps.hullMax = 15;
-ps.hull = 15;
+ps.hullMax = 12;
+ps.hull = 12;
 ps.credits = 25;
-
+ps.mountWeapon(new Weapon('Tractor Beam', 10, 1, 100, 3, DAMAGE_TRACTOR), MOUNT_FWD);
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
@@ -34,6 +34,7 @@ var crewUpgradeCost = 10;
 var prisonerUpgradeCost = 10;
 var capacitorUpgradeCost = 10;
 var shieldUpgradeCost = 10;
+var computerUpgradeCost = 10;
 
 var global_pending_events = [];
 var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";

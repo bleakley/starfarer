@@ -23,12 +23,15 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
   this.energyRegen = SHIP_ENERGY_RECHARGE[type];
   this.energy = SHIP_ENERGY[type];
   this.energyMax = SHIP_ENERGY[type];
+  this.accuracyBoost = 0;
   this.crew = SHIP_MAX_CREW[type];
   this.minCrew = SHIP_MIN_CREW[type];
   this.maxCrew = SHIP_MAX_CREW[type];
   this.maxPrisoners = Math.floor(SHIP_MAX_CREW[type]/2);
   this.prisoners = randomNumber(0, this.maxPrisoners);
   this.credits = SHIP_LOOT[type];
+  if (flag == SHIP_FLAG_MERCHANT)
+    this.credits = 2*SHIP_LOOT[type];
   switch (type) {
     case SHIP_TYPE_FIGHTER:
       this.mountWeapon(new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), MOUNT_FWD);
@@ -372,6 +375,10 @@ Ship.prototype = {
 
     let totalHitProb = weapon.accuracy;
     let hitModifiers = [`+${weapon.accuracy.toString().padEnd(2)} Base weapon accuracy`];
+    if (this.accuracyBoost) {
+      totalHitProb += this.accuracyBoost;
+      hitModifiers.push(`+${this.accuracyBoost.toString().padEnd(2)} Targeting computer`);
+    }
     totalHitProb -= distance;
     hitModifiers.push(`-${distance.toString().padEnd(2)} Distance`);
     let speedMod = 5*targetSpeed;

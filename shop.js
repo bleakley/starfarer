@@ -65,6 +65,17 @@ ShopEvent.prototype = {
         this.action(universe, callbackFunction);
       }
     }});
+    options.push({ t: `Upgrade your targeting computer for ${computerUpgradeCost} BitCredits`, o: () => {
+      if(ps.credits < computerUpgradeCost) {
+        getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
+      } else {
+        ps.credits -= computerUpgradeCost;
+        computerUpgradeCost += 5;
+        ps.accuracyBoost += 3;
+        drawSideBar();
+        this.action(universe, callbackFunction);
+      }
+    }});
     if (ps.maneuverCost > 1)
       options.push({ t: `Upgrade your sublight engines for ${propulsionUpgradeCost} BitCredits`, o: () => {
         if(ps.credits < propulsionUpgradeCost) {
@@ -77,48 +88,56 @@ ShopEvent.prototype = {
           this.action(universe, callbackFunction);
         }
       }});
-      if (ps.maneuverCost < ps.energyMax) { // all this stuff increases your mass
-        options.push({ t: `Install ${armorIncrement} additional units of armor plating for ${armorUpgradeCost} BitCredits and +1 mass`, o: () => {
-          if(ps.credits < armorUpgradeCost) {
-            getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
-          } else {
-            ps.credits -= armorUpgradeCost;
-            armorUpgradeCost += 5;
-            ps.maneuverCost++;
-            ps.hull += armorIncrement;
-            ps.hullMax += armorIncrement;
-            drawSideBar();
-            this.action(universe, callbackFunction);
-          }
-        }});
-        options.push({ t: `Install additional crew berthing for ${crewUpgradeCost} BitCredits and +1 mass`, o: () => {
-          if(ps.credits < crewUpgradeCost) {
-            getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
-          } else {
-            ps.credits -= crewUpgradeCost;
-            crewUpgradeCost += 5;
-            ps.maneuverCost++;
-            ps.minCrew += 1;
-            ps.maxCrew += 5;
-            drawSideBar();
-            this.action(universe, callbackFunction);
-          }
-        }});
-        options.push({ t: `Install additional detention cells for ${prisonerUpgradeCost} BitCredits and +1 mass`, o: () => {
-          if(ps.credits < prisonerUpgradeCost) {
-            getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
-          } else {
-            ps.credits -= prisonerUpgradeCost;
-            prisonerUpgradeCost += 5;
-            ps.maneuverCost++;
-            ps.minCrew += 1;
-            ps.maxPrisoners += 5;
-            drawSideBar();
-            this.action(universe, callbackFunction);
-          }
-        }});
-      }
+    if (ps.maneuverCost < ps.energyMax) { // all this stuff increases your mass
+      options.push({ t: `Install ${armorIncrement} additional units of armor plating for ${armorUpgradeCost} BitCredits and +1 mass`, o: () => {
+        if(ps.credits < armorUpgradeCost) {
+          getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
+        } else {
+          ps.credits -= armorUpgradeCost;
+          armorUpgradeCost += 5;
+          ps.maneuverCost++;
+          ps.hull += armorIncrement;
+          ps.hullMax += armorIncrement;
+          drawSideBar();
+          this.action(universe, callbackFunction);
+        }
+      }});
+      options.push({ t: `Install additional crew berthing for ${crewUpgradeCost} BitCredits and +1 mass`, o: () => {
+        if(ps.credits < crewUpgradeCost) {
+          getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
+        } else {
+          ps.credits -= crewUpgradeCost;
+          crewUpgradeCost += 5;
+          ps.maneuverCost++;
+          ps.minCrew += 1;
+          ps.maxCrew += 5;
+          drawSideBar();
+          this.action(universe, callbackFunction);
+        }
+      }});
+      options.push({ t: `Install additional detention cells for ${prisonerUpgradeCost} BitCredits and +1 mass`, o: () => {
+        if(ps.credits < prisonerUpgradeCost) {
+          getAcknowledgement(`You can't afford that!`, () => { this.action(universe, callbackFunction); });
+        } else {
+          ps.credits -= prisonerUpgradeCost;
+          prisonerUpgradeCost += 5;
+          ps.maneuverCost++;
+          ps.minCrew += 1;
+          ps.maxPrisoners += 5;
+          drawSideBar();
+          this.action(universe, callbackFunction);
+        }
+      }});
+    }
 
+    options.push({ t: `Buy new weapons and mount them to your ship.`, o: () => {
+      this.buyWeapons(universe, callbackFunction);
+    }});
+
+    if (ps.weapons.length > 0)
+      options.push({ t: `Scrap weapons to earn money, free up crew, and reduce ship mass.`, o: () => {
+        this.scrapWeapons(universe, callbackFunction);
+      }});
 
     options.push({ t: `Leave the station.`, o: () => {
       playerTurn();
@@ -127,5 +146,63 @@ ShopEvent.prototype = {
     var so = new selectOption(this.message, options);
     so.run();
 
-	}
+	},
+  scrapWeapons: function (universe, callbackFunction) {
+    system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+    let scrapValue = 5;
+    var options = [];
+    ps.weapons.forEach((w) => {
+      options.push({ t: `Scrap your ${MOUNT_NAMES[w.mount]} ${w.name} for ${scrapValue} BitCredits, -1 mass, and -1 min. crew.`, o: () => {
+          ps.credits += scrapValue;
+          if (ps.maneuverCost > 1)
+            ps.maneuverCost--;
+          if (ps.minCrew > 1)
+            ps.minCrew--;
+
+          let index = ps.weapons.indexOf(w);
+          ps.weapons.splice(index, 1);
+          drawSideBar();
+          this.scrapWeapons(universe, callbackFunction);
+        }
+      });
+    });
+    options.push({ t: `Leave the scrapyard.`, o: () => {
+        this.action(universe, callbackFunction);
+      }
+    });
+
+    var so = new selectOption('Scrap weapons to earn money, free up crew, and reduce ship mass.', options);
+    so.run();
+  },
+  buyWeapons: function (universe, callbackFunction) {
+    system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+
+    let laserCannonCost = 10;
+    let ionCannonCost = 10;
+
+    var options = [];
+    options.push({ t: `Buy a Laser Cannon for ${laserCannonCost} BitCredits and +1 mass`, o: () => {
+      if(ps.credits < laserCannonCost) {
+        getAcknowledgement(`You can't afford that!`, () => { this.buyWeapons(universe, callbackFunction); });
+      } else {
+        equipWeapon(ps, new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), this.buyWeapons.bind(this, universe, callbackFunction));
+      }
+    }});
+    options.push({ t: `Buy an Ion Cannon for ${ionCannonCost} BitCredits and +1 mass`, o: () => {
+      if(ps.credits < ionCannonCost) {
+        getAcknowledgement(`You can't afford that!`, () => { this.buyWeapons(universe, callbackFunction); });
+      } else {
+        equipWeapon(ps, new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), this.buyWeapons.bind(this, universe, callbackFunction));
+      }
+    }});
+    options.push({ t: `Leave the weapon shop.`, o: () => {
+        this.action(universe, callbackFunction);
+      }
+    });
+
+    var so = new selectOption('Weapons of war are available here for a reasonable cost. Note that installing a weapon increases the mass of your ship and your minimum crew requirement.', options);
+    so.run();
+  }
 }
