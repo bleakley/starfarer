@@ -202,9 +202,10 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
 	sideBarDisplay.drawText(2, 5, `Shields: ${ps.shields}/${ps.shieldsMax}`);
 	sideBarDisplay.drawText(2, 6, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
-	sideBarDisplay.drawText(2, 7, `Maneuver: -${ps.maneuverCost}/\u0394`);
-  sideBarDisplay.drawText(2, 8, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
-  sideBarDisplay.drawText(2, 9, `Prisoners: ${ps.prisoners}/${ps.maxPrisoners}`);
+  sideBarDisplay.drawText(2, 7, `Warp Core: ${ps.warpCore}/${ps.warpCoreMax}`);
+	sideBarDisplay.drawText(2, 8, `Maneuver: -${ps.maneuverCost}/\u0394`);
+  sideBarDisplay.drawText(2, 9, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
+  sideBarDisplay.drawText(2, 10, `Prisoners: ${ps.prisoners}/${ps.maxPrisoners}`);
 
   for (let i = 0; i < ps.weapons.length; i++) {
     let w = ps.weapons[i];
@@ -213,9 +214,9 @@ drawSideBar = function()
       color = 'dimgrey';
     else if (w.selected)
       color = 'yellow';
-    sideBarDisplay.drawText(2, 11+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
+    sideBarDisplay.drawText(2, 12+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
   }
-	sideBarDisplay.drawText(2, 13 + ps.weapons.length, message.text);
+	sideBarDisplay.drawText(2, 14 + ps.weapons.length, message.text);
 }
 
 addTextToCombatLog = function(text) {
@@ -658,6 +659,7 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 27:
 			//esc, deselect weapon
+      currentlyHighlightedObject = null;
       getPlayerShip(getPlayerSystem(universe).ships).weapons.forEach((w) => { w.selected = false; });
 			window.removeEventListener('keydown', this);
       playerTurn();
@@ -675,9 +677,11 @@ selectDirection.handleEvent = function(event) {
 			break;
     case 74:
 			//j, jump to hyperspace
-			window.removeEventListener('keydown', this);
       var options = [];
       var ps = getPlayerShip(getPlayerSystem(universe).ships);
+      if (ps.warpCore < ps.warpCoreMax)
+        break;
+      window.removeEventListener('keydown', this);
       ps.known_systems.forEach( (sys) => {
         let opt = { system: sys, t: sys.name, o: () => {warp(ps, getPlayerSystem(universe), sys); playerTurn()} };
         if (sys != getPlayerSystem(universe)) {
@@ -693,7 +697,7 @@ selectDirection.handleEvent = function(event) {
 
         var so = new selectOption("Select a destination:", options);
         so.run();
-        addTextToCombatLog("Hyperspace jump successful...warp core recharging.");
+
       }
 			break;
 	}

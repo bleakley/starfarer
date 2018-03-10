@@ -230,6 +230,8 @@ warp = function (ship, source, destination) {
   ship.xCursor = ps.xMoment;
   ship.yCursor = ps.yMoment;
   ship.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
+  ship.warpCore = 0;
+  addTextToCombatLog("Hyperspace jump successful...warp core recharging.");
   if (ship.player) {
     source.bgm.pause();
     destination.bgm.play();
@@ -242,7 +244,7 @@ randomLargeBodyName = function () {
   const CONSTELLATION_NAME = 2;
   var options = [{opt: NGC, prob: 20}, {opt: COMMON_NAME, prob: 50}, {opt: CONSTELLATION_NAME, prob: 30}];
   var name = null;
-  do { 
+  do {
     var choice = randomOption(options);
     switch (choice) {
       case NGC:
@@ -262,7 +264,7 @@ randomLargeBodyName = function () {
 
 randomSmallBodyName = function (p) {
   var name = null;
-  do { 
+  do {
     switch (p.system.planet_naming_style) {
       case PLANET_NAMING_STYLE_COMMON:
         name = SMALL_BODY_COMMON_NAMES.random();

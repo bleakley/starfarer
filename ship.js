@@ -14,6 +14,8 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
     this.facing = EAST;
   this.weapons = [];
 
+  this.warpCore = 20;
+  this.warpCoreMax = 20;
   this.hullMax = SHIP_HULL[type];
   this.hull = SHIP_HULL[type];
   this.shields = SHIP_SHIELD[type];
@@ -187,8 +189,12 @@ Ship.prototype = {
 
     if(this.shields > this.shieldsMax) {
       this.shields--; // if you are overcharged, you slowly leak extra shields
-    } else if(this.energy >= this.energyMax) {
+    } else if(this.energy >= this.energyMax/2) {
       this.shields = Math.min(this.shields + 1, this.shieldsMax);
+    }
+
+    if(this.energy >= this.energyMax/2) {
+      this.warpCore = Math.min(this.warpCore + 1, this.warpCoreMax);
     }
 
     if(this.energy > 2*this.energyMax) {
