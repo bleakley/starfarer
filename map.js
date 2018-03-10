@@ -23,7 +23,7 @@ if (TEST_MODE) {
   maneuverLevel = 4;
   universe.systems.slice(1).forEach( (sys) => {ps.known_systems.push(sys)});
   if (universe.systems[0].planets.length >= 3){
-    //universe.systems[0].planets[1].events = [new MedicalDeliveryRequestEvent (universe.systems[0].planets[1], universe.systems[0].planets[2])];   
+    //universe.systems[0].planets[1].events = [new MedicalDeliveryRequestEvent (universe.systems[0].planets[1], universe.systems[0].planets[2])];
   }
 }
 
@@ -250,25 +250,71 @@ advanceTurn =  function() {
 
   let system = getPlayerSystem(universe);
   let ps = getPlayerShip(system.ships);
-  var astar = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
+  let enemies = system.ships.filter(s => { return s.attackPlayer && !s.destroyed && !s.abandoned });
+  let allies = system.ships.filter(s => { return s.attackEnemies && !s.destroyed && !s.abandoned });
+  let weakestEnemy = _.first(_.sortBy(enemies, s => s.hull));
+
+  var astarForEnemies = new ROT.Path.AStar(ps.xCoord+ps.xMoment, ps.yCoord+ps.yMoment, (x,y) => {
      return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
   });
+  var astarForAllies;
+
+  var astarForNeutrals = new ROT.Path.AStar(20, 10, (x,y) => { //change these positions
+     return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
+  });
+
+  if (weakestEnemy) {
+    console.log(`weakest enemy is ${weakestEnemy.name} with ${weakestEnemy.hull} hull`);
+    astarForAllies = new ROT.Path.AStar(weakestEnemy.xCoord+weakestEnemy.xMoment, weakestEnemy.yCoord+weakestEnemy.yMoment, (x,y) => {
+       return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
+    });
+  } else {
+    astarForAllies = astarForNeutrals;
+  }
 
   let renderAttacks = false;
 
   system.ships.forEach((s) => {
     if (!s.player) {
 
-      if (s.attackPlayer) {
+      if (s.attackPlayer || s.mindControlByEnemyDuration) {
         s.weapons.forEach((w) => {
-          if (s.canFireWeapon(w) && ps.canBeHitByWeapon(s, w)) {
-            fire(s, ps, w, Function.prototype);
-            renderAttacks = true;
+          if (s.canFireWeapon(w)) {
+            if (ps.canBeHitByWeapon(s, w)) {
+              fire(s, ps, w, Function.prototype);
+              renderAttacks = true;
+            } else {
+              allies.forEach((a) => {
+                if (s.canFireWeapon(w) && a.canBeHitByWeapon(s, w)) {
+                  fire(s, a, w, Function.prototype);
+                  renderAttacks = true;
+                }
+              })
+            }
           }
         });
       }
 
-      s.plotBetterCourse(system.map, astar);
+      if (s.attackEnemies || s.mindControlByPlayerDuration) {
+        s.weapons.forEach((w) => {
+          if (s.canFireWeapon(w)) {
+              enemies.forEach((e) => {
+                if (s.canFireWeapon(w) && e.canBeHitByWeapon(s, w)) {
+                  fire(s, e, w, Function.prototype);
+                  renderAttacks = true;
+                }
+              });
+          }
+        });
+      }
+
+
+      if (s.attackEnemies || s.mindControlByPlayerDuration)
+        s.plotBetterCourse(system.map, astarForAllies);
+      else if (s.attackPlayer || s.mindControlByEnemyDuration)
+        s.plotBetterCourse(system.map, astarForEnemies);
+      else
+        s.plotBetterCourse(system.map, astarForNeutrals);
     }
     let maneuverMagnitude = freeDiagonalDistance([s.xCursor, s.yCursor], [s.xMoment, s.yMoment]);
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {

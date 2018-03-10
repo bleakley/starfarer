@@ -31,6 +31,7 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
   this.prisoners = randomNumber(0, this.maxPrisoners);
   this.credits = SHIP_LOOT[type];
   this.type = type;
+  this.flag = flag;
   if (flag == SHIP_FLAG_MERCHANT)
     this.credits = 2*SHIP_LOOT[type];
   switch (type) {
@@ -128,15 +129,21 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
     case SHIP_FLAG_MERCHANT:
       this.followPlayer = false;
       this.attackPlayer = false;
+      this.followEnemies = false;
+      this.attackEnemies = false;
       break;
     case SHIP_FLAG_PLAYER:
-      this.followPlayer = true;
+      this.followPlayer = false;
       this.attackPlayer = false;
+      this.followEnemies = true;
+      this.attackEnemies = true;
       break;
     case SHIP_FLAG_PIRATE:
     case SHIP_FLAG_KHAN:
       this.followPlayer = true;
       this.attackPlayer = true;
+      this.followEnemies = false;
+      this.attackEnemies = false;
       break;
   }
   this.destroyed = false;
@@ -164,8 +171,13 @@ Ship.prototype = {
     });
 	},
   regenerateSystems: function() {
-    if(this.energy >= this.energyMax) {
+    if(this.shields > this.shieldsMax) {
+      this.shields--; // if you are overcharged, you slowly leak extra shields
+    } else if(this.energy >= this.energyMax) {
       this.shields = Math.min(this.shields + 1, this.shieldsMax);
+    }
+    if(this.energy > 2*this.energyMax) {
+      this.takeHullDamage(1); // reactor meltdown!
     }
     if(this.energy > this.energyMax) {
       this.energy--; // if you are overcharged, you slowly leak extra energy
@@ -214,6 +226,12 @@ Ship.prototype = {
       case DAMAGE_MINDCONTROL:
         this.takeMindControlDamage(damage, attacker);
         break;
+      case DAMAGE_SIPHON:
+        this.takeSiphonDamage(damage, attacker);
+        break;
+      case DAMAGE_OVERLOAD:
+        this.takeOverchargeDamage(damage);
+        break;
     }
     return this.destroyed;
 	},
@@ -259,6 +277,7 @@ Ship.prototype = {
       return;
     if (this.player)
       return;
+    console.log(`${this.name} hit with mindcontrol by ${attacker.name} of the team ${TEAM_NAME[attacker.flag]}`);
     switch (attacker.flag) {
       case SHIP_FLAG_KHAN:
       case SHIP_FLAG_PIRATE:
@@ -272,6 +291,15 @@ Ship.prototype = {
         this.mindControlByPlayerDuration += damage;
         break;
     }
+    console.log(`${this.name} mindcontrol by (player: ${this.mindControlByPlayerDuration}) (enemy: ${this.mindControlByEnemyDuration})`);
+	},
+  takeSiphonDamage: function(damage, attacker) {
+    let amountSiphoned = Math.min(this.shields, damage);
+    this.shields = Math.max(0, this.shields - damage);
+    attacker.shields += amountSiphoned;
+	},
+  takeOverchargeDamage: function(damage) {
+    this.energy += damage;
 	},
   getLootWeapon: function() {
     switch (this.type) {
@@ -383,10 +411,10 @@ Ship.prototype = {
   getHighlightColor: function() {
     if (this.player)
       return "#0E4";
-    if (this.attackPlayer)
-      return "red";
     if (this.mindControlByPlayerDuration || this.mindControlByEnemyDuration)
       return "purple";
+    if (this.attackPlayer)
+      return "red";
     return "yellow";
   },
   toggleSelectedWeapon: function() { //only useful for player
@@ -493,7 +521,7 @@ Ship.prototype = {
     }
     let prob = this.getChanceToHit(weapon, target).prob;
     if (percentChance(prob)) {
-      target.takeDamage(weapon.damage, weapon.damageType);
+      target.takeDamage(weapon.damage, weapon.damageType, this);
       console.log(`${this.name} fires at ${target.name} (${prob}%) and hits`);
       return true;
     }

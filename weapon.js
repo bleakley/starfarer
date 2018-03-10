@@ -94,11 +94,11 @@ function Weapon(type)
       this.name = 'Mind Control Ray';
       this.cost = 100;
       this.range = 10;
-      this.damage = 3;
+      this.damage = 6;
       this.energy = 10;
       this.accuracy = 100;
       this.damageType = DAMAGE_MINDCONTROL;
-      this.makeNeutralsHostile = true;
+      this.makeNeutralsHostile = false;
       this.artifact = true;
       break;
     case WEAPON_ZERO_POINT:
