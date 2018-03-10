@@ -34,6 +34,7 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
   this.credits = SHIP_LOOT[type];
   this.type = type;
   this.flag = flag;
+  this.hasOrbitron = false;
   if (flag == SHIP_FLAG_MERCHANT)
     this.credits = 2*SHIP_LOOT[type];
   switch (type) {

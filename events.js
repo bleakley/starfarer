@@ -68,7 +68,7 @@ AnomalyCollapseEvent.prototype = {
 }
 
 function MessageEvent (message, time_until) {
-	this.message = "A subspace communication has been received from Altaris IV. " + message;
+	this.message = message;
 	this.time_until = time_until;
 }
 MessageEvent.prototype = {
@@ -79,11 +79,12 @@ MessageEvent.prototype = {
 
 function FindOrbitronEvent () {
 	this.message = "Amongst the crumbling ruins of a Precursor temple, your landing party finds a metal sphere with many spindly antennas. Your tech specialist is ecstatic...this is an intact Orbitron Device!\n\n" +
-  "Congratulations! You have saved the Altaris system and won the game.";
+  "Congratulations! You have saved the Altaris system.\n\n YOU HAVE WON THE GAME";
 	this.time_until = 0;
 }
 FindOrbitronEvent.prototype = {
 	action: function (universe, callbackFunction) {
+    getPlayerShip(getPlayerSystem(universe).ships).hasOrbitron = true;
     getAcknowledgement(this.message, callbackFunction);
 	}
 }

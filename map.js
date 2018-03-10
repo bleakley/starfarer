@@ -15,7 +15,7 @@ ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
 
-const TEST_MODE = true
+const TEST_MODE = false
 if (TEST_MODE) {
   ps.hullMax = 200;
   ps.hull = 200;
@@ -38,7 +38,7 @@ var shieldUpgradeCost = 10;
 var computerUpgradeCost = 10;
 
 var global_pending_events = [];
-var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
+var message_text = "A subspace communication has been received from Altaris IV. Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
 global_pending_events.push(new MessageEvent(message_text, 10));
 
 // these are event listeners
@@ -441,8 +441,6 @@ advanceTurn =  function() {
 
   console.log('status',getPlayerShip(system.ships).destroyed)
   if (getPlayerShip(system.ships).destroyed) {
-    
-  console.log('game over')
     system.ships.forEach((s) => {
       s.followPlayer = false;
       s.attackPlayer = false; //peace has come to the galaxy at last
@@ -463,7 +461,7 @@ advanceTurn =  function() {
   
   universe.turn++;
   
-  if (universe.turn==N_TURNS) {
+  if (universe.turn==N_TURNS && !getPlayerShip(system.ships).hasOrbitron) {
     global_pending_events.push(new MessageEvent("You have failed to find the Orbitron Device in time, and the Altaris system has destroyed by a supernova. A somber silence overcomes your crew as they realize that they are all that is left of the Altaris civilization.",0));
   }
   
