@@ -31,10 +31,10 @@ TempleEvent.prototype = {
 			mass: -1,
 			events: []
 		}
-		anomaly.events.push(new AnomalyCollapseEvent(anomaly));
+		/*anomaly.events.push(new AnomalyCollapseEvent(anomaly));
 		system.planets.push(anomaly);
 		system.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
-		system.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
+		system.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;*/
 
     getAcknowledgement(this.message, callbackFunction);
 
@@ -63,7 +63,6 @@ AnomalyCollapseEvent.prototype = {
     }
     system = getPlayerSystem(universe);
     system.planets.push(black_hole);
-    this.anomaly.destroy();
     getAcknowledgement(this.message, callbackFunction);
   }
 }
