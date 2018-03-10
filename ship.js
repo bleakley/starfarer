@@ -543,7 +543,7 @@ Ship.prototype = {
             if (target.shields > 0)
               addTextToCombatLog(messageString + `, but the target's shields prevent the weapon from taking effect.`);
             else
-              addTextToCombatLog(messageString + `, reducing the target's speed to ${target.speed}.`);
+              addTextToCombatLog(messageString + `, reducing the target's speed to ${target.speed()}.`);
             break;
           case DAMAGE_NEUTRON:
             if (target.shields > 0)
