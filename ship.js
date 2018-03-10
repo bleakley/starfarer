@@ -171,20 +171,30 @@ Ship.prototype = {
     });
 	},
   regenerateSystems: function() {
+    if(percentChance(this.crew-this.minCrew) && this.hull < this.hullMax && this.energy > 0) {
+      addTextToCombatLog(`The extra crew of the ${this.name} focus on damage control, and recover 1 point of hull.`);
+      this.hull = Math.min(this.hull + 1, this.hullMax);
+    }
+
     if(this.shields > this.shieldsMax) {
       this.shields--; // if you are overcharged, you slowly leak extra shields
     } else if(this.energy >= this.energyMax) {
       this.shields = Math.min(this.shields + 1, this.shieldsMax);
     }
+
     if(this.energy > 2*this.energyMax) {
       addTextToCombatLog(`DANGER! Reactor meltdown in progress on board ${this.name}!`);
       this.takeHullDamage(1); // reactor meltdown!
     }
-    if(this.energy > this.energyMax) {
+
+    if(percentChance(-1*(this.crew-this.minCrew)) && this.energyRegen > 0) {
+      addTextToCombatLog(`With insufficient manning, the ${this.name} is unable to make use of reactor output.`);
+    } else if(this.energy > this.energyMax) {
       this.energy--; // if you are overcharged, you slowly leak extra energy
     } else {
       this.energy = Math.min(this.energy + this.energyRegen, this.energyMax);
     }
+
     this.weapons.forEach((w) => { w.readyToFire = true; });
     this.mindControlByPlayerDuration = Math.max(0, this.mindControlByPlayerDuration - 1);
     this.mindControlByEnemyDuration = Math.max(0, this.mindControlByEnemyDuration - 1);

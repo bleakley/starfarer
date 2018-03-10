@@ -92,6 +92,7 @@ drawShipHighlight = function(s) {
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 0, `%c{${color}}Hull: ${s.hull}/${s.hullMax}`);
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 1, `%c{${color}}Shields: ${s.shields}/${s.shieldsMax}`);
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 2, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 3, `%c{${color}}Crew: ${s.crew}/${s.maxCrew} (min. ${s.minCrew})`);
   if (s.player)
     return;
   var ps = getPlayerShip(getPlayerSystem(universe).ships);
@@ -99,9 +100,9 @@ drawShipHighlight = function(s) {
   if (!pw)
     return;
   let cd = ps.getChanceToHit(pw, s);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 3, `%c{${color}} ${cd.prob}% to hit`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 4, `%c{${color}} ${cd.prob}% to hit`);
   for (let j = 0; j < cd.modifiers.length; j++)
-    mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 4 + j, `%c{${color}}${cd.modifiers[j]}`);
+    mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 5 + j, `%c{${color}}${cd.modifiers[j]}`);
 }
 
 drawFiringArc = function(ship, weapon) {
