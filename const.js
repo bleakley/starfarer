@@ -1,7 +1,8 @@
 const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
 const N_STAR_SYSTEMS = 8;
-const N_CLUES = 8;
+//const N_CLUES = 8;
+const N_CLUES = 0;
 
 const BODY_STAR_YELLOW = 0;
 const BODY_STAR_RED = 1;

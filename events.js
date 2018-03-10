@@ -170,7 +170,7 @@ TempleFindCoordinatesEvent.prototype = {
     system = getPlayerSystem(universe);
     ps = getPlayerShip(system.ships);
     if (ps.known_systems.indexOf(this.destination) > -1) {
-      this.message = `Your landing party finds a number of fascinating glyphs and diagrams inscribed in the wall of a Precursor temple. The diagrams appear to depict the ${destination.name} star system, whose hyperspace coordinates your navigator had previously recorded.`
+      this.message = `Your landing party finds a number of fascinating glyphs and diagrams inscribed in the wall of a Precursor temple. The diagrams appear to depict the ${this.destination.name} star system, a system whose hyperspace coordinates your navigator already has determined.`
     }
     else{
       ps.known_systems.push(this.destination);
