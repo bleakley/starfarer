@@ -177,6 +177,7 @@ Ship.prototype = {
       this.shields = Math.min(this.shields + 1, this.shieldsMax);
     }
     if(this.energy > 2*this.energyMax) {
+      addTextToCombatLog(`DANGER! Reactor meltdown in progress on board ${this.name}!`);
       this.takeHullDamage(1); // reactor meltdown!
     }
     if(this.energy > this.energyMax) {
@@ -206,7 +207,7 @@ Ship.prototype = {
 
       if (!this.destroyed) // no double dipping
         this.event = new LootAbandonedShipEvent(this.name, 2*this.credits, weaponLoot);
-      console.log(this.name + ' has lost all crew and is defenseless.');
+      addTextToCombatLog(this.name + ' has lost all crew and is defenseless.');
     }
   },
   takeDamage: function(damage, damageType, attacker) {
@@ -521,11 +522,55 @@ Ship.prototype = {
     }
     let prob = this.getChanceToHit(weapon, target).prob;
     if (percentChance(prob)) {
+      let initiallyDestroyed = target.destroyed;
+      let initialShields = target.shields;
       target.takeDamage(weapon.damage, weapon.damageType, this);
-      console.log(`${this.name} fires at ${target.name} (${prob}%) and hits`);
+      let messageString = `${this.name} fires at ${target.name} with its ${weapon.name} (${prob}%) and hits`;
+      if (!initiallyDestroyed && target.destroyed) {
+        addTextToCombatLog(messageString + `, destroying it.`);
+      } else {
+        switch (weapon.damageType) {
+          case DAMAGE_NORMAL:
+            addTextToCombatLog(messageString + `, dealing ${weapon.damage} damage.`);
+            break;
+          case DAMAGE_ION:
+            addTextToCombatLog(messageString + `, draining shields and energy for ${weapon.damage} damage.`);
+            break;
+          case DAMAGE_TRACTOR:
+            if (target.shields > 0)
+              addTextToCombatLog(messageString + `, but the target's shields prevent the weapon from taking effect.`);
+            else
+              addTextToCombatLog(messageString + `, reducing the target's speed to ${target.speed}.`);
+            break;
+          case DAMAGE_NEUTRON:
+            if (target.shields > 0)
+              addTextToCombatLog(messageString + `, but the target's shields prevent the weapon from taking effect.`);
+            else
+              addTextToCombatLog(messageString + `, dealing ${weapon.damage} directly to the crew.`);
+            break;
+          case DAMAGE_MINDCONTROL:
+            if (target.shields > 0)
+              addTextToCombatLog(messageString + `, but the target's shields prevent the weapon from taking effect.`);
+            else
+              addTextToCombatLog(messageString + `, seizing control of the hostile crew's minds.`);
+            break;
+          case DAMAGE_SIPHON:
+            if (initialShields <= 0)
+              addTextToCombatLog(messageString + `, but the target has no shields to drain.`);
+            else
+              addTextToCombatLog(messageString + `, draining the target's shields of ${initialShields-target.shields} points.`);
+            break;
+          case DAMAGE_OVERLOAD:
+            addTextToCombatLog(messageString + `, sending a massive surge of energy directly into the target's reactor.`);
+            break;
+          default:
+            addTextToCombatLog(messageString);
+            break;
+        }
+      }
       return true;
     }
-    console.log(`${this.name} fires at ${target.name} (${prob}%) and misses`);
+    addTextToCombatLog(`${this.name} fires at ${target.name} with its ${weapon.name} (${prob}%) and misses`);
     return false;
   },
   speed: function() {

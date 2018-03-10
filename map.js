@@ -203,10 +203,28 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 11 + ps.weapons.length, message.text);
 }
 
+addTextToCombatLog = function(text) {
+  combatLog.push(text);
+  if (combatLog.length > COMBAT_LOG_LENGTH) {
+    combatLog.shift();
+  }
+  drawBottomBar();
+}
+
+drawBottomBar = function() {
+  bottomBarDisplay.clear();
+  for (let j = 0; j < combatLog.length; j++) {
+    bottomBarDisplay.drawText(0, j, combatLog[j]);
+  }
+}
+
 init = function()
 {
   document.body.appendChild(mapDisplay.getContainer());
   document.body.appendChild(sideBarDisplay.getContainer());
+  var div = document.createElement("div");
+	div.appendChild(bottomBarDisplay.getContainer());
+	document.body.appendChild(div);
   document.getElementById("stuffOnTop").appendChild(popUpDisplay.getContainer());
 
 	drawAll(true);
@@ -333,11 +351,23 @@ advanceTurn =  function() {
     if(_.has(system.map, [s.xCoord, s.yCoord, 'terrain'])){
 
       let effect = TERRAIN_EFFECTS[system.map[s.xCoord][s.yCoord].terrain];
-      if (s.takeDamage(effect.damage * (Math.max(0, s.speed() + 1 - effect.minSpeedForDamage)), effect.damageType)) {
+      let damage = effect.damage * (Math.max(0, s.speed() + 1 - effect.minSpeedForDamage));
+      let message = `The ${s.name} collides with ${effect.terrainName}, takes ${damage} damage`
+      if (s.takeDamage(damage, effect.damageType)) {
+
+        if (effect.disintegrateOnDeath) {
+          message += ` and is instantly annihilated.`
+          s.toBeDisintegrated = true;
+        } else {
+          message += ` and is destroyed.`
+        }
+
         if (effect.stopOnDeath)
           s.stop();
-        if (effect.disintegrateOnDeath)
-          s.toBeDisintegrated = true;
+      }
+
+      if (damage) {
+        addTextToCombatLog(message);
       }
 
       if (s.player && !s.destroyed) {
@@ -594,7 +624,7 @@ selectDirection.handleEvent = function(event) {
 
         var so = new selectOption("Select a destination:", options);
         so.run();
-        message.text = "Hyperspace jump successful...warp core recharging.";
+        addTextToCombatLog("Hyperspace jump successful...warp core recharging.");
       }
 			break;
 	}

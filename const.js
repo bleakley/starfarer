@@ -1,5 +1,7 @@
 const MAP_WIDTH = 120;
 const MAP_HEIGHT = 50;
+const SIDEBAR_WIDTH = 40;
+const COMBAT_LOG_LENGTH = 8;
 const N_STAR_SYSTEMS = 8;
 //const N_CLUES = 8;
 const N_CLUES = 0;
@@ -356,7 +358,8 @@ TERRAIN_EFFECTS[TERRAIN_STAR_YELLOW] = {
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
 	disintegrateOnDeath: true,
-	stopForEvent: false
+	stopForEvent: false,
+	terrainName: 'the surface of a star'
 };
 TERRAIN_EFFECTS[TERRAIN_QUASAR] = {
 	minSpeedForDamage: 0,
@@ -364,7 +367,8 @@ TERRAIN_EFFECTS[TERRAIN_QUASAR] = {
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
 	disintegrateOnDeath: true,
-	stopForEvent: false
+	stopForEvent: false,
+	terrainName: 'the surface of a quasar'
 };
 TERRAIN_EFFECTS[TERRAIN_BLACK_HOLE] = {
 	minSpeedForDamage: 0,
@@ -372,7 +376,8 @@ TERRAIN_EFFECTS[TERRAIN_BLACK_HOLE] = {
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
 	disintegrateOnDeath: true,
-	stopForEvent: false
+	stopForEvent: false,
+	terrainName: 'the event horizon of a black hole'
 };
 TERRAIN_EFFECTS[TERRAIN_CORONA_YELLOW] = {
 	minSpeedForDamage: 0,
@@ -380,7 +385,8 @@ TERRAIN_EFFECTS[TERRAIN_CORONA_YELLOW] = {
 	damageType: DAMAGE_ION,
 	stopOnDeath: false,
 	disintegrateOnDeath: false,
-	stopForEvent: false
+	stopForEvent: false,
+	terrainName: 'a solar corona'
 };
 TERRAIN_EFFECTS[TERRAIN_QUASAR_JET] = {
 	minSpeedForDamage: 0,
@@ -388,7 +394,8 @@ TERRAIN_EFFECTS[TERRAIN_QUASAR_JET] = {
 	damageType: DAMAGE_ION,
 	stopOnDeath: false,
 	disintegrateOnDeath: false,
-	stopForEvent: false
+	stopForEvent: false,
+	terrainName: 'the relativistic ion jet of a quasar'
 };
 TERRAIN_EFFECTS[TERRAIN_ANOMALY] = {
 	minSpeedForDamage: 0,
@@ -396,7 +403,8 @@ TERRAIN_EFFECTS[TERRAIN_ANOMALY] = {
 	damageType: DAMAGE_ION,
 	stopOnDeath: false,
 	disintegrateOnDeath: false,
-	stopForEvent: false
+	stopForEvent: false,
+	terrainName: 'the bizarre subspatial curvature of an anomaly'
 };
 
 const terrestialTerrain = {
@@ -405,7 +413,8 @@ const terrestialTerrain = {
 	damageType: DAMAGE_NORMAL,
 	stopOnDeath: true,
 	disintegrateOnDeath: false,
-	stopForEvent: true
+	stopForEvent: true,
+	terrainName: 'the surface of a planet'
 };
 
 const harmlessTerrain = {

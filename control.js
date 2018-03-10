@@ -4,7 +4,12 @@ mapDisplay = new ROT.Display({
 });
 
 sideBarDisplay = new ROT.Display({
-  width:40, height:MAP_HEIGHT,
+  width:SIDEBAR_WIDTH, height:MAP_HEIGHT,
+  layout:"rect", fg: "#0E4", forceSquareRatio: false
+});
+
+bottomBarDisplay = new ROT.Display({
+  width:MAP_WIDTH+SIDEBAR_WIDTH, height:COMBAT_LOG_LENGTH,
   layout:"rect", fg: "#0E4", forceSquareRatio: false
 });
 
@@ -12,6 +17,8 @@ popUpDisplay = new ROT.Display({
   width:80, height:23,
   layout:"rect", fg: "#0E4"
 });
+
+var combatLog = [];
 
 function selectOption(situation, options)
 {
