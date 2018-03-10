@@ -3,7 +3,6 @@ function ArrivalEvent (ship) {
 	this.time_until = 0;
 	this.ship = ship;
 }
-
 ArrivalEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
@@ -17,7 +16,6 @@ function TempleEvent () {
 	this.message = `Your landing party searches a crumbling Precursor temple and finds a digicodex containing the coordinates of a nearby anomaly. However, while decrypting the access key, your tech specialist accidentally activated the temple's subspace transponder. Orbital simulations indicate that if any ships in the nearest star system picked up the transmission, they could arrive in as few as ${this.arrival_delay} days.`;
 	this.time_until = 0;
 }
-
 TempleEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
@@ -52,7 +50,6 @@ function AnomalyCollapseEvent (anomaly) {
 	this.time_until = 0;
 	this.anomaly = anomaly;
 }
-
 AnomalyCollapseEvent.prototype = {
   action: function (universe, callbackFunction) {
     black_hole = {
@@ -71,12 +68,10 @@ AnomalyCollapseEvent.prototype = {
   }
 }
 
-
 function MessageEvent (message, time_until) {
 	this.message = "A subspace communication has been received from Altaris IV. " + message;
 	this.time_until = time_until;
 }
-
 MessageEvent.prototype = {
   action: function (universe, callbackFunction) {
     getAcknowledgement(this.message, callbackFunction);
@@ -88,13 +83,11 @@ function FindOrbitronEvent () {
   "Congratulations! You have saved the Altaris system and won the game.";
 	this.time_until = 0;
 }
-
 FindOrbitronEvent.prototype = {
 	action: function (universe, callbackFunction) {
     getAcknowledgement(this.message, callbackFunction);
 	}
 }
-
 
 function TempleClueEvent (orbitron_system, orbitron_planet) {
 
@@ -111,7 +104,6 @@ function TempleClueEvent (orbitron_system, orbitron_planet) {
   }
 	this.time_until = 0;
 }
-
 TempleClueEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
@@ -119,13 +111,11 @@ TempleClueEvent.prototype = {
 	}
 }
 
-
 function SpaceStationEvent () {
 	this.message = "As you approach the space station, you see that its scaffolds have been badly damaged by laser burns. The commander of the space station explains that a savage band of space pirates ransacked the station 17 days ago. They were searching for Precursor digicodexes. \"I just don't get why space pirates would care so much about some boring old books!\"\n\n" +
   "The commander looks scarcely old enough to be a ensign. You speculate that everyone above him in the chain of command was killed in the attack.";
 	this.time_until = 0;
 }
-
 SpaceStationEvent.prototype = {
 	action: function (universe, callbackFunction) {
     getAcknowledgement(this.message, callbackFunction);
@@ -139,7 +129,6 @@ function LootDestroyedShipEvent (name, credits, item) {
 	this.credits = credits;
 	this.time_until = 0;
 }
-
 LootDestroyedShipEvent.prototype = {
 	action: function (universe, callbackFunction) {
 		system = getPlayerSystem(universe);
@@ -170,13 +159,11 @@ LootAbandonedShipEvent.prototype = {
 	}
 }
 
-
 function TempleFindCoordinatesEvent (destination) {
 	this.message = `Your landing party finds a number of fascinating glyphs and diagrams inscribed in the wall of a Precursor temple. Your tech specialist recognizes the diagrams as a star map, and is able to determine the hyperspace coordinates of the ${destination.name} star system.`;
 	this.time_until = 0;
   this.destination = destination;
 }
-
 TempleFindCoordinatesEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
@@ -192,13 +179,11 @@ TempleFindCoordinatesEvent.prototype = {
 	}
 }
 
-
 function AnomalyWarpEvent (destination) {
 	this.message = "";
 	this.time_until = 0;
   this.destination = destination;
 }
-
 AnomalyWarpEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
@@ -210,6 +195,26 @@ AnomalyWarpEvent.prototype = {
       this.message = this.message + " Your navigator has added the hyperspace coordinates of this system to her system log."
     }
     warp(getPlayerShip(system.ships), system, this.destination);
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
+function FindTribeEvent () {
+	this.message = "You find a pre-warptech city-state on this planet. Some of the civilians left unemployed after the recent cryptocurrency collapse are eager to leave their homeworld and start a new life.";
+	this.time_until = 0;
+}
+FindTribeEvent.prototype = {
+	action: function (universe, callbackFunction) {
+    let system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+    var crew = Math.min(randomNumber(5,20), ps.maxCrew - ps.crew);
+    if (crew > 0) {
+      this.message += ` Your ship acquires ${crew} new crewmembers.`
+      ps.crew += crew;
+    }
+    else {
+      this.message += " With great sadness you inform them that your ship doesn't have any room to fit new crew members."
+    }
     getAcknowledgement(this.message, callbackFunction);
 	}
 }

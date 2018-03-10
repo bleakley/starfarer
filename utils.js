@@ -11,12 +11,7 @@ function randomNumber(min, max) { return min + Math.floor(Math.random() * (max -
 function percentChance(chance) { return randomNumber(1, 100) <= chance; }
 
 randomOption = function(options) {
-  if (_.sumBy(options, 'prob') != 100) {
-    console.log('Error in random option selection, probabilities do not sum to 100.');
-    console.log(options);
-    return options[0].opt;
-  }
-  let roll = randomNumber(1, 100);
+  let roll = randomNumber(1, _.sumBy(options, 'prob'));
   let randomizedOptions = _.shuffle(options);
 
   for (let i = 0; i < options.length; i++) {
