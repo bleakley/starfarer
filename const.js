@@ -4,6 +4,7 @@ const SIDEBAR_WIDTH = 40;
 const COMBAT_LOG_LENGTH = 8;
 const N_STAR_SYSTEMS = 8;
 const N_CLUES = 8;
+const N_TURNS = 1000;
 
 const BODY_STAR_YELLOW = 0;
 const BODY_STAR_RED = 1;

@@ -100,3 +100,15 @@ getConfirmation = function(string, callbackFunction1, callbackFunction2)
 
 	window.addEventListener('keydown', cf);
 }
+
+gameOver = function(string)
+{
+	document.getElementById('stuffOnTop').style.display = 'initial';
+	popUpDisplay.clear();
+	popUpDisplay.drawText(1, 1, string);
+  cf = function(event) {
+    event.preventDefault();
+		window.removeEventListener('keydown', cf);
+	};
+	window.addEventListener('keydown', cf);
+}

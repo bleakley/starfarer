@@ -440,12 +440,17 @@ advanceTurn =  function() {
     }
   });
 
+  console.log('status',getPlayerShip(system.ships).destroyed)
   if (getPlayerShip(system.ships).destroyed) {
+    
+  console.log('game over')
     system.ships.forEach((s) => {
       s.followPlayer = false;
       s.attackPlayer = false; //peace has come to the galaxy at last
     });
-  }
+    gameOver("Your ship has been destroyed!\n\nGAME OVER");
+    return;
+  } 
 
   system.ships.forEach((s) => {
     if (!s.player) {
@@ -456,8 +461,13 @@ advanceTurn =  function() {
       }
     }
   });
-
+  
   universe.turn++;
+  
+  if (universe.turn==N_TURNS) {
+    global_pending_events.push(new MessageEvent("You have failed to find the Orbitron Device in time, and the Altaris system has destroyed by a supernova. A somber silence overcomes your crew as they realize that they are all that is left of the Altaris civilization.",0));
+  }
+  
   if (renderAttacks) {
     setTimeout(resolvePendingEvents, 1000);
   } else {
