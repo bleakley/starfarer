@@ -261,27 +261,20 @@ randomLargeBodyName = function () {
 }
 
 randomSmallBodyName = function (p) {
-  const COMMON_NAME = 0;
-  const SCIENTIFIC_NAME = 1;
-  const SYSTEM_DERIVED_NAME = 1;
-  var options = [{opt: COMMON_NAME, prob: 40}, {opt: SCIENTIFIC_NAME, prob: 30}, {opt: SYSTEM_DERIVED_NAME, prob: 30}];
   var name = null;
   do { 
-    var choice = randomOption(options);
-    switch (choice) {
-      case COMMON_NAME:
+    switch (p.system.planet_naming_style) {
+      case PLANET_NAMING_STYLE_COMMON:
         name = SMALL_BODY_COMMON_NAMES.random();
         break;
-      case SCIENTIFIC_NAME:
-        name = SMALL_BODY_SCIENTIFIC_NAMES.random() + randomNumber(1,999);
+      case PLANET_NAMING_STYLE_SCIENTIFIC:
+        name = SMALL_BODY_SCIENTIFIC_NAMES.random() + "-" + randomNumber(1,999);
         break;
-      case SYSTEM_DERIVED_NAME:
+      case PLANET_NAMING_STYLE_SYSTEM_DERIVED:
         name = p.system.name + " " + SMALL_BODY_SYSTEM_DERIVED_NAMES.random();
-        if (p.system.name.substring(0,3) == "NGC")
-          name = null;
     }
   }
-  while(name != null && USED_BODY_NAMES.indexOf(name) < -1);
+  while(USED_BODY_NAMES.indexOf(name) < -1);
   USED_BODY_NAMES.push(name);
   return name;
 }

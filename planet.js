@@ -8,7 +8,7 @@ function Planet (xCoord, yCoord, radius, system) {
   this.system = system;
   this.name = randomSmallBodyName(this);
 }
-//"AW-197", "AZ-84", "UX-25", "GV-9", "RN-43", "UQ-513", "XR-190", "BX-64"
+
 Planet.prototype = {
   addRandomEvent: function() {
     var options = [];

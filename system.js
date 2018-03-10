@@ -13,9 +13,12 @@ function System (universe) {
       mass: randomNumber(1,4)*100,
       events: null
     });
-    
-  this.addRandomPlanets()
   this.name = this.planets[0].name;
+  if (this.name.substring(0,3) == "NGC")
+    this.planet_naming_style = PLANET_NAMING_STYLE_SCIENTIFIC;
+  else
+    this.planet_naming_style = [PLANET_NAMING_STYLE_COMMON, PLANET_NAMING_STYLE_SCIENTIFIC, PLANET_NAMING_STYLE_SYSTEM_DERIVED].random();
+  this.addRandomPlanets()
   this.map = [];
   this.generateMap();
   this.ships = [];
