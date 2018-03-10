@@ -14,7 +14,7 @@ ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
 
-const TEST_MODE = true
+const TEST_MODE = false
 if (TEST_MODE) {
   ps.hullMax = 200;
   ps.hull = 200;
