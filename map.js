@@ -10,7 +10,7 @@ ps.char = '@';
 ps.hullMax = 12;
 ps.hull = 12;
 ps.credits = 25;
-ps.mountWeapon(new Weapon('Tractor Beam', 10, 1, 100, 3, DAMAGE_TRACTOR), MOUNT_FWD);
+ps.mountWeapon(new Weapon(WEAPON_TRACTOR_BEAM), MOUNT_FWD);
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;

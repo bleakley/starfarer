@@ -123,7 +123,9 @@ SpaceStationEvent.prototype = {
 }
 
 function LootDestroyedShipEvent (name, credits, item) {
+	this.item = new Weapon(item);
 	this.message = `You lock on to the destroyed ${name} and slice open its hull with your boarding tubes. Your crew scours the ship and manage to download ${credits} BitCredits from the central computer.`;
+	this.message += `Most of the ships systems and weapons were badly damaged in combat, but you are able to salvage a ${this.item.name}.`
 	this.credits = credits;
 	this.time_until = 0;
 }
@@ -132,7 +134,9 @@ LootDestroyedShipEvent.prototype = {
 		system = getPlayerSystem(universe);
     ps = getPlayerShip(system.ships);
 		ps.credits += this.credits;
-    getAcknowledgement(this.message, callbackFunction);
+    getAcknowledgement(this.message, () => {
+			equipWeapon(ps, this.item, callbackFunction);
+		});
 	}
 }
 
