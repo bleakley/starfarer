@@ -249,6 +249,7 @@ randomLargeBodyName = function () {
 
 equipWeapon = function (ship, weapon, callback) {
   let message = `You have a new ${weapon.name}. Where will you mount it?`;
+  var options = [];
   if (ship.maneuverCost < ship.energyMax) {
     options.push({ t: `Mount it on the forward end of the ship.`, o: () => {
         ship.mountWeapon(weapon, MOUNT_FWD);
@@ -286,4 +287,7 @@ equipWeapon = function (ship, weapon, callback) {
     });
   }
   options.push({ t: `Just jettison it. The thing will only slow us down.`, o: callback });
+
+  var so = new selectOption(message, options);
+  so.run();
 }

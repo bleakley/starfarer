@@ -130,6 +130,10 @@ ShopEvent.prototype = {
       }});
     }
 
+    options.push({ t: `Buy new weapons and mount them to your ship.`, o: () => {
+      this.buyWeapons(universe, callbackFunction);
+    }});
+
     if (ps.weapons.length > 0)
       options.push({ t: `Scrap weapons to earn money, free up crew, and reduce ship mass.`, o: () => {
         this.scrapWeapons(universe, callbackFunction);
@@ -169,6 +173,36 @@ ShopEvent.prototype = {
     });
 
     var so = new selectOption('Scrap weapons to earn money, free up crew, and reduce ship mass.', options);
+    so.run();
+  },
+  buyWeapons: function (universe, callbackFunction) {
+    system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+
+    let laserCannonCost = 10;
+    let ionCannonCost = 10;
+
+    var options = [];
+    options.push({ t: `Buy a Laser Cannon for ${laserCannonCost} BitCredits and +1 mass`, o: () => {
+      if(ps.credits < laserCannonCost) {
+        getAcknowledgement(`You can't afford that!`, () => { this.buyWeapons(universe, callbackFunction); });
+      } else {
+        equipWeapon(ps, new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), this.buyWeapons.bind(this, universe, callbackFunction));
+      }
+    }});
+    options.push({ t: `Buy an Ion Cannon for ${ionCannonCost} BitCredits and +1 mass`, o: () => {
+      if(ps.credits < ionCannonCost) {
+        getAcknowledgement(`You can't afford that!`, () => { this.buyWeapons(universe, callbackFunction); });
+      } else {
+        equipWeapon(ps, new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), this.buyWeapons.bind(this, universe, callbackFunction));
+      }
+    }});
+    options.push({ t: `Leave the weapon shop.`, o: () => {
+        this.action(universe, callbackFunction);
+      }
+    });
+
+    var so = new selectOption('Weapons of war are available here for a reasonable cost. Note that installing a weapon increases the mass of your ship and your minimum crew requirement.', options);
     so.run();
   }
 }
