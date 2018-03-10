@@ -2,7 +2,7 @@ function Universe () {
   this.systems = [];
 
   for (var count = 0; count < N_STAR_SYSTEMS; count++) {
-    this.systems.push(new System());
+    this.systems.push(new System(this));
   }
 
   // Determine location of the Orbitron Device
@@ -36,7 +36,7 @@ function Universe () {
     sys.planets.forEach( (p) => {
       if (p.class == BODY_PLANET_BARREN || p.class == BODY_PLANET_TERRAN || p.class == BODY_PLANET_FROZEN)
         if (p.events.length == 0){
-          p.events.push(new TempleEvent);
+          p.addRandomEvent();
       }
     });
   });
@@ -81,7 +81,6 @@ Universe.prototype = {
             source.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
             connected_systems.push(destination);
             disconnected_systems.pop();
-            console.log(source,destination)
       }
     }
 

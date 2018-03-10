@@ -1,6 +1,7 @@
 // Construct an object representing a star system
-function System () {
+function System (universe) {
 
+  this.universe = universe;
   this.planets = [];
   this.planets.push(
     {
@@ -12,44 +13,11 @@ function System () {
       mass: randomNumber(1,4)*100,
       events: null
     });
-
-  var n_planets = randomNumber(0, 3);
-  for (i = 0; i < n_planets; i++) {
-
-    let r = randomNumber(2,3);
-    var collision = true;
-    for (var attempts = 0; attempts < 1000; attempts++) {
-      x = randomNumber(8,MAP_WIDTH-8);
-      y = randomNumber(8,MAP_HEIGHT-8);
-      collision = false;
-      for (var count = 0; count < this.planets.length; count++) {
-        if (Math.abs(this.planets[count].xCoord - x) < this.planets[count].radius + r + 1)
-          collision = true;
-        if (Math.abs(this.planets[count].yCoord - y) < this.planets[count].radius + r + 1)
-          collision = true;
-      }
-      console.log(collision)
-      if (!collision)
-        break;
-    }
-
-    if (!collision) {
-      this.planets.push({
-        name: SMALL_BODY_NAMES.random(),
-        xCoord: x,
-        yCoord: y,
-        radius: r,
-        class: randomOption(SMALL_BODIES),
-        mass: randomNumber(1,4),
-        events: []
-      });
-    }
-  }
+    
+  this.addRandomPlanets()
   this.name = this.planets[0].name;
-
   this.map = [];
   this.generateMap();
-
   this.ships = [];
 
   let encounters = [
@@ -205,8 +173,32 @@ System.prototype = {
       });
       if (this.map[x][y].body != null)
         collision = true;
-      console.log(collision)
     }
     return([x,y]);
+  },
+  addRandomPlanets: function() {
+    var n_planets = randomNumber(0, 3);
+    for (i = 0; i < n_planets; i++) {
+
+      let r = randomNumber(2,3);
+      var collision = true;
+      for (var attempts = 0; attempts < 1000; attempts++) {
+        x = randomNumber(8,MAP_WIDTH-8);
+        y = randomNumber(8,MAP_HEIGHT-8);
+        collision = false;
+        for (var count = 0; count < this.planets.length; count++) {
+          if (Math.abs(this.planets[count].xCoord - x) < this.planets[count].radius + r + 1)
+            collision = true;
+          if (Math.abs(this.planets[count].yCoord - y) < this.planets[count].radius + r + 1)
+            collision = true;
+        }
+        if (!collision)
+          break;
+      }
+
+      if (!collision) {
+        this.planets.push(new Planet(x, y, r, this));
+      }
+    }
   }
 }

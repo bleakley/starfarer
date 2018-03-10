@@ -10,9 +10,21 @@ ps.char = '@';
 ps.hullMax = 15;
 ps.hull = 15;
 ps.credits = 25;
+
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
+
+const TEST_MODE = false
+if (TEST_MODE) {
+  ps.hullMax = 200;
+  ps.hull = 200;
+  ps.energyMax = 200;
+  ps.energy = 200;
+  maneuverLevel = 4;
+  universe.systems.slice(1).forEach( (sys) => {ps.known_systems.push(sys)});
+  universe.systems[0].planets[1].events = [new FindTribeEvent()];
+}
 
 var repairCost = 1;
 var reactorUpgradeCost = 10;
@@ -339,7 +351,6 @@ resolvePendingEvents = function() {
     let e = global_pending_events[count];
     e.time_until = e.time_until - 1;
     if (e.time_until <= 0) {
-      console.log(e);
       e.action(universe, resolvePendingEvents);
       index = global_pending_events.indexOf(e);
       global_pending_events.splice(index, 1);
