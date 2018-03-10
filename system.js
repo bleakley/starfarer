@@ -68,12 +68,10 @@ function System (universe) {
         let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN);
         this.ships.push(s);
       }
-      for (var count = 0; count < randomNumber(1, 2); count++) {
+      for (var count = 0; count < randomNumber(0, 3); count++) {
         let s = new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_SLOOP, SHIP_FLAG_KHAN);
         this.ships.push(s);
       }
-      if (percentChance(50))
-        this.ships.push(new Ship(this.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_TRANSPORT, SHIP_FLAG_KHAN));
       break;
   }
 

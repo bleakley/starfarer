@@ -229,6 +229,7 @@ warp = function (ship, source, destination) {
   ship.yMoment = randomNumber(-2,2);
   ship.xCursor = ps.xMoment;
   ship.yCursor = ps.yMoment;
+  this.warpCore = 0;
   ship.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
   if (ship.player && source.bgm != destination.bgm) {
     source.bgm.pause();

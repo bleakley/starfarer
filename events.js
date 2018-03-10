@@ -25,14 +25,14 @@ TempleEvent.prototype = {
     let destination = candidate_destinations.random();
     let location = system.randomUnoccupiedSpace();
     let anomaly = new Planet(location[0], location[1], 0, system);
-    anomaly.name = getAnomalyName(); 
+    anomaly.name = getAnomalyName();
     anomaly.class = BODY_ANOMALY;
     anomaly.mass = -1;
     anomaly.events = [new AnomalyWarpEvent(anomaly, destination)];
     system.planets.push(anomaly);
     system.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
     system.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
-    
+
     getAcknowledgement(this.message, callbackFunction);
 
     var ship = new Ship(system.randomUnoccupiedSpace(), [2,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN)
@@ -241,7 +241,6 @@ MoggKhanArrivalEvent.prototype = {
 		for (let n = 0; n < 3; n++) {
 			possibleSystems[n].khanFleet = true;
 			possibleSystems[n].ships.push(new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,1], SHIP_TYPE_BATTLESHIP, SHIP_FLAG_KHAN));
-			possibleSystems[n].ships.push(new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,1], SHIP_TYPE_TRANSPORT, SHIP_FLAG_KHAN));
 			for (var count = 0; count < 2; count++) {
 				let s = new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN);
 				possibleSystems[n].ships.push(s);
