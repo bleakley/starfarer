@@ -40,7 +40,7 @@ TempleEvent.prototype = {
 
     getAcknowledgement(this.message, callbackFunction);
 
-    var ship = new Ship(this.randomUnoccupiedSpace(), [2,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN)
+    var ship = new Ship(system.randomUnoccupiedSpace(), [2,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN)
     arrival = new ArrivalEvent(ship);
     arrival.time_until = this.arrival_delay;
     system.pending_events.push(arrival);
@@ -128,6 +128,20 @@ function SpaceStationEvent () {
 
 SpaceStationEvent.prototype = {
 	action: function (universe, callbackFunction) {
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
+function LootDestroyedShipEvent (name, credits, item) {
+	this.message = `You lock on to the destroyed ${name} and slice open its hull with your boarding tubes. Your crew scours the ship and manage to download ${credits} BitCredits from the central computer.`;
+	this.time_until = 0;
+}
+
+LootDestroyedShipEvent.prototype = {
+	action: function (universe, callbackFunction) {
+		system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+		ps.credits += credits;
     getAcknowledgement(this.message, callbackFunction);
 	}
 }

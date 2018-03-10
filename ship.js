@@ -210,6 +210,7 @@ Ship.prototype = {
     this.maneuverLevel = 0;
     this.powerDown();
     this.destroyed = true;
+    this.event = new LootDestroyedShipEvent(this.name, this.credits, null);
     console.log(this.name + ' is destroyed');
 	},
   getTurnsUntilCollision: function(map) {
