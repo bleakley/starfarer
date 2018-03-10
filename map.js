@@ -14,7 +14,7 @@ ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
 
-const TEST_MODE = false
+const TEST_MODE = true
 if (TEST_MODE) {
   ps.hullMax = 200;
   ps.hull = 200;
@@ -22,9 +22,8 @@ if (TEST_MODE) {
   ps.energy = 200;
   maneuverLevel = 4;
   universe.systems.slice(1).forEach( (sys) => {ps.known_systems.push(sys)});
-  if (universe.systems[0].planets.length >= 3){
-    //universe.systems[0].planets[1].events = [new MedicalDeliveryRequestEvent (universe.systems[0].planets[1], universe.systems[0].planets[2])];
-  }
+  ps.mountWeapon(new Weapon(WEAPON_SINGULARITY), MOUNT_FWD);
+  ps.mountWeapon(new Weapon(WEAPON_PURIFICATION), MOUNT_FWD);
 }
 
 var repairCost = 1;
@@ -185,12 +184,13 @@ drawSideBar = function()
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
 	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}`);
-  sideBarDisplay.drawText(2, 1, `BitCredits: ${ps.credits}`);
-	sideBarDisplay.drawText(2, 3, `Hull: ${ps.hull}/${ps.hullMax}`);
-	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
-	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
-	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
-  sideBarDisplay.drawText(2, 7, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
+	sideBarDisplay.drawText(2, 1, `System: ${getPlayerSystem(universe).name}`);
+  sideBarDisplay.drawText(2, 2, `BitCredits: ${ps.credits}`);
+	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
+	sideBarDisplay.drawText(2, 5, `Shields: ${ps.shields}/${ps.shieldsMax}`);
+	sideBarDisplay.drawText(2, 6, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
+	sideBarDisplay.drawText(2, 7, `Maneuver: -${ps.maneuverCost}/\u0394`);
+  sideBarDisplay.drawText(2, 8, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
   for (let i = 0; i < ps.weapons.length; i++) {
     let w = ps.weapons[i];
     let color = '#0E4';
@@ -198,9 +198,9 @@ drawSideBar = function()
       color = 'dimgrey';
     else if (w.selected)
       color = 'yellow';
-    sideBarDisplay.drawText(2, 9+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
+    sideBarDisplay.drawText(2, 10+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
   }
-	sideBarDisplay.drawText(2, 11 + ps.weapons.length, message.text);
+	sideBarDisplay.drawText(2, 12 + ps.weapons.length, message.text);
 }
 
 addTextToCombatLog = function(text) {

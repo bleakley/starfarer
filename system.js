@@ -109,16 +109,19 @@ function System (universe) {
 }
 
 System.prototype = {
+  clearTile: function (x, y) {
+    this.map[x][y] = {
+      terrain: randomOption([{ prob: 80, opt: TERRAIN_NONE_EMPTY}, {prob: 15, opt: TERRAIN_NONE_DIM_STAR}, {prob: 5, opt: TERRAIN_NONE_BRIGHT_STAR}]),
+      body: null,
+      forbiddenToAI: false
+    }
+  },
   generateMap: function()
   {
     for(var i = 0; i < MAP_WIDTH; i++) {
       this.map[i] = [];
       for(var j = 0; j < MAP_HEIGHT; j++) {
-        this.map[i][j] = {
-          terrain: randomOption([{ prob: 80, opt: TERRAIN_NONE_EMPTY}, {prob: 15, opt: TERRAIN_NONE_DIM_STAR}, {prob: 5, opt: TERRAIN_NONE_BRIGHT_STAR}]),
-          body: null,
-          forbiddenToAI: false
-        }
+        this.clearTile(i, j);
       }
     }
 

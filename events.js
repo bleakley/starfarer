@@ -122,29 +122,30 @@ SpaceStationEvent.prototype = {
 	}
 }
 
-function LootDestroyedShipEvent (name, credits, item) {
-	this.item = new Weapon(item);
-	this.message = `You lock on to the destroyed ${name} and slice open its hull with your boarding tubes. Your crew scours the ship and manage to download ${credits} BitCredits from the central computer.`;
-	this.message += `Most of the ships systems and weapons were badly damaged in combat, but you are able to salvage a ${this.item.name}.`
-	this.credits = credits;
+function LootDestroyedShipEvent (ship) {
+  this.ship = ship;
+  this.item = new Weapon(ship.getLootWeapon());
+	this.message = `You lock on to the destroyed ${ship.name} and slice open its hull with your boarding tubes. Your crew scours the ship and manage to download ${ship.credits} BitCredits from the central computer.`;
+	this.message += ` Most of the ships systems and weapons were badly damaged in combat, but you are able to salvage a ${this.item.name}.`
 	this.time_until = 0;
 }
 LootDestroyedShipEvent.prototype = {
 	action: function (universe, callbackFunction) {
 		system = getPlayerSystem(universe);
     ps = getPlayerShip(system.ships);
-		ps.credits += this.credits;
+		ps.credits += this.ship.credits;
+    this.ship.event = null;
     getAcknowledgement(this.message, () => {
 			equipWeapon(ps, this.item, callbackFunction);
 		});
 	}
 }
 
-function LootAbandonedShipEvent (name, credits, item) {
-	this.item = new Weapon(item);
-	this.message = `You lock on to the derelict ${name} and slice open its hull with your boarding tubes. The ship's computers are in relatively good condition and your crew manages to download ${credits} BitCredits.`;
-	this.message += `Many of the ship's systems were badly irradiated, but you are able to salvage a ${this.item.name}.`
-	this.credits = credits;
+function LootAbandonedShipEvent (ship) {
+  this.ship = ship;
+  this.item = new Weapon(ship.getLootWeapon());
+	this.message = `You lock on to the derelict ${ship.name} and slice open its hull with your boarding tubes. The ship's computers are in relatively good condition and your crew manages to download ${ship.credits} BitCredits.`;
+	this.message += ` Many of the ship's systems were badly irradiated, but you are able to salvage a ${this.item.name}.`
 	this.time_until = 0;
 }
 
@@ -152,7 +153,8 @@ LootAbandonedShipEvent.prototype = {
 	action: function (universe, callbackFunction) {
 		system = getPlayerSystem(universe);
     ps = getPlayerShip(system.ships);
-		ps.credits += this.credits;
+		ps.credits += this.ship.credits;
+    this.ship.event = null;
     getAcknowledgement(this.message, () => {
 			equipWeapon(ps, this.item, callbackFunction);
 		});
@@ -179,10 +181,11 @@ TempleFindCoordinatesEvent.prototype = {
 	}
 }
 
-function AnomalyWarpEvent (destination) {
+function AnomalyWarpEvent (p, destination) {
 	this.message = "";
 	this.time_until = 0;
   this.destination = destination;
+  this.anomaly = p;
 }
 AnomalyWarpEvent.prototype = {
 
@@ -195,6 +198,8 @@ AnomalyWarpEvent.prototype = {
       this.message = this.message + " Your navigator has added the hyperspace coordinates of this system to her system log."
     }
     warp(getPlayerShip(system.ships), system, this.destination);
+    p.system.clearTile(p.xCoord, p.yCoord);
+    p.system.planets.splice(p.system.planets.indexOf(p),1);
     getAcknowledgement(this.message, callbackFunction);
 	}
 }
