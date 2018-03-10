@@ -1,12 +1,12 @@
 function Planet (xCoord, yCoord, radius, system) {
-  this.xCoord = x,
-  this.yCoord = y,
-  this.radius = radius,
-  this.class = randomOption(SMALL_BODIES),
-  this.name = SMALL_BODY_NAMES.random(),
-  this.mass = randomNumber(1,4),
+  this.xCoord = x;
+  this.yCoord = y;
+  this.radius = radius;
+  this.class = randomOption(SMALL_BODIES);
+  this.mass = randomNumber(1,4);
   this.events = [];
   this.system = system;
+  this.name = randomSmallBodyName(this);
 }
 
 Planet.prototype = {

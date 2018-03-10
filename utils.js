@@ -237,8 +237,45 @@ warp = function (ship, source, destination) {
 }
 
 randomLargeBodyName = function () {
-  var name = LARGE_BODY_NAMES.random();
-  LARGE_BODY_NAMES.splice(LARGE_BODY_NAMES.indexOf(name),1);
+  const NGC = 0;
+  const COMMON_NAME = 1;
+  const CONSTELLATION_NAME = 2;
+  var options = [{opt: NGC, prob: 20}, {opt: COMMON_NAME, prob: 50}, {opt: CONSTELLATION_NAME, prob: 30}];
+  var name = null;
+  do { 
+    var choice = randomOption(options);
+    switch (choice) {
+      case NGC:
+        name = "NGC-" + randomNumber(1000,9999);
+        break;
+      case COMMON_NAME:
+        name = STAR_COMMON_NAMES.random();
+        break;
+      case CONSTELLATION_NAME:
+        name = GREEK_LETTERS.random() + " " + CONSTELLATION_NAMES_POSSESSIVE.random();
+    }
+  }
+  while(USED_BODY_NAMES.indexOf(name) < -1);
+  USED_BODY_NAMES.push(name);
+  return name;
+}
+
+randomSmallBodyName = function (p) {
+  var name = null;
+  do { 
+    switch (p.system.planet_naming_style) {
+      case PLANET_NAMING_STYLE_COMMON:
+        name = SMALL_BODY_COMMON_NAMES.random();
+        break;
+      case PLANET_NAMING_STYLE_SCIENTIFIC:
+        name = SMALL_BODY_SCIENTIFIC_NAMES.random() + "-" + randomNumber(1,999);
+        break;
+      case PLANET_NAMING_STYLE_SYSTEM_DERIVED:
+        name = p.system.name + " " + SMALL_BODY_SYSTEM_DERIVED_NAMES.random();
+    }
+  }
+  while(USED_BODY_NAMES.indexOf(name) < -1);
+  USED_BODY_NAMES.push(name);
   return name;
 }
 
