@@ -205,7 +205,7 @@ Ship.prototype = {
       let weaponLoot = this.getLootWeapon();
 
       if (!this.destroyed) // no double dipping
-        this.event = new LootAbandonedShipEvent(this.name, 2*this.credits, weaponLoot);
+        this.event = new LootAbandonedShipEvent(this);
       console.log(this.name + ' has lost all crew and is defenseless.');
     }
   },
@@ -326,18 +326,21 @@ Ship.prototype = {
     }
   },
   destroy: function() {
-    this.hull = 0;
-    this.char = '#';
-    this.energyRegen = 0;
-    this.maneuverLevel = 0;
-    this.crew = 0;
-    this.powerDown();
-    this.destroyed = true;
-    let weaponLoot = this.getLootWeapon();
+    if (!this.destroyed) {
+      this.hull = 0;
+      this.char = '#';
+      this.energyRegen = 0;
+      this.maneuverLevel = 0;
+      this.crew = 0;
+      this.powerDown();
+      this.destroyed = true;
+      this.credits = Math.floor(this.credits/2);
+      let weaponLoot = this.getLootWeapon();
 
-    if (!this.abandoned) // no double dipping
-      this.event = new LootDestroyedShipEvent(this.name, this.credits, weaponLoot);
-    console.log(this.name + ' is destroyed');
+      if (!this.abandoned) // no double dipping
+        this.event = new LootDestroyedShipEvent(this);
+      console.log(this.name + ' is destroyed');
+    }
 	},
   getTurnsUntilCollision: function(map) {
     for (let i = 0; i < 4; i++) {
