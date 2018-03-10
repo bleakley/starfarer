@@ -1,12 +1,11 @@
 function MedicalDeliveryRequestEvent (origin, destination) {
-  console.log("Delivery!", origin.system, origin, destination)
   let distance = Math.max(Math.abs(destination.xCoord - origin.xCoord), Math.abs(destination.yCoord - origin.yCoord));
   this.diseaseName = destination.system.universe.systems.random().name + " parasite";
   this.turns = Math.floor(distance/2) + randomNumber(10,40);
   this.reward = Math.floor(distance/5 + 1)*5;
   this.origin = origin;
   this.destination = destination;
-	this.message = `${this.origin.name} is suffering from a category 4 ${this.diseaseName} outbreak! Local authorities have requested your assistance in retrieving vaccines from ${destination.name}. If the vaccines are brought within ${this.turns} days, then you will be compensated ${this.reward} BitCredits.`;
+	this.message = `${this.origin.name} is suffering from a category 4 pandemic of the ${this.diseaseName}! Local authorities have requested your assistance in retrieving vaccines from ${destination.name}. If the vaccines are brought within ${this.turns} days, then you will be compensated ${this.reward} BitCredits.`;
 	this.time_until = 0;
 }
 MedicalDeliveryRequestEvent.prototype = {
