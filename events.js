@@ -151,6 +151,25 @@ LootDestroyedShipEvent.prototype = {
 	}
 }
 
+function LootAbandonedShipEvent (name, credits, item) {
+	this.item = new Weapon(item);
+	this.message = `You lock on to the derelict ${name} and slice open its hull with your boarding tubes. The ship's computers are in relatively good condition and your crew manages to download ${credits} BitCredits.`;
+	this.message += `Many of the ship's systems were badly irradiated, but you are able to salvage a ${this.item.name}.`
+	this.credits = credits;
+	this.time_until = 0;
+}
+
+LootAbandonedShipEvent.prototype = {
+	action: function (universe, callbackFunction) {
+		system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+		ps.credits += this.credits;
+    getAcknowledgement(this.message, () => {
+			equipWeapon(ps, this.item, callbackFunction);
+		});
+	}
+}
+
 
 function TempleFindCoordinatesEvent (destination) {
 	this.message = `Your landing party finds a number of fascinating glyphs and diagrams inscribed in the wall of a Precursor temple. Your tech specialist recognizes the diagrams as a star map, and is able to determine the hyperspace coordinates of the ${destination.name} star system.`;
