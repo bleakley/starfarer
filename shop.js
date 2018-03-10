@@ -150,9 +150,9 @@ ShopEvent.prototype = {
   scrapWeapons: function (universe, callbackFunction) {
     system = getPlayerSystem(universe);
     ps = getPlayerShip(system.ships);
-    let scrapValue = 5;
     var options = [];
     ps.weapons.forEach((w) => {
+			let scrapValue = Math.floor(w.cost/2);
       options.push({ t: `Scrap your ${MOUNT_NAMES[w.mount]} ${w.name} for ${scrapValue} BitCredits, -1 mass, and -1 min. crew.`, o: () => {
           ps.credits += scrapValue;
           if (ps.maneuverCost > 1)
@@ -180,21 +180,21 @@ ShopEvent.prototype = {
     ps = getPlayerShip(system.ships);
 
     let laserCannonCost = 10;
-    let ionCannonCost = 10;
+    let ionCannonCost = 12;
 
     var options = [];
     options.push({ t: `Buy a Laser Cannon for ${laserCannonCost} BitCredits and +1 mass`, o: () => {
       if(ps.credits < laserCannonCost) {
         getAcknowledgement(`You can't afford that!`, () => { this.buyWeapons(universe, callbackFunction); });
       } else {
-        equipWeapon(ps, new Weapon('Laser Cannon', 15, 3, 100, 2, DAMAGE_NORMAL), this.buyWeapons.bind(this, universe, callbackFunction));
+        equipWeapon(ps, new Weapon(WEAPON_LASER_CANNON), this.buyWeapons.bind(this, universe, callbackFunction));
       }
     }});
     options.push({ t: `Buy an Ion Cannon for ${ionCannonCost} BitCredits and +1 mass`, o: () => {
       if(ps.credits < ionCannonCost) {
         getAcknowledgement(`You can't afford that!`, () => { this.buyWeapons(universe, callbackFunction); });
       } else {
-        equipWeapon(ps, new Weapon('Ion Cannon', 15, 4, 100, 2, DAMAGE_ION), this.buyWeapons.bind(this, universe, callbackFunction));
+        equipWeapon(ps, new Weapon(WEAPON_ION_CANNON), this.buyWeapons.bind(this, universe, callbackFunction));
       }
     }});
     options.push({ t: `Leave the weapon shop.`, o: () => {

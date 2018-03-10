@@ -4,7 +4,7 @@ mapDisplay = new ROT.Display({
 });
 
 sideBarDisplay = new ROT.Display({
-  width:30, height:MAP_HEIGHT,
+  width:40, height:MAP_HEIGHT,
   layout:"rect", fg: "#0E4", forceSquareRatio: false
 });
 

@@ -246,7 +246,7 @@ equipWeapon = function (ship, weapon, callback) {
   let message = `You have a new ${weapon.name}. Where will you mount it?`;
   var options = [];
   if (ship.maneuverCost < ship.energyMax) {
-    options.push({ t: `Mount it on the forward end of the ship.`, o: () => {
+    options.push({ t: `Mount it on the forward end of the ship. (+1 mass)`, o: () => {
         ship.mountWeapon(weapon, MOUNT_FWD);
         ship.minCrew++;
         ship.maneuverCost++;
@@ -254,7 +254,7 @@ equipWeapon = function (ship, weapon, callback) {
         callback();
       }
     });
-    options.push({ t: `Mount it on the starboard side.`, o: () => {
+    options.push({ t: `Mount it on the starboard side. (+1 mass)`, o: () => {
         ship.mountWeapon(weapon, MOUNT_STBD);
         ship.minCrew++;
         ship.maneuverCost++;
@@ -262,7 +262,7 @@ equipWeapon = function (ship, weapon, callback) {
         callback();
       }
     });
-    options.push({ t: `Mount it on the port side.`, o: () => {
+    options.push({ t: `Mount it on the port side. (+1 mass)`, o: () => {
         ship.mountWeapon(weapon, MOUNT_PORT);
         ship.minCrew++;
         ship.maneuverCost++;
@@ -272,7 +272,7 @@ equipWeapon = function (ship, weapon, callback) {
     });
   }
   if (ps.maneuverCost + AFT_MOUNT_PENALTY < ps.energyMax) {
-    options.push({ t: `Mount it on the aft end of the ship.`, o: () => {
+    options.push({ t: `Mount it on the aft end of the ship. It's bulky and will likely interfere with propulsion. (+${1 + AFT_MOUNT_PENALTY} mass)`, o: () => {
         ship.mountWeapon(weapon, MOUNT_AFT);
         ship.minCrew++;
         ship.maneuverCost += 1 + AFT_MOUNT_PENALTY;
