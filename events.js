@@ -231,3 +231,48 @@ FindTribeEvent.prototype = {
     getAcknowledgement(this.message, callbackFunction);
 	}
 }
+
+function MoggKhanArrivalEvent () {
+	this.message = "News of your quest has spread to men of ill motives. The dread warlord Mogg Khan's scouts have informed him of your presence in the sector and his fleets are now arriving in full force to claim the Orbitron Device.";
+	this.time_until = 0;
+}
+MoggKhanArrivalEvent.prototype = {
+	action: function (universe, callbackFunction) {
+		// add 1 capital fleet and 2 strike fleets
+		let possibleSystems = _.shuffle(universe.systems.filter((sys) => { return sys != getPlayerSystem(universe) }));
+		for (let n = 0; n < 3; n++) {
+			possibleSystems[n].khanFleet = true;
+			possibleSystems[n].ships.push(new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,1], SHIP_TYPE_BATTLESHIP, SHIP_FLAG_KHAN));
+			possibleSystems[n].ships.push(new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,1], SHIP_TYPE_TRANSPORT, SHIP_FLAG_KHAN));
+			for (var count = 0; count < 2; count++) {
+				let s = new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN);
+				possibleSystems[n].ships.push(s);
+			}
+			for (var count = 0; count < 2; count++) {
+				let s = new Ship(possibleSystems[n].randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_SLOOP, SHIP_FLAG_KHAN);
+				possibleSystems[n].ships.push(s);
+			}
+		}
+
+		possibleSystems[0].ships.push(new Ship(possibleSystems[0].randomUnoccupiedSpace(), [1,1], SHIP_TYPE_DREADNOUGHT, SHIP_FLAG_KHAN));
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
+function PrecursorArrivalEvent () {
+	this.message = "Hidden transponders located within the Precursor temples have notified long-dormant Precursor strike fleets of your activity in the sector. They will stop at nothing to ensure that these ancient secrets stay buried.";
+	this.time_until = 0;
+}
+PrecursorArrivalEvent.prototype = {
+	action: function (universe, callbackFunction) {
+		// add 1 precursor fleet
+		let precursorSystem = universe.systems.filter((sys) => { return sys != getPlayerSystem(universe) && !sys.khanFleet })[0];
+		precursorSystem.ships = [];
+		for (var count = 0; count < 2; count++) {
+			let s = new Ship(precursorSystem.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_WRAITH, SHIP_FLAG_PRECURSOR);
+			precursorSystem.ships.push(s);
+		}
+		precursorSystem.ships.push(new Ship(precursorSystem.randomUnoccupiedSpace(), [1,-2], SHIP_TYPE_ARBITER, SHIP_FLAG_PRECURSOR));
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}

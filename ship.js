@@ -149,6 +149,7 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
       this.attackEnemies = false;
       this.prisoners = Math.min(2*this.prisoners, this.maxPrisoners);
       break;
+    case SHIP_FLAG_PRECURSOR:
     case SHIP_FLAG_KHAN:
       this.followPlayer = true;
       this.attackPlayer = true;

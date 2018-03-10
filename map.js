@@ -196,7 +196,7 @@ drawSideBar = function()
 {
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
-	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}`);
+	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}/${N_TURNS}`);
 	sideBarDisplay.drawText(2, 1, `System: ${getPlayerSystem(universe).name}`);
   sideBarDisplay.drawText(2, 2, `BitCredits: ${ps.credits}`);
 	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
@@ -442,7 +442,7 @@ advanceTurn =  function() {
 
   console.log('status',getPlayerShip(system.ships).destroyed)
   if (getPlayerShip(system.ships).destroyed) {
-    
+
   console.log('game over')
     system.ships.forEach((s) => {
       s.followPlayer = false;
@@ -450,7 +450,7 @@ advanceTurn =  function() {
     });
     gameOver("Your ship has been destroyed!\n\nGAME OVER");
     return;
-  } 
+  }
 
   system.ships.forEach((s) => {
     if (!s.player) {
@@ -461,13 +461,19 @@ advanceTurn =  function() {
       }
     }
   });
-  
+
   universe.turn++;
-  
+
   if (universe.turn==N_TURNS) {
-    global_pending_events.push(new MessageEvent("You have failed to find the Orbitron Device in time, and the Altaris system has destroyed by a supernova. A somber silence overcomes your crew as they realize that they are all that is left of the Altaris civilization.",0));
+    global_pending_events.push(new MessageEvent("You have failed to find the Orbitron Device in time, and the Altaris system has been destroyed by a supernova. A somber silence overcomes your crew as they realize that they are all that is left of the Altaris civilization.",0));
   }
-  
+  if (universe.turn==350) {
+    global_pending_events.push(new MoggKhanArrivalEvent(0));
+  }
+  if (universe.turn==550) {
+    global_pending_events.push(new PrecursorArrivalEvent(0));
+  }
+
   if (renderAttacks) {
     setTimeout(resolvePendingEvents, 1000);
   } else {
