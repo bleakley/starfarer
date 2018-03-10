@@ -20,22 +20,19 @@ TempleEvent.prototype = {
 
 	action: function (universe, callbackFunction) {
     let system = getPlayerSystem(universe);
-
-		let location = system.randomUnoccupiedSpace();
-		let anomaly = {
-			name: getAnomalyName(),
-			xCoord: location[0],
-			yCoord: location[1],
-			radius: 0,
-			class: BODY_ANOMALY,
-			mass: -1,
-			events: []
-		}
-		/*anomaly.events.push(new AnomalyCollapseEvent(anomaly));
-		system.planets.push(anomaly);
-		system.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
-		system.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;*/
-
+    let candidate_destinations = universe.systems.slice();
+    candidate_destinations.splice(candidate_destinations.indexOf(system),1);
+    let destination = candidate_destinations.random();
+    let location = system.randomUnoccupiedSpace();
+    let anomaly = new Planet(location[0], location[1], 0, system);
+    anomaly.name = getAnomalyName(); 
+    anomaly.class = BODY_ANOMALY;
+    anomaly.mass = -1;
+    anomaly.events = [new AnomalyWarpEvent(anomaly, destination)];
+    system.planets.push(anomaly);
+    system.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
+    system.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
+    
     getAcknowledgement(this.message, callbackFunction);
 
     var ship = new Ship(system.randomUnoccupiedSpace(), [2,1], SHIP_TYPE_FRIGATE, SHIP_FLAG_KHAN)

@@ -230,8 +230,6 @@ warp = function (ship, source, destination) {
   ship.xCursor = ps.xMoment;
   ship.yCursor = ps.yMoment;
   ship.facing = getEightWayDirection(ps.xMoment, ps.yMoment);
-  ship.warpCore = 0;
-  addTextToCombatLog("Hyperspace jump successful...warp core recharging.");
   if (ship.player && source.bgm != destination.bgm) {
     source.bgm.pause();
     destination.bgm.play();

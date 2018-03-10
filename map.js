@@ -692,7 +692,11 @@ selectDirection.handleEvent = function(event) {
       }
       window.removeEventListener('keydown', this);
       ps.known_systems.forEach( (sys) => {
-        let opt = { system: sys, t: sys.name, o: () => {warp(ps, getPlayerSystem(universe), sys); playerTurn()} };
+        let opt = { system: sys, t: sys.name, o: () => {
+          warp(ps, getPlayerSystem(universe), sys);
+          ps.warpCore = 0;
+          addTextToCombatLog("Hyperspace jump successful...warp core recharging.");
+          playerTurn();}};
         if (sys != getPlayerSystem(universe)) {
           options.push(opt);
         }
