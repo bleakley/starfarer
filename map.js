@@ -15,7 +15,7 @@ ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
 
-const TEST_MODE = true
+const TEST_MODE = false
 if (TEST_MODE) {
   ps.hullMax = 200;
   ps.hull = 200;
@@ -38,7 +38,7 @@ var shieldUpgradeCost = 10;
 var computerUpgradeCost = 10;
 
 var global_pending_events = [];
-var message_text = "Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
+var message_text = "A subspace communication has been received from Altaris IV. Xenopaleontologists have decrypted an intriguing Precursor digicodex. Apparently, by reversing the polarity, an Orbitron Device can be used to induce, rather than prevent, a supernova event. Records show that shortly after this capability was discovered, the Precursor council issued an edict ordering all Orbitron Devices to be destroyed.";
 global_pending_events.push(new MessageEvent(message_text, 10));
 
 // these are event listeners
@@ -196,7 +196,11 @@ drawSideBar = function()
 {
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
+<<<<<<< HEAD
 	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}/${N_TURNS}`);
+=======
+	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn} / ${N_TURNS}`);
+>>>>>>> f13881f45d30b63ef1e09c03cc39ead6c23359b6
 	sideBarDisplay.drawText(2, 1, `System: ${getPlayerSystem(universe).name}`);
   sideBarDisplay.drawText(2, 2, `BitCredits: ${ps.credits}`);
 	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
@@ -247,8 +251,7 @@ init = function()
   getPlayerSystem(universe).bgm.play();
   let system = getPlayerSystem(universe);
 
-  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
-
+  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova. Stellarographers predict that the supernova will occur in ${N_TURNS} days.`, displayHelp);
 }
 
 displayHelp = function(){
@@ -442,8 +445,6 @@ advanceTurn =  function() {
 
   console.log('status',getPlayerShip(system.ships).destroyed)
   if (getPlayerShip(system.ships).destroyed) {
-
-  console.log('game over')
     system.ships.forEach((s) => {
       s.followPlayer = false;
       s.attackPlayer = false; //peace has come to the galaxy at last
@@ -464,7 +465,7 @@ advanceTurn =  function() {
 
   universe.turn++;
 
-  if (universe.turn==N_TURNS) {
+  if (universe.turn==N_TURNS && !getPlayerShip(system.ships).hasOrbitron) {
     global_pending_events.push(new MessageEvent("You have failed to find the Orbitron Device in time, and the Altaris system has been destroyed by a supernova. A somber silence overcomes your crew as they realize that they are all that is left of the Altaris civilization.",0));
   }
   if (universe.turn==350) {
@@ -695,11 +696,17 @@ selectDirection.handleEvent = function(event) {
 			//j, jump to hyperspace
       var options = [];
       var ps = getPlayerShip(getPlayerSystem(universe).ships);
-      if (ps.warpCore < ps.warpCoreMax)
+      if (ps.warpCore < ps.warpCoreMax) {
+        getAcknowledgement("Commander, our warp core must recharge before we can jump to hyperspace again!", playerTurn);
         break;
+      }
       window.removeEventListener('keydown', this);
       ps.known_systems.forEach( (sys) => {
-        let opt = { system: sys, t: sys.name, o: () => {warp(ps, getPlayerSystem(universe), sys); playerTurn()} };
+        let opt = { system: sys, t: sys.name, o: () => {
+          warp(ps, getPlayerSystem(universe), sys);
+          ps.warpCore = 0;
+          addTextToCombatLog("Hyperspace jump successful...warp core recharging.");
+          playerTurn();}};
         if (sys != getPlayerSystem(universe)) {
           options.push(opt);
         }
@@ -710,10 +717,8 @@ selectDirection.handleEvent = function(event) {
         getAcknowledgement("We do not know the coordinates of any other star systems. Perhaps we can find coordinates somewhere in this system.", playerTurn);
       }
       else {
-
         var so = new selectOption("Select a destination:", options);
         so.run();
-
       }
 			break;
 	}
