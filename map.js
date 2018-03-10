@@ -1,4 +1,3 @@
-let turn = 0;
 let message = {text: ""};
 
 var universe = new Universe();
@@ -15,7 +14,7 @@ ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
 
-const TEST_MODE = false
+const TEST_MODE = true
 if (TEST_MODE) {
   ps.hullMax = 200;
   ps.hull = 200;
@@ -23,7 +22,9 @@ if (TEST_MODE) {
   ps.energy = 200;
   maneuverLevel = 4;
   universe.systems.slice(1).forEach( (sys) => {ps.known_systems.push(sys)});
-  universe.systems[0].planets[1].events = [new FindTribeEvent()];
+  if (universe.systems[0].planets.length >= 3){
+    //universe.systems[0].planets[1].events = [new MedicalDeliveryRequestEvent (universe.systems[0].planets[1], universe.systems[0].planets[2])];   
+  }
 }
 
 var repairCost = 1;
@@ -183,7 +184,7 @@ drawSideBar = function()
 {
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
-	sideBarDisplay.drawText(2, 0, `Turn: ${turn}`);
+	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}`);
   sideBarDisplay.drawText(2, 1, `BitCredits: ${ps.credits}`);
 	sideBarDisplay.drawText(2, 3, `Hull: ${ps.hull}/${ps.hullMax}`);
 	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
@@ -326,7 +327,7 @@ advanceTurn =  function() {
     }
   });
 
-  turn++;
+  universe.turn++;
   if (renderAttacks) {
     setTimeout(resolvePendingEvents, 1000);
   } else {
@@ -340,9 +341,9 @@ resolvePendingEvents = function() {
     let e = system.pending_events[count];
     e.time_until = e.time_until - 1;
     if (e.time_until <= 0) {
-      e.action(universe, resolvePendingEvents);
       index = system.pending_events.indexOf(e);
       system.pending_events.splice(index, 1);
+      e.action(universe, resolvePendingEvents);
       drawAll();
       return;
     }
@@ -352,9 +353,9 @@ resolvePendingEvents = function() {
     let e = global_pending_events[count];
     e.time_until = e.time_until - 1;
     if (e.time_until <= 0) {
-      e.action(universe, resolvePendingEvents);
       index = global_pending_events.indexOf(e);
       global_pending_events.splice(index, 1);
+      e.action(universe, resolvePendingEvents);
       drawAll();
       return;
     }

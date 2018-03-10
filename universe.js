@@ -1,5 +1,6 @@
 function Universe () {
   this.systems = [];
+  this.turn = 0;
 
   for (var count = 0; count < N_STAR_SYSTEMS; count++) {
     this.systems.push(new System(this));
