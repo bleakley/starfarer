@@ -1,14 +1,14 @@
 function Planet (xCoord, yCoord, radius, system) {
-  this.xCoord = x,
-  this.yCoord = y,
-  this.radius = radius,
-  this.class = randomOption(SMALL_BODIES),
-  this.name = SMALL_BODY_NAMES.random(),
-  this.mass = randomNumber(1,4),
+  this.xCoord = x;
+  this.yCoord = y;
+  this.radius = radius;
+  this.class = randomOption(SMALL_BODIES);
+  this.mass = randomNumber(1,4);
   this.events = [];
   this.system = system;
+  this.name = randomSmallBodyName(this);
 }
-
+//"AW-197", "AZ-84", "UX-25", "GV-9", "RN-43", "UQ-513", "XR-190", "BX-64"
 Planet.prototype = {
   addRandomEvent: function() {
     var options = [];
