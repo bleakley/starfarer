@@ -140,6 +140,7 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
       break;
   }
   this.destroyed = false;
+  this.abandoned = false;
   this.toBeDisintegrated = false;
   this.mindControlByPlayerDuration = 0;
   this.mindControlByEnemyDuration = 0;
@@ -181,39 +182,64 @@ Ship.prototype = {
     this.xCursor = 0;
     this.yCursor = 0;
   },
-  takeDamage: function(damage, damageType) {
+  loseCrew: function(number) {
+    this.crew = Math.max(0, this.crew - number);
+    if (this.crew <= 0 && this.minCrew > 0) {
+      this.abandoned = true;
+      this.energyRegen = 0;
+      this.maneuverLevel = 0;
+      this.crew = 0;
+      this.powerDown();
+      let weaponLoot = this.getLootWeapon();
+
+      if (!this.destroyed) // no double dipping
+        this.event = new LootAbandonedShipEvent(this.name, 2*this.credits, weaponLoot);
+      console.log(this.name + ' has lost all crew and is defenseless.');
+    }
+  },
+  takeDamage: function(damage, damageType, attacker) {
     switch (damageType) {
       case DAMAGE_NORMAL:
-        return this.takeNormalDamage(damage);
+        this.takeNormalDamage(damage);
+        break;
       case DAMAGE_ION:
-        return this.takeIonDamage(damage);
+        this.takeIonDamage(damage);
+        break;
       case DAMAGE_TRACTOR:
-        return this.takeTractorDamage(damage);
+        this.takeTractorDamage(damage);
+        break;
+      case DAMAGE_NEUTRON:
+        this.takeNeutronDamage(damage);
+        break;
+      case DAMAGE_MINDCONTROL:
+        this.takeMindControlDamage(damage, attacker);
+        break;
     }
+    return this.destroyed;
 	},
 	takeNormalDamage: function(damage) {
 		let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
     this.shields = Math.max(0, this.shields - damage);
     this.hull = Math.max(0, this.hull - damageAfterShields);
+    if (percentChance(damageAfterShields*20)) {
+      this.loseCrew(1);
+    }
     if (!this.hull)
       this.destroy();
-    return this.destroyed;
 	},
   takeHullDamage: function(damage) {
     this.hull = Math.max(0, this.hull - damage);
     if (!this.hull)
       this.destroy();
-    return this.destroyed;
 	},
   takeIonDamage: function(damage) {
 		let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
     this.shields = Math.max(0, this.shields - damage);
     this.energy -= damageAfterShields; // can go negative
-    return this.destroyed;
 	},
   takeTractorDamage: function(damage) {
     if (this.shields > 0)
-      return this.destroyed;
+      return;
     if (this.xMoment > 0)
 		  this.xMoment = Math.max(0, this.xMoment - damage);
     if (this.xMoment < 0)
@@ -222,50 +248,67 @@ Ship.prototype = {
 		  this.yMoment = Math.max(0, this.yMoment - damage);
     if (this.yMoment < 0)
       this.yMoment = Math.min(0, this.yMoment + damage);
-    return this.destroyed;
 	},
+  takeNeutronDamage: function(damage) {
+    if (this.shields > 0)
+      return;
+    this.loseCrew(damage);
+	},
+  takeMindControlDamage: function(damage, attacker) {
+    if (this.shields > 0)
+      return;
+    if (this.player)
+      return;
+    switch (attacker.flag) {
+      case SHIP_FLAG_KHAN:
+      case SHIP_FLAG_PIRATE:
+      case SHIP_FLAG_PRECURSOR:
+      default:
+        this.mindControlByPlayerDuration = 0;
+        this.mindControlByEnemyDuration += damage;
+        break;
+      case SHIP_FLAG_PLAYER:
+        this.mindControlByEnemyDuration = 0;
+        this.mindControlByPlayerDuration += damage;
+        break;
+    }
+	},
+  getLootWeapon: function() {
+    switch (this.type) {
+      case SHIP_TYPE_FIGHTER:
+        return WEAPON_LASER_CANNON;
+      case SHIP_TYPE_SLOOP:
+        return WEAPON_LASER_CANNON;
+      case SHIP_TYPE_FRIGATE:
+        return [WEAPON_LASER_CANNON, WEAPON_ION_CANNON].random();
+      case SHIP_TYPE_TRANSPORT:
+        return [WEAPON_TRACTOR_BEAM, WEAPON_ION_CANNON].random();
+      case SHIP_TYPE_CARRIER:
+        return [WEAPON_HEAVY_ION, WEAPON_ION_CANNON].random();
+      case SHIP_TYPE_BATTLESHIP:
+        return [WEAPON_SIEGE_LASER, WEAPON_HEAVY_LASER, WEAPON_LASER_CANNON].random();
+      case SHIP_TYPE_DREADNOUGHT:
+        return [WEAPON_HEAVY_LASER, WEAPON_NEUTRON_BEAM].random();
+      case SHIP_TYPE_STATION:
+        return [WEAPON_SIEGE_LASER, WEAPON_LASER_CANNON].random();
+      case SHIP_TYPE_WRAITH:
+        return [WEAPON_LASER_CANNON, WEAPON_ION_CANNON].random();
+      case SHIP_TYPE_ARBITER:
+        return _.find(this.weapons, (w) => { return w.artifact });
+    }
+  },
   destroy: function() {
     this.hull = 0;
     this.char = '#';
     this.energyRegen = 0;
     this.maneuverLevel = 0;
+    this.crew = 0;
     this.powerDown();
     this.destroyed = true;
-    let weaponLoot = null;
-    switch (this.type) {
-      case SHIP_TYPE_FIGHTER:
-        weaponLoot = WEAPON_LASER_CANNON;
-        break;
-      case SHIP_TYPE_SLOOP:
-        weaponLoot = WEAPON_LASER_CANNON;
-        break;
-      case SHIP_TYPE_FRIGATE:
-        weaponLoot = [WEAPON_LASER_CANNON, WEAPON_ION_CANNON].random();
-        break;
-      case SHIP_TYPE_TRANSPORT:
-        weaponLoot = [WEAPON_TRACTOR_BEAM, WEAPON_ION_CANNON].random();
-        break;
-      case SHIP_TYPE_CARRIER:
-        weaponLoot = [WEAPON_HEAVY_ION, WEAPON_ION_CANNON].random();
-        break;
-      case SHIP_TYPE_BATTLESHIP:
-        weaponLoot = [WEAPON_SIEGE_LASER, WEAPON_HEAVY_LASER, WEAPON_LASER_CANNON].random();
-        break;
-      case SHIP_TYPE_DREADNOUGHT:
-        weaponLoot = [WEAPON_HEAVY_LASER, WEAPON_NEUTRON_BEAM].random();
-        break;
-      case SHIP_TYPE_STATION:
-        weaponLoot = [WEAPON_SIEGE_LASER, WEAPON_LASER_CANNON].random();
-        break;
-      case SHIP_TYPE_WRAITH:
-        weaponLoot = [WEAPON_LASER_CANNON, WEAPON_ION_CANNON].random();
-        break;
-      case SHIP_TYPE_ARBITER:
-        weaponLoot = _.find(this.weapons, (w) => { return w.artifact });
-        break;
-    }
+    let weaponLoot = this.getLootWeapon();
 
-    this.event = new LootDestroyedShipEvent(this.name, this.credits, weaponLoot);
+    if (!this.abandoned) // no double dipping
+      this.event = new LootDestroyedShipEvent(this.name, this.credits, weaponLoot);
     console.log(this.name + ' is destroyed');
 	},
   getTurnsUntilCollision: function(map) {
