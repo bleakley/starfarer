@@ -184,12 +184,13 @@ drawSideBar = function()
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
 	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}`);
-  sideBarDisplay.drawText(2, 1, `BitCredits: ${ps.credits}`);
-	sideBarDisplay.drawText(2, 3, `Hull: ${ps.hull}/${ps.hullMax}`);
-	sideBarDisplay.drawText(2, 4, `Shields: ${ps.shields}/${ps.shieldsMax}`);
-	sideBarDisplay.drawText(2, 5, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
-	sideBarDisplay.drawText(2, 6, `Maneuver: -${ps.maneuverCost}/\u0394`);
-  sideBarDisplay.drawText(2, 7, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
+	sideBarDisplay.drawText(2, 1, `System: ${getPlayerSystem(universe).name}`);
+  sideBarDisplay.drawText(2, 2, `BitCredits: ${ps.credits}`);
+	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
+	sideBarDisplay.drawText(2, 5, `Shields: ${ps.shields}/${ps.shieldsMax}`);
+	sideBarDisplay.drawText(2, 6, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
+	sideBarDisplay.drawText(2, 7, `Maneuver: -${ps.maneuverCost}/\u0394`);
+  sideBarDisplay.drawText(2, 8, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
   for (let i = 0; i < ps.weapons.length; i++) {
     let w = ps.weapons[i];
     let color = '#0E4';
@@ -197,9 +198,9 @@ drawSideBar = function()
       color = 'dimgrey';
     else if (w.selected)
       color = 'yellow';
-    sideBarDisplay.drawText(2, 9+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
+    sideBarDisplay.drawText(2, 10+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
   }
-	sideBarDisplay.drawText(2, 11 + ps.weapons.length, message.text);
+	sideBarDisplay.drawText(2, 12 + ps.weapons.length, message.text);
 }
 
 init = function()
