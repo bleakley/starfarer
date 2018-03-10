@@ -196,7 +196,7 @@ drawSideBar = function()
 {
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
-	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}`);
+	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn} / ${N_TURNS}`);
 	sideBarDisplay.drawText(2, 1, `System: ${getPlayerSystem(universe).name}`);
   sideBarDisplay.drawText(2, 2, `BitCredits: ${ps.credits}`);
 	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
@@ -247,8 +247,7 @@ init = function()
   getPlayerSystem(universe).bgm.play();
   let system = getPlayerSystem(universe);
 
-  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova.`, displayHelp);
-
+  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova. Stellarographers predict that the supernova will occur in ${N_TURNS} days.`, displayHelp);
 }
 
 displayHelp = function(){
@@ -689,8 +688,10 @@ selectDirection.handleEvent = function(event) {
 			//j, jump to hyperspace
       var options = [];
       var ps = getPlayerShip(getPlayerSystem(universe).ships);
-      if (ps.warpCore < ps.warpCoreMax)
+      if (ps.warpCore < ps.warpCoreMax) {
+        getAcknowledgement("Commander, our warp core must recharge before we can jump to hyperspace again!", playerTurn);
         break;
+      }
       window.removeEventListener('keydown', this);
       ps.known_systems.forEach( (sys) => {
         let opt = { system: sys, t: sys.name, o: () => {warp(ps, getPlayerSystem(universe), sys); playerTurn()} };
@@ -704,10 +705,8 @@ selectDirection.handleEvent = function(event) {
         getAcknowledgement("We do not know the coordinates of any other star systems. Perhaps we can find coordinates somewhere in this system.", playerTurn);
       }
       else {
-
         var so = new selectOption("Select a destination:", options);
         so.run();
-
       }
 			break;
 	}
