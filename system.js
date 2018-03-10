@@ -13,7 +13,7 @@ function System (universe) {
       mass: randomNumber(1,4)*100,
       events: null
     });
-    
+
   this.addRandomPlanets()
   this.name = this.planets[0].name;
   this.map = [];
@@ -100,6 +100,11 @@ function System (universe) {
       s.event = new ShopEvent();
     }
     this.ships.push(s);
+  }
+
+  this.waypoints = [];
+  for (let n = 0; n < 3; n++) {
+    this.waypoints.push(this.randomUnoccupiedSpace());
   }
 
   this.pending_events = [];

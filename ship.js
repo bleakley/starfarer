@@ -131,6 +131,8 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
       this.attackPlayer = false;
       this.followEnemies = false;
       this.attackEnemies = false;
+      this.prisoners = 0;
+      this.maxPrisoners = 0;
       break;
     case SHIP_FLAG_PLAYER:
       this.followPlayer = false;
@@ -139,6 +141,12 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
       this.attackEnemies = true;
       break;
     case SHIP_FLAG_PIRATE:
+      this.followPlayer = true;
+      this.attackPlayer = true;
+      this.followEnemies = false;
+      this.attackEnemies = false;
+      this.prisoners = Math.min(2*this.prisoners, this.maxPrisoners);
+      break;
     case SHIP_FLAG_KHAN:
       this.followPlayer = true;
       this.attackPlayer = true;
@@ -252,6 +260,7 @@ Ship.prototype = {
     this.hull = Math.max(0, this.hull - damageAfterShields);
     if (percentChance(damageAfterShields*20)) {
       this.loseCrew(1);
+      this.prisoners = Math.max(0, this.prisoners - 1);
     }
     if (!this.hull)
       this.destroy();
@@ -281,6 +290,7 @@ Ship.prototype = {
   takeNeutronDamage: function(damage) {
     if (this.shields > 0)
       return;
+    this.prisoners = Math.max(0, this.prisoners - damage);
     this.loseCrew(damage);
 	},
   takeMindControlDamage: function(damage, attacker) {

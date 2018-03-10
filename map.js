@@ -9,6 +9,7 @@ ps.char = '@';
 ps.hullMax = 12;
 ps.hull = 12;
 ps.credits = 25;
+ps.prisoners = 0;
 ps.mountWeapon(new Weapon(WEAPON_TRACTOR_BEAM), MOUNT_FWD);
 ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
@@ -93,6 +94,7 @@ drawShipHighlight = function(s) {
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 1, `%c{${color}}Shields: ${s.shields}/${s.shieldsMax}`);
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 2, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
   mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 3, `%c{${color}}Crew: ${s.crew}/${s.maxCrew} (min. ${s.minCrew})`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 4, `%c{${color}}Prisoners: ${s.prisoners}/${s.maxPrisoners}`);
   if (s.player)
     return;
   var ps = getPlayerShip(getPlayerSystem(universe).ships);
@@ -100,9 +102,9 @@ drawShipHighlight = function(s) {
   if (!pw)
     return;
   let cd = ps.getChanceToHit(pw, s);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 4, `%c{${color}} ${cd.prob}% to hit`);
+  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 5, `%c{${color}} ${cd.prob}% to hit`);
   for (let j = 0; j < cd.modifiers.length; j++)
-    mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 5 + j, `%c{${color}}${cd.modifiers[j]}`);
+    mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 6 + j, `%c{${color}}${cd.modifiers[j]}`);
 }
 
 drawFiringArc = function(ship, weapon) {
@@ -195,6 +197,8 @@ drawSideBar = function()
 	sideBarDisplay.drawText(2, 6, `Energy: ${ps.energy}/${ps.energyMax} (+${ps.energyRegen})`);
 	sideBarDisplay.drawText(2, 7, `Maneuver: -${ps.maneuverCost}/\u0394`);
   sideBarDisplay.drawText(2, 8, `Crew: ${ps.crew}/${ps.maxCrew} (min. ${ps.minCrew})`);
+  sideBarDisplay.drawText(2, 9, `Prisoners: ${ps.prisoners}/${ps.maxPrisoners}`);
+
   for (let i = 0; i < ps.weapons.length; i++) {
     let w = ps.weapons[i];
     let color = '#0E4';
@@ -202,9 +206,9 @@ drawSideBar = function()
       color = 'dimgrey';
     else if (w.selected)
       color = 'yellow';
-    sideBarDisplay.drawText(2, 10+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
+    sideBarDisplay.drawText(2, 11+i, `%c{${color}}${MOUNT_NAMES[w.mount].padEnd(4)} ${w.name}: ${w.damage}d -${w.energy}e`);
   }
-	sideBarDisplay.drawText(2, 12 + ps.weapons.length, message.text);
+	sideBarDisplay.drawText(2, 13 + ps.weapons.length, message.text);
 }
 
 addTextToCombatLog = function(text) {
@@ -268,6 +272,10 @@ moveCursor =  function(direction) {
   return true;
 }
 
+launchBoardingParty = function() {
+
+}
+
 advanceTurn =  function() {
 
   let system = getPlayerSystem(universe);
@@ -281,9 +289,15 @@ advanceTurn =  function() {
   });
   var astarForAllies;
 
-  var astarForNeutrals = new ROT.Path.AStar(20, 10, (x,y) => { //change these positions
-     return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
-  });
+
+  var astarForNeutrals = [];
+  system.waypoints.forEach((wp) => {
+    let asfn = new ROT.Path.AStar(20, 10, (x,y) => { //change these positions
+       return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
+    });
+    astarForNeutrals.push(asfn);
+  })
+  astarForNeutrals = astarForNeutrals.random();
 
   if (weakestEnemy) {
     console.log(`weakest enemy is ${weakestEnemy.name} with ${weakestEnemy.hull} hull`);
@@ -389,6 +403,31 @@ advanceTurn =  function() {
   });
 
   system.ships = system.ships.filter(s => s.player || !s.toBeDisintegrated);
+
+  system.ships.filter(s => { return !s.player && s.type != SHIP_TYPE_FIGHTER && s.crew > 0 && s.attackPlayer && freeDiagonalDistance([s.xCoord,s.yCoord],[ps.xCoord,ps.yCoord]) <= 1 && (ps.speed() == 0 || s.speed() == 0); }).forEach((s) => {
+    let combatWidth = 2*Math.min(ps.crew, s.crew);
+    let playerCasualties = 0;
+    let enemyCasualties = 0;
+    for (let i = 0; i < Math.min(ps.crew, combatWidth); i++) {
+      if (randomNumber(1,4) == 4)
+        enemyCasualties++;
+    }
+    for (let i = 0; i < Math.min(s.crew, combatWidth); i++) {
+      if (randomNumber(1,4) == 4)
+        playerCasualties++;
+    }
+    playerCasualties = Math.min(playerCasualties, ps.crew);
+    enemyCasualties = Math.min(enemyCasualties, s.crew);
+    let message = `Boarding tubes are deployed between ${ps.name} and ${s.name}. In the ensuing battle they suffer casualties of ${playerCasualties} and ${enemyCasualties}, respectively.`;
+    addTextToCombatLog(message);
+    ps.loseCrew(playerCasualties)
+    s.loseCrew(enemyCasualties);
+    if (s.crew > 0 && 5*s.crew < ps.crew && s.crew + ps.prisoners <= ps.maxPrisoners) {
+      addTextToCombatLog(`The crew of the ${s.name} surrenders and the ${s.crew} that remain are taken prisoner by ${ps.name}.`);
+      ps.prisoners += s.crew;
+      s.loseCrew(s.crew);
+    }
+  });
 
   if (getPlayerShip(system.ships).destroyed) {
     system.ships.forEach((s) => {

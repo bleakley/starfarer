@@ -145,7 +145,15 @@ function LootAbandonedShipEvent (ship) {
   this.ship = ship;
   this.item = new Weapon(ship.getLootWeapon());
 	this.message = `You lock on to the derelict ${ship.name} and slice open its hull with your boarding tubes. The ship's computers are in relatively good condition and your crew manages to download ${ship.credits} BitCredits.`;
-	this.message += ` Many of the ship's systems were badly irradiated, but you are able to salvage a ${this.item.name}.`
+	this.message += ` Many of the ship's systems were badly irradiated, but you are able to salvage a ${this.item.name}.`;
+	if (this.ship.prisoners > 0) {
+		this.message += ` You find ${this.ship.prisoners} in an unguarded detention block. They eagerly offer to join your crew.`
+	}
+	ps = getPlayerShip(getPlayerSystem(universe).ships);
+	let roomLeft = ps.maxCrew - ps.crew;
+	if (this.ship.prisoners > roomLeft) {
+		this.message += ` Unfortunately you only have room for ${roomLeft} additional crewmembers, so the prisoners draw lots and the unlucky ones leave via the derelict vessel's escape pods.`;
+	}
 	this.time_until = 0;
 }
 
@@ -154,6 +162,7 @@ LootAbandonedShipEvent.prototype = {
 		system = getPlayerSystem(universe);
     ps = getPlayerShip(system.ships);
 		ps.credits += this.ship.credits;
+		ps.crew = Math.min(ps.maxCrew, ps.crew + this.ship.prisoners);
     this.ship.event = null;
     getAcknowledgement(this.message, () => {
 			equipWeapon(ps, this.item, callbackFunction);
