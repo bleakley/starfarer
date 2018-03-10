@@ -107,7 +107,11 @@ function System (universe) {
 
   this.waypoints = [];
   for (let n = 0; n < 3; n++) {
-    this.waypoints.push(this.randomUnoccupiedSpace());
+    let rus = this.randomUnoccupiedSpace();
+    let asfn = new ROT.Path.AStar(rus[0], rus[1], (x,y) => { //change these positions
+       return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
+    });
+    this.waypoints.push(asfn);
   }
 
   this.pending_events = [];

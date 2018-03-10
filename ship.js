@@ -159,6 +159,7 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
   this.toBeDisintegrated = false;
   this.mindControlByPlayerDuration = 0;
   this.mindControlByEnemyDuration = 0;
+  this.currentWaypoint = null; //for npc navigation only
   this.event = null; // Event triggered by investigating this ship
   this.known_systems = [];
 }

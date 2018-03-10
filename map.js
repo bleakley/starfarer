@@ -176,6 +176,13 @@ drawAll = function(recursion)
     }
   });
 
+  // draw the player's arrow if off the map
+  if (ps.xCoord >= MAP_WIDTH || ps.xCoord < 0 || ps.yCoord >= MAP_HEIGHT || ps.yCoord < 0) {
+    let closestX = Math.max(0, Math.min(MAP_WIDTH-1, ps.xCoord));
+    let closestY = Math.max(0, Math.min(MAP_HEIGHT-1, ps.yCoord));
+    mapDisplay.draw(closestX, closestY, ARROWS[ps.facing], ps.getHighlightColor());
+  }
+
   drawSideBar();
 
 	if(recursion)
@@ -291,13 +298,12 @@ advanceTurn =  function() {
 
 
   var astarForNeutrals = [];
-  system.waypoints.forEach((wp) => {
-    let asfn = new ROT.Path.AStar(20, 10, (x,y) => { //change these positions
-       return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
-    });
-    astarForNeutrals.push(asfn);
-  })
-  astarForNeutrals = astarForNeutrals.random();
+  system.ships.forEach((s) => {
+    if (s.currentWaypoint == null)
+      s.currentWaypoint = system.waypoints.random();
+    if (percentChance(10))
+      s.currentWaypoint = system.waypoints.random();
+  });
 
   if (weakestEnemy) {
     console.log(`weakest enemy is ${weakestEnemy.name} with ${weakestEnemy.hull} hull`);
@@ -305,7 +311,7 @@ advanceTurn =  function() {
        return !_.get(system.map, [x, y, 'forbiddenToAI'], true);
     });
   } else {
-    astarForAllies = astarForNeutrals;
+    astarForAllies = system.waypoints[0];
   }
 
   let renderAttacks = false;
@@ -349,8 +355,12 @@ advanceTurn =  function() {
         s.plotBetterCourse(system.map, astarForAllies);
       else if (s.attackPlayer || s.mindControlByEnemyDuration)
         s.plotBetterCourse(system.map, astarForEnemies);
-      else
-        s.plotBetterCourse(system.map, astarForNeutrals);
+      else {
+        s.plotBetterCourse(system.map, s.currentWaypoint);
+        //console.log(`${s.name} navigating to waypoint at:`);
+        //console.log(s.currentWaypoint);
+      }
+
     }
     let maneuverMagnitude = freeDiagonalDistance([s.xCursor, s.yCursor], [s.xMoment, s.yMoment]);
     if (s.energy >= maneuverMagnitude * s.maneuverCost) {
