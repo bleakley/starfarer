@@ -68,15 +68,11 @@ Universe.prototype = {
             break;
           case 2:
             let location = source.randomUnoccupiedSpace();
-            let anomaly = {
-              name: getAnomalyName(),
-              xCoord: location[0],
-              yCoord: location[1],
-              radius: 0,
-              class: BODY_ANOMALY,
-              mass: -1,
-              events: [new AnomalyWarpEvent(destination)]
-            }
+            let anomaly = new Planet(location[0], location[1], 0, source);
+            anomaly.name = getAnomalyName(); 
+            anomaly.class = BODY_ANOMALY;
+            anomaly.mass = -1;
+            anomaly.events = [new AnomalyWarpEvent(anomaly, destination)];
             source.planets.push(anomaly);
             source.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
             source.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;

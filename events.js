@@ -179,10 +179,11 @@ TempleFindCoordinatesEvent.prototype = {
 	}
 }
 
-function AnomalyWarpEvent (destination) {
+function AnomalyWarpEvent (p, destination) {
 	this.message = "";
 	this.time_until = 0;
   this.destination = destination;
+  this.anomaly = p;
 }
 AnomalyWarpEvent.prototype = {
 
@@ -195,6 +196,8 @@ AnomalyWarpEvent.prototype = {
       this.message = this.message + " Your navigator has added the hyperspace coordinates of this system to her system log."
     }
     warp(getPlayerShip(system.ships), system, this.destination);
+    p.system.clearTile(p.xCoord, p.yCoord);
+    p.system.planets.splice(p.system.planets.indexOf(p),1);
     getAcknowledgement(this.message, callbackFunction);
 	}
 }
