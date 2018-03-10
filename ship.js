@@ -362,6 +362,7 @@ Ship.prototype = {
       this.energyRegen = 0;
       this.maneuverLevel = 0;
       this.crew = 0;
+      this.prisoners = 0;
       this.powerDown();
       this.destroyed = true;
       this.credits = Math.floor(this.credits/2);
