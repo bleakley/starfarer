@@ -196,11 +196,7 @@ drawSideBar = function()
 {
   let ps = getPlayerShip(getPlayerSystem(universe).ships);
 	sideBarDisplay.clear();
-<<<<<<< HEAD
 	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn}/${N_TURNS}`);
-=======
-	sideBarDisplay.drawText(2, 0, `Day: ${universe.turn} / ${N_TURNS}`);
->>>>>>> f13881f45d30b63ef1e09c03cc39ead6c23359b6
 	sideBarDisplay.drawText(2, 1, `System: ${getPlayerSystem(universe).name}`);
   sideBarDisplay.drawText(2, 2, `BitCredits: ${ps.credits}`);
 	sideBarDisplay.drawText(2, 4, `Hull: ${ps.hull}/${ps.hullMax}`);
