@@ -68,13 +68,13 @@ function Weapon(type)
       this.makeNeutralsHostile = true;
       this.artifact = false;
       break;
-    case WEAPON_HEAVY_LASER:
+    case WEAPON_SIEGE_LASER:
       this.name = 'Heavy Siege Laser';
       this.cost = 40;
       this.range = 30;
       this.damage = 5;
       this.energy = 10;
-      this.accuracy = 90;
+      this.accuracy = 100;
       this.damageType = DAMAGE_NORMAL;
       this.makeNeutralsHostile = true;
       this.artifact = false;
