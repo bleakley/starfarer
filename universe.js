@@ -41,6 +41,8 @@ function Universe () {
       }
     });
   });
+  
+  console.log(USED_BODY_NAMES)
 }
 
 Universe.prototype = {

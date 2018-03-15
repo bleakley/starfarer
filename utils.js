@@ -241,7 +241,7 @@ randomLargeBodyName = function () {
   const NGC = 0;
   const COMMON_NAME = 1;
   const CONSTELLATION_NAME = 2;
-  var options = [{opt: NGC, prob: 20}, {opt: COMMON_NAME, prob: 50}, {opt: CONSTELLATION_NAME, prob: 30}];
+  var options = [{opt: NGC, prob: 40}, {opt: COMMON_NAME, prob: 20}, {opt: CONSTELLATION_NAME, prob: 40}];
   var name = null;
   do {
     var choice = randomOption(options);
@@ -255,8 +255,9 @@ randomLargeBodyName = function () {
       case CONSTELLATION_NAME:
         name = GREEK_LETTERS.random() + " " + CONSTELLATION_NAMES_POSSESSIVE.random();
     }
+    console.log(name, USED_BODY_NAMES.indexOf(name))
   }
-  while(USED_BODY_NAMES.indexOf(name) < -1);
+  while(USED_BODY_NAMES.indexOf(name) > -1);
   USED_BODY_NAMES.push(name);
   return name;
 }
@@ -274,8 +275,9 @@ randomSmallBodyName = function (p) {
       case PLANET_NAMING_STYLE_SYSTEM_DERIVED:
         name = p.system.name + " " + SMALL_BODY_SYSTEM_DERIVED_NAMES.random();
     }
+    console.log(name)
   }
-  while(USED_BODY_NAMES.indexOf(name) < -1);
+  while(USED_BODY_NAMES.indexOf(name) > -1);
   USED_BODY_NAMES.push(name);
   return name;
 }
