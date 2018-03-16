@@ -39,6 +39,10 @@ function Universe () {
         if (p.events.length == 0){
           p.addRandomEvent();
       }
+      if (p.class == BODY_ANOMALY)
+        if (p.events.length == 0){
+          p.addAnomalyEvent();
+      }
     });
   });
 
@@ -69,10 +73,7 @@ Universe.prototype = {
             break;
           case 2:
             let location = source.randomUnoccupiedSpace();
-            let anomaly = new Planet(location[0], location[1], 0, source);
-            anomaly.name = getAnomalyName();
-            anomaly.class = BODY_ANOMALY;
-            anomaly.mass = -1;
+            let anomaly = new Planet(location[0], location[1], BODY_ANOMALY, 0, source);
             anomaly.events = [new AnomalyWarpEvent(anomaly, destination)];
             source.planets.push(anomaly);
             source.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;

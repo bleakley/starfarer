@@ -37,6 +37,17 @@ getPredatorName = function() {
   return prefix + suffix;
 }
 
+getPhenomenonName = function() {
+  let scientists = [ 'Einstein', 'Hawking', 'Bose', 'Rosen', 'Penrose', 'Chandrasekhar', 'Bohr', 'Higgs', 'Dyson', 'Fermi', 'Levi', 'Strauss', 'Eratosthenes', 'Khayyam', 'Archimedes', 'Euclid', 'Radin', 'Bleakley' ];
+  let phenomena = [ 'vortex', 'eddy', 'whirlpool', 'fracture', 'fissure', 'irregularity', 'instability', 'singularity', 'oscillation', 'fluctuation', 'field', 'minimum', 'maximum', 'composition', 'decomposition', 'condensate', 'reversal', 'collapse', 'inversion', 'wave' ];
+  let sci1 = scientists.random();
+  let sci2 = scientists.random();
+  while (sci1 === sci2) {
+    sci2 = scientists.random();
+  }
+  return `${sci1}-${sci2} ${phenomena.random()}`;
+}
+
 getEightWayDirection = function(x, y) {
   if (x == 0) {
     if (y > 0)
@@ -270,7 +281,12 @@ randomLargeBodyName = function () {
 
 randomSmallBodyName = function (p) {
   var name = null;
+  let counter = 0;
   do {
+    counter++;
+    if (counter > 1000) {
+      return 'UNKNOWN PLANET ' + randomNumber(1,999);
+    }
     switch (p.system.planet_naming_style) {
       case PLANET_NAMING_STYLE_COMMON:
         name = SMALL_BODY_COMMON_NAMES.random();

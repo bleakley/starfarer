@@ -18,10 +18,11 @@ function System (universe) {
     this.planet_naming_style = PLANET_NAMING_STYLE_SCIENTIFIC;
   else
     this.planet_naming_style = [PLANET_NAMING_STYLE_COMMON, PLANET_NAMING_STYLE_SCIENTIFIC, PLANET_NAMING_STYLE_SYSTEM_DERIVED].random();
-  this.addRandomPlanets()
-  this.map = [];
-  this.generateMap();
   this.ships = [];
+  this.map = [];
+  this.addRandomPlanets();
+  this.generateMap();
+  this.addRandomAnomalies();
   this.khanFleet = false;
 
   let encounters = [
@@ -122,7 +123,6 @@ System.prototype = {
 
       if(p.class == BODY_QUASAR) {
         p.radius = 3; //smaller than other stellar bodies
-        p.name = 'QUASAR';
       }
 
       if (p.radius == 0) {
@@ -172,6 +172,16 @@ System.prototype = {
     }
     return([x,y]);
   },
+  addRandomAnomalies: function() {
+    var n_anomalies = randomNumber(0, 2);
+    for (i = 0; i < n_anomalies; i++) {
+      let space = this.randomUnoccupiedSpace();
+      let anomaly = new Planet(space[0], space[1], BODY_ANOMALY, 0, this);
+      this.planets.push(anomaly);
+      this.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
+      this.map[anomaly.xCoord][anomaly.yCoord].terrain = TERRAIN_ANOMALY;
+    }
+  },
   addRandomPlanets: function() {
     var n_planets = randomNumber(0, 3);
     for (i = 0; i < n_planets; i++) {
@@ -193,7 +203,7 @@ System.prototype = {
       }
 
       if (!collision) {
-        this.planets.push(new Planet(x, y, r, this));
+        this.planets.push(new Planet(x, y, randomOption(SMALL_BODIES), r, this));
       }
     }
   }

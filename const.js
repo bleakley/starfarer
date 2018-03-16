@@ -329,10 +329,10 @@ TILES[TERRAIN_ICE] = [
 TILES[TERRAIN_BLACK_HOLE] = [
 		{prob: 100, opt:  {character : " ", color : "#000", backgroundColor : "#000"}}];
 TILES[TERRAIN_ANOMALY] = [
-		{prob: 55, opt:  {character : " ", color : "#99F", backgroundColor : "#000"}},
-		{prob: 15, opt:  {character : "?", color : "purple", backgroundColor : "#000"}},
-		{prob: 15, opt:  {character : "?", color : "green", backgroundColor : "#000"}},
-		{prob: 15, opt:  {character : "?", color : "blue", backgroundColor : "#000"}}];
+		{prob: 25, opt:  {character : " ", color : "#99F", backgroundColor : "#000"}},
+		{prob: 25, opt:  {character : "?", color : "purple", backgroundColor : "#000"}},
+		{prob: 25, opt:  {character : "?", color : "green", backgroundColor : "#000"}},
+		{prob: 25, opt:  {character : "?", color : "blue", backgroundColor : "#000"}}];
 TILES[TERRAIN_QUASAR] = [
 		{prob: 51, opt:  {character : "~", color : "#73A", backgroundColor : "#CEF"}},
 		{prob: 49, opt:  {character : "~", color : "#CEF", backgroundColor : "#73A"}}];

@@ -24,10 +24,7 @@ TempleEvent.prototype = {
     candidate_destinations.splice(candidate_destinations.indexOf(system),1);
     let destination = candidate_destinations.random();
     let location = system.randomUnoccupiedSpace();
-    let anomaly = new Planet(location[0], location[1], 0, system);
-    anomaly.name = getAnomalyName();
-    anomaly.class = BODY_ANOMALY;
-    anomaly.mass = -1;
+    let anomaly = new Planet(location[0], location[1], BODY_ANOMALY, 0, system);
     anomaly.events = [new AnomalyWarpEvent(anomaly, destination)];
     system.planets.push(anomaly);
     system.map[anomaly.xCoord][anomaly.yCoord].body = anomaly;
@@ -204,6 +201,43 @@ AnomalyWarpEvent.prototype = {
       this.message = this.message + " Your navigator has added the hyperspace coordinates of this system to her system log."
     }
     warp(getPlayerShip(system.ships), system, this.destination);
+    p.system.clearTile(p.xCoord, p.yCoord);
+    p.system.planets.splice(p.system.planets.indexOf(p),1);
+    getAcknowledgement(this.message, callbackFunction);
+	}
+}
+
+function AnomalyScienceEvent (p, destination) {
+	this.message = `As you approach the anomaly, your science officer initiates a full sub-spatial survey. You are shocked to discover that it is a naturally occuring ${getPhenomenonName()}! Your engineers manage to use the data you collect to make some rather unorthodox field modifications to ship systems.`;
+	this.message += '\n\n';
+	this.time_until = 0;
+  this.anomaly = p;
+}
+AnomalyScienceEvent.prototype = {
+
+	action: function (universe, callbackFunction) {
+    let system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+
+		switch (randomNumber(1,4)) {
+			case 1:
+				this.message += '+1 Auxilliary reactor';
+				ps.energyRegen++;
+				break;
+			case 2:
+				this.message += '+1 Capacitor bank';
+				ps.energyMax += 2;
+				break;
+			case 3:
+				this.message += '+1 Shield battery';
+				ps.shieldsMax += 2;
+				break;
+			case 4:
+				this.message += '+1 Ship computer';
+				ps.accuracyBoost += 5;
+				break;
+		}
+
     p.system.clearTile(p.xCoord, p.yCoord);
     p.system.planets.splice(p.system.planets.indexOf(p),1);
     getAcknowledgement(this.message, callbackFunction);

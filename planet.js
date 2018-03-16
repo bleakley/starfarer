@@ -1,15 +1,28 @@
-function Planet (xCoord, yCoord, radius, system) {
+function Planet (xCoord, yCoord, type, radius, system) {
   this.xCoord = x;
   this.yCoord = y;
   this.radius = radius;
-  this.class = randomOption(SMALL_BODIES);
-  this.mass = randomNumber(1,4);
+  this.class = type;
   this.events = [];
   this.system = system;
-  this.name = randomSmallBodyName(this);
+  switch (this.class) {
+    case BODY_ANOMALY:
+      this.name = getAnomalyName();
+      this.mass = -1;
+      break;
+    default:
+      this.name = randomSmallBodyName(this);
+      this.mass = randomNumber(1,4);
+      break;
+  }
 }
 
 Planet.prototype = {
+  addAnomalyEvent: function() {
+    var options = [];
+    options.push({opt: new AnomalyScienceEvent(), prob: 10});
+    this.events.push(randomOption(options));
+  },
   addRandomEvent: function() {
     var options = [];
     options.push({opt: new TempleEvent(), prob: 10});
