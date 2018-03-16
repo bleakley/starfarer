@@ -221,19 +221,19 @@ AnomalyScienceEvent.prototype = {
 
 		switch (randomNumber(1,4)) {
 			case 1:
-				this.message += '+1 Auxilliary reactor';
+				this.message += 'Your auxilliary reactor has been upgraded.';
 				ps.energyRegen++;
 				break;
 			case 2:
-				this.message += '+1 Capacitor bank';
+				this.message += 'Your capacitor bank has been upgraded.';
 				ps.energyMax += 2;
 				break;
 			case 3:
-				this.message += '+1 Shield battery';
+				this.message += 'Your shield battery has been upgraded.';
 				ps.shieldsMax += 2;
 				break;
 			case 4:
-				this.message += '+1 Ship computer';
+				this.message += 'Your ship computer has been upgraded.';
 				ps.accuracyBoost += 5;
 				break;
 		}
