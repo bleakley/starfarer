@@ -26,7 +26,7 @@ function Universe () {
 
   for (var count = 0; count < N_CLUES; count++){
     p = candidate_planets.random();
-    if (p!=this.orbitron_planet){
+    if (p!=this.orbitron_planet && p.events.length == 0){
       p.events = [new TempleClueEvent(this.orbitron_system, this.orbitron_planet)];
     }
   }
@@ -41,8 +41,7 @@ function Universe () {
       }
     });
   });
-  
-  console.log(USED_BODY_NAMES)
+
 }
 
 Universe.prototype = {
@@ -71,7 +70,7 @@ Universe.prototype = {
           case 2:
             let location = source.randomUnoccupiedSpace();
             let anomaly = new Planet(location[0], location[1], 0, source);
-            anomaly.name = getAnomalyName(); 
+            anomaly.name = getAnomalyName();
             anomaly.class = BODY_ANOMALY;
             anomaly.mass = -1;
             anomaly.events = [new AnomalyWarpEvent(anomaly, destination)];

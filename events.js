@@ -210,6 +210,49 @@ AnomalyWarpEvent.prototype = {
 	}
 }
 
+function ApexPredatorEvent () {
+	this.predator = getPredatorName();
+	this.message = "You find no signs of civilization on this planet, but it still serves as a good location to stop and repair while one of your crew makes a geological survey of the surroundings.\n\n";
+	this.message += `An unearthly howl is soon heard echoing all around you! Your xenobiologist quickly identifies it as the cry of the fearsome ${this.predator}, which is likely to soon devour your unfortunate surveyor.`;
+	this.option1 = `How truly brave of him to give his life so that we may survive. Let's get out of here!`;
+	this.option2 = `We will never leave a shipmate behind! Crack open the weapons locker and hunt down the ${this.predator}.`;
+	this.time_until = 0;
+}
+ApexPredatorEvent.prototype = {
+	action: function (universe, callbackFunction) {
+    let system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+		if (ps.crew < 3) {
+			getAcknowledgement("You land on this desolate world, but even with your advanced surveying equipment you are unable to find anything of note.", callbackFunction);
+		} else {
+			var so = new selectOption(this.message, [{ t: this.option1, o: () => this.flee(universe, callbackFunction) }, { t: this.option2, o: () => this.fight(universe, callbackFunction) }]);
+	    so.run();
+		}
+	},
+	flee: function (universe, callbackFunction) {
+    let system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+		ps.loseCrew(1);
+		getAcknowledgement("You quickly fire up the main engines and leave this planet, and your unluckly geologist, behind.", callbackFunction);
+	},
+	fight: function (universe, callbackFunction) {
+    let system = getPlayerSystem(universe);
+    ps = getPlayerShip(system.ships);
+		if (percentChance(35)) {
+			getAcknowledgement(`Your party is able to track down the ${this.predator} and slay the massive creature with several well-placed railgun shots. Your xenobiologist insists that you got lucky, and that such creatures should rarely be trifled with.`, callbackFunction);
+		} else {
+			let casualties = randomNumber(2,5);
+			if (casualties < ps.crew) {
+				ps.loseCrew(casualties);
+				getAcknowledgement(`Not long after beginning your hunt, the ${this.predator} leaps from cover and attacks! You manage to bring the creature down with a well-placed shot from your plasma rifle, but not before it savagely butchers ${casualties} of your crew.`, callbackFunction);
+			} else {
+				ps.loseCrew(casualties);
+				getAcknowledgement(`You try to trap the ${this.predator} in an ambush, but the creature is far too clever. Attacking from the shadows, it picks off the last of your crew, one by one. You try to flee back to the ship but the ${this.predator} moves with frightening speed and mercilessly devours you.`, callbackFunction);
+			}
+		}
+	}
+}
+
 function FindTribeEvent () {
 	this.message = "You find a pre-warptech city-state on this planet. Some of the civilians left unemployed after the recent cryptocurrency collapse are eager to leave their homeworld and start a new life.";
 	this.time_until = 0;

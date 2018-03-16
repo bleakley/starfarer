@@ -27,8 +27,14 @@ randomOption = function(options) {
 getAnomalyName = function() {
   let num = randomNumber(0,99).toString().padStart(2, '0');
   let goodScrabbleLetter = ['X', 'Q', 'Z', 'J', 'K'].random();
-  let badScrabbleLetter = ['A', 'B', 'C', 'D', 'E'].random()
+  let badScrabbleLetter = ['A', 'B', 'C', 'D', 'E'].random();
   return `Anomaly ${goodScrabbleLetter}${num}-${badScrabbleLetter}`;
+}
+
+getPredatorName = function() {
+  let prefix = [ 'arachno', 'ultra', 'alpha', 'omega', 'mega', 'pyro', 'cryo', 'toxo', 'necro', 'macro', 'symbio', 'tachyo', 'tetra', 'kaiju'].random();
+  let suffix = [ 'hydra', 'basilisk', 'gorgon', 'kraken', 'panther', 'python', 'raptor', 'hound', 'lisk', 'saur', 'don' ].random();
+  return prefix + suffix;
 }
 
 getEightWayDirection = function(x, y) {
