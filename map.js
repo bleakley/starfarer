@@ -244,10 +244,16 @@ init = function()
   document.getElementById("stuffOnTop").appendChild(popUpDisplay.getContainer());
 
 	drawAll(true);
-  getPlayerSystem(universe).bgm.play();
   let system = getPlayerSystem(universe);
 
-  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova. Stellarographers predict that the supernova will occur in ${N_TURNS} days.`, displayHelp);
+  getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova. Stellarographers predict that the supernova will occur in ${N_TURNS} days.`, startMusic);
+  
+}
+
+startMusic = function() {
+  // Music can't start until after the user has interacted with the page due to autoplay restrictions on some browsers
+  getPlayerSystem(universe).bgm.play();
+  displayHelp();
 }
 
 displayHelp = function(){
