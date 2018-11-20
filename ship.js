@@ -352,7 +352,7 @@ Ship.prototype = {
       case SHIP_TYPE_WRAITH:
         return [WEAPON_LASER_CANNON, WEAPON_ION_CANNON].random();
       case SHIP_TYPE_ARBITER:
-        return _.find(this.weapons, (w) => { return w.artifact });
+        return _.find(this.weapons, (w) => { return w.artifact }).type;
     }
   },
   destroy: function() {
