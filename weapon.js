@@ -167,6 +167,17 @@ function Weapon(type)
       this.makeNeutralsHostile = true;
       this.artifact = true;
       break;
+    case WEAPON_TELEPORTATION_BAY:
+      this.name = 'Combat Teleporter';
+      this.cost = 40;
+      this.range = 5;
+      this.damage = 10;
+      this.energy = 5;
+      this.accuracy = 200;
+      this.damageType = DAMAGE_TELEPORTATION;
+      this.makeNeutralsHostile = true;
+      this.artifact = false;
+      break;
   }
 
   this.readyToFire = false;
@@ -194,6 +205,10 @@ function Weapon(type)
     case DAMAGE_OVERLOAD:
       this.symbol = "\u25CB";
       this.color = "blue";
+      break;
+    case DAMAGE_TELEPORTATION:
+      this.symbol = "\u25CB";
+      this.color = "orange";
       break;
     case DAMAGE_MINDCONTROL:
       this.symbol = "\u25CB";

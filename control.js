@@ -1,6 +1,6 @@
 mapDisplay = new ROT.Display({
   width:MAP_WIDTH, height:MAP_HEIGHT,
-  layout:"rect", forceSquareRatio: false
+  layout:"rect", forceSquareRatio: false, fontFamily: 'courier'
 });
 
 sideBarDisplay = new ROT.Display({

@@ -1,3 +1,18 @@
+Array.prototype.random = function() {
+  return _.sample(this);
+}
+
+let triangularMemo = [0];
+triangularNumber = function(n) {
+  if (n < 1) {
+    return 0;
+  }
+  if (!triangularMemo[n]) {
+    triangularMemo[n] = triangularNumber(n - 1) + n;
+  }
+  return triangularMemo[n];
+}
+
 unitVector = function(x, y) {
   let mag = Math.sqrt(x*x+y*y)
   return [x/mag, y/mag]

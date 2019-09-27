@@ -15,7 +15,7 @@ ps.known_systems.push(universe.systems[0]);
 universe.systems[0].ships.push(ps);
 universe.systems[0].bgm = bgm2;
 
-const TEST_MODE = false
+const TEST_MODE = true
 if (TEST_MODE) {
   ps.hullMax = 200;
   ps.hull = 200;
@@ -25,6 +25,7 @@ if (TEST_MODE) {
   universe.systems.slice(1).forEach( (sys) => {ps.known_systems.push(sys)});
   ps.mountWeapon(new Weapon(WEAPON_SINGULARITY), MOUNT_FWD);
   ps.mountWeapon(new Weapon(WEAPON_PURIFICATION), MOUNT_FWD);
+  ps.mountWeapon(new Weapon(WEAPON_TELEPORTATION_BAY), MOUNT_TURRET);
 }
 
 var repairCost = 1;
@@ -89,12 +90,41 @@ drawShipHighlight = function(s) {
   mapDisplay.draw(s.xCoord + 1, s.yCoord, "#", color);
   mapDisplay.draw(s.xCoord+DIRECTIONS[s.facing][0], s.yCoord+DIRECTIONS[s.facing][1], ARROWS[s.facing], color);
 
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord - 1, `%c{${color}}${s.name}`);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 0, `%c{${color}}Hull: ${s.hull}/${s.hullMax}`);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 1, `%c{${color}}Shields: ${s.shields}/${s.shieldsMax}`);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 2, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 3, `%c{${color}}Crew: ${s.crew}/${s.maxCrew} (min. ${s.minCrew})`);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 4, `%c{${color}}Prisoners: ${s.prisoners}/${s.maxPrisoners}`);
+  let xInfo = s.xCoord + 2;
+  let yInfo = s.yCoord - 1;
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}${s.name}`);
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}Hull: ${s.hull}/${s.hullMax}`);
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}Shields: ${s.shields}/${s.shieldsMax}`);
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}Energy: ${s.energy}/${s.energyMax}`);
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}Crew: ${s.crew}/${s.maxCrew} (min. ${s.minCrew})`);
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}Prisoners: ${s.prisoners}/${s.maxPrisoners}`);
+
+  yInfo++;
+  let conditionList = false;
+  let bulletPoint = '\u2022';
+  let explosiveCharges = s.getNumberOfExplosiveCharges();
+  Object.keys(s.boardingParties).forEach((faction, index) => {
+    conditionList = true;
+    let count = s.boardingParties[faction].numberOfBoarders;
+    let actionDescription = BOARDING_DESCRIPTIONS[s.boardingParties[faction].currentAction];
+    mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}${bulletPoint} ${count} of ${TEAM_NAME[faction]} boarders are ${actionDescription}.`);
+  });
+  if (explosiveCharges) {
+    conditionList = true;
+    mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}${bulletPoint} There ${explosiveCharges} explosive charges planted on board this ship.`);
+  }
+  if (s.mindControlByPlayerDuration) {
+    conditionList = true;
+    mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}${bulletPoint} This ship is mindcontrolled by you for the next ${mindControlByPlayerDuration} turns.`);
+  }
+  if (s.mindControlByEnemyDuration) {
+    conditionList = true;
+    mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}${bulletPoint} This ship is mindcontrolled by the enemy for the next ${mindControlByEnemyDuration} turns.`);
+  }
+  if (conditionList) {
+    yInfo++;
+  }
+
   if (s.player)
     return;
   var ps = getPlayerShip(getPlayerSystem(universe).ships);
@@ -102,17 +132,16 @@ drawShipHighlight = function(s) {
   if (!pw)
     return;
   let cd = ps.getChanceToHit(pw, s);
-  mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 5, `%c{${color}} ${cd.prob}% to hit`);
+  mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}} ${cd.prob}% to hit`);
   for (let j = 0; j < cd.modifiers.length; j++)
-    mapDisplay.drawText(s.xCoord + 2,  s.yCoord + 6 + j, `%c{${color}}${cd.modifiers[j]}`);
+    mapDisplay.drawText(xInfo,  yInfo++, `%c{${color}}${cd.modifiers[j]}`);
 }
 
 drawFiringArc = function(ship, weapon) {
   let color = ship.getHighlightColor();
   let octant = getFiringOctant(ship.facing, weapon.mount);
-  if (octant == CENTER)
-    return;
-  [getClockwiseOctant(octant), getCounterClockwiseOctant(octant)].forEach((line) => {
+  let lines = octant == CENTER ? [NE, NW, SE, SW] : [getClockwiseOctant(octant), getCounterClockwiseOctant(octant)];
+  lines.forEach((line) => {
     for(let r = 0; r < weapon.range; r++)
       mapDisplay.draw(ship.xCoord+DIRECTIONS[line][0]*r, ship.yCoord+DIRECTIONS[line][1]*r, "+", ship.getHighlightColor());
   });
@@ -247,7 +276,7 @@ init = function()
   let system = getPlayerSystem(universe);
 
   getAcknowledgement(`Greetings, space farer! You have entered the ${system.name} system in search of an ancient Precursor artifact, the Orbitron Device, that can be used to prevent your home system, Altaris, from going supernova. Stellarographers predict that the supernova will occur in ${N_TURNS} days.`, startMusic);
-  
+
 }
 
 startMusic = function() {

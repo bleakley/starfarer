@@ -35,6 +35,8 @@ function Ship(coords, momentum, type=SHIP_TYPE_OTHER, flag=SHIP_FLAG_UNKNOWN)
   this.type = type;
   this.flag = flag;
   this.hasOrbitron = false;
+  this.combatWidth = Math.floor(this.maxCrew/4);
+  this.boardingParties = {}; //keyed by boarder ship flag
   if (flag == SHIP_FLAG_MERCHANT)
     this.credits = 2*SHIP_LOOT[type];
   switch (type) {
@@ -184,7 +186,21 @@ Ship.prototype = {
     });
 	},
   regenerateSystems: function() {
-    if(percentChance(this.crew-this.minCrew) && this.hull < this.hullMax && this.energy > 0) {
+
+    if(this.crew > this.maxCrew && percentChance(30)) {
+      this.crew--; // life support might fail
+    }
+
+    if(this.prisoners > this.maxPrisoners && percentChance(80)) {
+      this.prisoners--; // conditions are not quite as nice in the brig :-(
+    }
+
+    if(percentChance(10*this.getEffectiveCrew()) && this.getNumberOfExplosiveCharges()) {
+      addTextToCombatLog(`The extra crew of the ${this.name} scour the ship, removing exposive charges.`);
+      Object.values(this.boardingParties).forEach(p => {
+        p.explosiveCharges = Math.max(0, p.explosiveCharges -1);
+      });
+    } else if(percentChance(this.getEffectiveCrew()) && this.hull < this.hullMax && this.energy > 0) {
       addTextToCombatLog(`The extra crew of the ${this.name} focus on damage control, and recover 1 point of hull.`);
       this.hull = Math.min(this.hull + 1, this.hullMax);
     }
@@ -204,10 +220,10 @@ Ship.prototype = {
       this.takeHullDamage(1); // reactor meltdown!
     }
 
-    if(percentChance(-1*(this.crew-this.minCrew)) && this.energyRegen > 0) {
-      addTextToCombatLog(`With insufficient manning, the ${this.name} is unable to make use of reactor output.`);
-    } else if(this.energy > this.energyMax) {
+    if(this.energy > this.energyMax) {
       this.energy--; // if you are overcharged, you slowly leak extra energy
+    } else if(percentChance(-1*this.getEffectiveCrew()) && this.energyRegen > 0) {
+      addTextToCombatLog(`With insufficient manning, the ${this.name} is unable to make use of reactor output.`);
     } else {
       this.energy = Math.min(this.energy + this.energyRegen, this.energyMax);
     }
@@ -260,6 +276,9 @@ Ship.prototype = {
       case DAMAGE_OVERLOAD:
         this.takeOverchargeDamage(damage);
         break;
+      case DAMAGE_TELEPORTATION:
+        this.takeBoardingDamage(damage, attacker);
+        break;
     }
     return this.destroyed;
 	},
@@ -279,6 +298,21 @@ Ship.prototype = {
     if (!this.hull)
       this.destroy();
 	},
+  boardViaTeleport: function(numberOfBoarders, boardingFlag) {
+    if (!numberOfBoarders || !this.combatWidth || this.shields > 0)
+      return 0;
+    if (!(boardingFlag in this.boardingParties)) {
+      this.boardingParties[boardingFlag] = {
+        numberOfBoarders: 0,
+        explosiveCharges: 0,
+        stolenCredits: 0,
+        currentAction: BOARDING_ACTION_ATTACK_BRIDGE
+      };
+    }
+    let numberActuallyBoarding = numberOfBoarders;
+    this.boardingParties[boardingFlag].numberOfBoarders += numberActuallyBoarding;
+    return numberActuallyBoarding;
+	},
   takeIonDamage: function(damage) {
 		let damageAfterShields = Math.max(0, damage - Math.max(0, this.shields));
     this.shields = Math.max(0, this.shields - damage);
@@ -287,21 +321,136 @@ Ship.prototype = {
   takeTractorDamage: function(damage) {
     if (this.shields > 0)
       return;
-    if (this.xMoment > 0)
-		  this.xMoment = Math.max(0, this.xMoment - damage);
-    if (this.xMoment < 0)
-      this.xMoment = Math.min(0, this.xMoment + damage);
-    if (this.yMoment > 0)
-		  this.yMoment = Math.max(0, this.yMoment - damage);
-    if (this.yMoment < 0)
-      this.yMoment = Math.min(0, this.yMoment + damage);
+    this.reduceSpeed(damage);
 	},
+  reduceSpeed: function(amt) {
+    if (this.xMoment > 0)
+		  this.xMoment = Math.max(0, this.xMoment - amt);
+    if (this.xMoment < 0)
+      this.xMoment = Math.min(0, this.xMoment + amt);
+    if (this.yMoment > 0)
+		  this.yMoment = Math.max(0, this.yMoment - amt);
+    if (this.yMoment < 0)
+      this.yMoment = Math.min(0, this.yMoment + amt);
+  },
   takeNeutronDamage: function(damage) {
     if (this.shields > 0)
       return;
     this.prisoners = Math.max(0, this.prisoners - damage);
     this.loseCrew(damage);
 	},
+  getNumberOfExplosiveCharges: function() {
+    return Object.values(this.boardingParties).reduce((prev, current) => {return prev + current.explosiveCharges}, 0);
+  },
+  getEffectiveCrew: function() {
+    // This returns the number of surplus crew, it can be negative
+    let enemyBoarders = Object.values(this.boardingParties).reduce((prev, current) => {return prev + current.numberOfBoarders}, 0);
+    let crewOccupiedFighting = enemyBoarders ? Math.min(this.crew, this.combatWidth) : 0;
+    return this.minCrew + this.crew - crewOccupiedFighting;
+  },
+  resolveShipboardCombat: function() {
+    let attackingFactions = Object.keys(this.boardingParties);
+    let totalAttackersKilled = 0;
+    let totalDefendersKilled = 0;
+    attackingFactions.forEach(faction => {
+      let enemyParty = attackingFactions[faction];
+      let attackerCount = Math.max(0, Math.min(enemyParty.numberOfBoarders, this.combatWidth));
+      let defenderCount = Math.max(0, Math.min(this.crew, this.combatWidth));
+      let attackerStrength = 3;//enemyParty.currentAction == BOARDING_ACTION_ATTACK_BRIDGE ? 3 : 2;
+      let defenderStrength = 4;
+      let attackerSuccesses = 0;
+      let defenderSuccesses = 0;
+      _.times(attackerCount * attackerStrength, () => {
+        if (randomNumber(1, 8) == 8) {
+          attackerSuccesses++;
+        }
+      });
+      _.times(defenderCount * defenderStrength, () => {
+        if (randomNumber(1, 8) == 8) {
+          defenderSuccesses++;
+        }
+      });
+
+      if (defenderSuccesses > 2*attackerSuccesses) {
+        // the entire party is captured
+        this.prisoners += attackerCount;
+        this.credits += enemyParty.stolenCredits;
+        enemyParty.numberOfBoarders -= attackerCount;
+        enemyParty.stolenCredits = 0;
+        if (enemyParty.numberOfBoarders) {
+          addTextToCombatLog(`${attackerCount} of ${nameWithDefArticle(faction)} boarding party on the ${this.name} is captured and sent to the brig!`);
+          continue;
+        }
+        addTextToCombatLog(`${nameWithDefArticle(faction)} boarding party on the ${this.name} is captured and sent to the brig!`);
+        continue;
+      }
+
+      //attacker does something different depending on action
+      switch (enemyParty.currentAction) {
+        case BOARDING_ACTION_ATTACK_BRIDGE:
+          totalAttackersKilled
+          this.crew = Math.max(0, this.crew - attackerSuccesses);
+          break;
+        case BOARDING_ACTION_RELEASE_PRISONERS:
+          let rescued = Math.min(this.prisoners, attackerSuccesses);
+          this.prisoners -= rescued;
+          enemyParty.numberOfBoarders += rescued;
+          break;
+        case BOARDING_ACTION_PLANT_EXPLOSIVES:
+          enemyParty.explosiveCharges += attackerSuccesses;
+          if (defenderSuccesses > attackerSuccesses && percentChance(50)) {
+            enemyParty.explosiveCharges = Math.max(0, enemyParty.explosiveCharges - 1);
+          }
+          break;
+        case BOARDING_ACTION_CONSUME_ENERGY:
+          this.energy -= 2*attackerSuccesses;
+          break;
+        case BOARDING_ACTION_STEAL_CREDITS:
+          let stolen = Math.min(this.credits, 3*attackerSuccesses);
+          this.credits -= stolen;
+          enemyParty.stolenCredits += stolen;
+          break;
+        case BOARDING_ACTION_SLOW_SHIP:
+          this.reduceSpeed(attackerSuccesses);
+          break;
+        case BOARDING_ACTION_STANDBY:
+          defenderSuccesses = Math.floor(defenderSuccesses/2);
+          break;
+      }
+
+      //defenders always kill attackers
+      let attackersKilled = Math.min(defenderSuccesses, enemyParty.numberOfBoarders);
+      enemyParty.numberOfBoarders -= attackersKilled;
+
+      //there may be incidental defender casualties, even if attackers are not directly attacking the bridge
+      let defendersKilled = Math.min(enemyParty.currentAction == BOARDING_ACTION_ATTACK_BRIDGE ? attackerSuccesses : Math.floor(attackerSuccesses/2), this.crew);
+      this.crew -= defendersKilled;
+      totalAttackersKilled += attackersKilled;
+      totalDefendersKilled += defendersKilled;
+
+    });
+
+    addTextToCombatLog(`A battle rages on board the ${this.name}, killing ${totalDefendersKilled} of the defending crew.`);
+  },
+  takeBoardingDamage: function(damage, attacker) {
+    let numberOfBoarders = Math.max(0, Math.min(damage, attacker.crew - attacker.minCrew));
+    let numberActuallySent = this.boardViaTeleport(numberOfBoarders, attacker.flag);
+    attacker.loseCrew(numberActuallySent);
+    console.log(`A boarding party of ${numberActuallySent} crewmembers teleports to ${this.name} from ${attacker.name}`);
+  },
+  detonateExplosiveCharges: function(damage, attacker) {
+    let n = this.getNumberOfExplosiveCharges();
+    let damage = triangularNumber(n);
+    let initiallyDestroyed = this.destroyed;
+
+    Object.values(this.boardingParties).forEach(p => {
+      p.explosiveCharges = 0;
+    });
+    this.takeDamage(damage, DAMAGE_NORMAL);
+
+    let destroyed = this.destroyed && !initiallyDestroyed;
+    addTextToCombatLog(`${n} explosive charge${n != 1 ? 's' : ''} detonate on board the ${this.name}, dealing ${damage} damage ${destroyed ? ' and destroying it' : ''}!`);
+  },
   takeMindControlDamage: function(damage, attacker) {
     if (this.shields > 0)
       return;
