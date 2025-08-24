@@ -1,5 +1,5 @@
 # Rogue Starfarer
-Rogue Starfarer is interstellar exploration roguelike created for the 2018 7DRL competition.
+Rogue Starfarer is interstellar exploration roguelike created for the 2018 7DRL competition. If you're interested in this concept, take a look at [WarpVector](https://store.steampowered.com/app/2135870/WarpVector/), which is a greatly-expanded version of Rogue Starfarer released as an Electron app on Steam.
 
 ## How to Build
 Just open up `index.html` in your browser.
